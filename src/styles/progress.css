@@ -1,0 +1,34 @@
+.progress-wrapper {
+  margin: 16px 0;
+}
+
+.progress-label {
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  background: linear-gradient(135deg, #00d4ff, #8a4fff);
+}
+
+.status-completed .progress-fill,
+.progress-fill.status-completed {
+  background: linear-gradient(135deg, #3dd598, #8ae48f);
+}
+
+.status-failed .progress-fill,
+.progress-fill.status-failed,
+.progress-fill.status-canceled {
+  background: linear-gradient(135deg, #ff6b6b, #ff9b9b);
+}

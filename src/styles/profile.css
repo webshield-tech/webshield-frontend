@@ -1,0 +1,194 @@
+/* PROFILE PAGE STYLES */
+
+/* Main container - full page with gradient background */
+.profile-container {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #0a1929 0%, #0c0c2e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Loading spinner animation */
+.profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: #88ccff;
+}
+
+.profile-loading .loader {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(0, 212, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #00d4ff;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Profile card - the white/blue box containing everything */
+.profile-card {
+  max-width: 500px;
+  width: 100%;
+  background: rgba(10, 25, 41, 0.9);
+  border-radius: 20px;
+  padding: 40px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(15px);
+}
+
+/* Profile header with avatar and name */
+.profile-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Big circle with user's initial */
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #0088ff 0%, #00d4ff 100%);
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: white;
+  font-weight: bold;
+}
+
+.profile-header h2 {
+  font-size: 2rem;
+  margin-bottom: 5px;
+  background: linear-gradient(90deg, #00d4ff, #66b3ff);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.user-email {
+  color: #88ccff;
+  font-size: 1rem;
+}
+
+/* Information section - where all user details are listed */
+.profile-info {
+  margin-bottom: 30px;
+}
+
+/* Each row of information (label + value) */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: #88ccff;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #e6f1ff;
+  font-weight: 600;
+}
+
+/* Special badge for user role */
+.role-badge {
+  background: rgba(0, 212, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: #00d4ff;
+}
+
+/* Percentage text for scan usage */
+.usage-percentage {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+
+/* Color coding for terms status */
+.terms-yes { color: #69f0ae; }
+.terms-no { color: #ffd54f; }
+
+/* Button container at bottom */
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* Base button style */
+.profile-actions button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+/* Back button - blue theme */
+.btn-back {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+}
+
+/* History button - lighter blue */
+.btn-history {
+  background: rgba(0, 136, 255, 0.1);
+  color: #66b3ff;
+  border: 1px solid rgba(0, 136, 255, 0.3) !important;
+}
+
+/* Logout button - red theme */
+.btn-logout {
+  background: rgba(255, 65, 108, 0.1);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 65, 108, 0.3) !important;
+}
+
+/* Button hover effect */
+.profile-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* MOBILE RESPONSIVENESS - Adjust for smaller screens */
+@media (max-width: 600px) {
+  .profile-card {
+    padding: 25px 20px;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+  
+  .profile-actions {
+    flex-direction: column;
+  }
+  
+  .profile-actions button {
+    width: 100%;
+  }
+}

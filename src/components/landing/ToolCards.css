@@ -1,0 +1,631 @@
+/* components/landing/ToolCards.css */
+.tools-section {
+  padding: 120px 20px;
+  position: relative;
+  background: 
+    radial-gradient(ellipse at 50% 0%, rgba(0, 212, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 50%, rgba(255, 107, 107, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 50%, rgba(105, 240, 174, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #0a1929 0%, #0a0f1a 100%);
+  overflow: hidden;
+}
+
+.tools-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 212, 255, 0.3), 
+    rgba(105, 240, 174, 0.3),
+    rgba(255, 107, 107, 0.3),
+    transparent
+  );
+}
+
+.tools-section::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 213, 79, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 60% 60%, rgba(105, 240, 174, 0.03) 0%, transparent 50%);
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.title-underline {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease-in-out infinite;
+  position: relative;
+  display: inline-block;
+  letter-spacing: -0.5px;
+}
+
+.title-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #00d4ff, #0088ff, transparent);
+  border-radius: 4px;
+  animation: underlinePulse 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes underlinePulse {
+  0%, 100% {
+    width: 120px;
+    opacity: 1;
+  }
+  50% {
+    width: 180px;
+    opacity: 0.8;
+    background: linear-gradient(90deg, transparent, #0088ff, #00d4ff, transparent);
+  }
+}
+
+.section-subtitle {
+  text-align: center;
+  color: #a3d5ff;
+  font-size: 1.3rem;
+  max-width: 800px;
+  margin: 0 auto 80px;
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+  font-weight: 300;
+  text-shadow: 0 2px 10px rgba(0, 132, 255, 0.1);
+}
+
+/* Tools Grid */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.tool-card {
+  background: linear-gradient(145deg, 
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 35px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  animation: cardAppear 0.8s forwards cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.tool-card:nth-child(1) { animation-delay: 0.1s; }
+.tool-card:nth-child(2) { animation-delay: 0.3s; }
+.tool-card:nth-child(3) { animation-delay: 0.5s; }
+.tool-card:nth-child(4) { animation-delay: 0.7s; }
+
+@keyframes cardAppear {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced hover effect */
+.tool-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  border-color: transparent;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.25),
+    0 0 80px rgba(var(--hover-glow, 0, 212, 255), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.tool-card-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* Tool Header */
+.tool-header {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.tool-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tool-card:hover .tool-icon-wrapper {
+  transform: translateY(-5px) rotate(5deg) scale(1.1);
+  box-shadow: 
+    0 15px 40px rgba(var(--hover-glow, 0, 212, 255), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.tool-icon-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    transparent 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.tool-card:hover .tool-icon-wrapper::before {
+  opacity: 1;
+  animation: iconShine 1.5s ease-in-out;
+}
+
+@keyframes iconShine {
+  0%, 100% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%);
+  }
+}
+
+.tool-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 4px 15px currentColor);
+  transition: all 0.4s ease;
+}
+
+.tool-card:hover .tool-icon {
+  filter: drop-shadow(0 8px 25px currentColor);
+  transform: scale(1.05);
+}
+
+.tool-header h3 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.9));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.tool-header h3::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, currentColor, transparent);
+  border-radius: 2px;
+  opacity: 0.5;
+  transition: width 0.4s ease;
+}
+
+.tool-card:hover .tool-header h3::after {
+  width: 60px;
+}
+
+/* Tool Description */
+.tool-description {
+  color: #c2e0ff;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 30px;
+  min-height: 48px;
+  font-weight: 300;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  position: relative;
+  padding-left: 10px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s ease;
+}
+
+.tool-card:hover .tool-description {
+  color: #ffffff;
+  border-left-color: currentColor;
+  padding-left: 20px;
+}
+
+/* Tool Features */
+.tool-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #d9ecff;
+  font-size: 1rem;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.05), 
+    transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.feature:hover::before {
+  transform: translateX(100%);
+}
+
+.feature:hover {
+  transform: translateX(8px);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, rgba(105, 240, 174, 0.2), rgba(105, 240, 174, 0.1));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #69f0ae;
+  font-weight: bold;
+  flex-shrink: 0;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(105, 240, 174, 0.1);
+}
+
+.feature:hover .feature-icon {
+  background: linear-gradient(135deg, rgba(105, 240, 174, 0.4), rgba(105, 240, 174, 0.2));
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(105, 240, 174, 0.2);
+}
+
+/* Advanced Border Animation */
+.tool-card::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 26px;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    var(--border-color-1, #00d4ff),
+    var(--border-color-2, #0088ff),
+    var(--border-color-3, #00d4ff),
+    transparent 50%,
+    transparent 100%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  animation: borderRotate 3s linear infinite;
+  animation-play-state: paused;
+  filter: blur(10px);
+}
+
+.tool-card:hover::after {
+  opacity: 0.3;
+  animation-play-state: running;
+}
+
+@keyframes borderRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Border glow effect */
+.tool-card::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 22px;
+  background: linear-gradient(
+    120deg,
+    transparent 25%,
+    var(--glow-color),
+    transparent 75%
+  );
+  opacity: 0;
+  filter: blur(12px);
+  transition: opacity 0.5s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tool-card:hover::after {
+  opacity: 1;
+}
+
+/* Individual card styles with custom properties */
+.tool-card[data-tool="nmap"] {
+  --hover-glow: 0, 212, 255;
+  --border-color-1: #00d4ff;
+  --border-color-2: #00a8ff;
+  --border-color-3: #0084ff;
+  --glow-color: rgba(0, 212, 255, 0.15);
+}
+
+.tool-card[data-tool="nikto"] {
+  --hover-glow: 255, 107, 107;
+  --border-color-1: #ff6b6b;
+  --border-color-2: #ff5252;
+  --border-color-3: #ff3838;
+  --glow-color: rgba(255, 107, 107, 0.15);
+}
+
+.tool-card[data-tool="sqlmap"] {
+  --hover-glow-border: 255, 213, 79;
+  --border-color-1: #ffd54f;
+  --border-color-2: #ffca28;
+  --border-color-3: #ffc107;
+  --glow-color: rgba(255, 213, 79, 0.15);
+}
+
+.tool-card[data-tool="sslscan"] {
+  --hover-glow: 105, 240, 174;
+  --border-color-1: #69f0ae;
+  --border-color-2: #00e676;
+  --border-color-3: #00c853;
+  --glow-color: rgba(105, 240, 174, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tools-section {
+    padding: 80px 20px;
+  }
+  
+  .title-underline {
+    font-size: 2.5rem;
+  }
+  
+  .section-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 50px;
+    padding: 0 15px;
+  }
+  
+  .tools-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    max-width: 500px;
+  }
+  
+  .tool-card {
+    padding: 30px;
+  }
+  
+  .tool-header {
+    gap: 20px;
+  }
+  
+  .tool-icon-wrapper {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .tool-icon {
+    font-size: 2.5rem;
+  }
+  
+  .tool-header h3 {
+    font-size: 1.8rem;
+  }
+  
+  .tool-description {
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tools-section {
+    padding: 60px 15px;
+  }
+  
+  .title-underline {
+    font-size: 2rem;
+  }
+  
+  .section-subtitle {
+    font-size: 1rem;
+    margin-bottom: 40px;
+  }
+  
+  .tool-card {
+    padding: 25px;
+  }
+  
+  .tool-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .tool-icon-wrapper {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .tool-icon {
+    font-size: 2.2rem;
+  }
+  
+  .tool-header h3 {
+    font-size: 1.6rem;
+  }
+  
+  .tool-description {
+    font-size: 1rem;
+  }
+  
+  .feature {
+    padding: 10px 15px;
+    font-size: 0.95rem;
+  }
+  
+  .feature-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Floating animation for cards */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* .tools-grid:hover .tool-card:not(:hover) {
+  animation: float 4s ease-in-out infinite;
+}
+
+.tools-grid:hover .tool-card:nth-child(1):not(:hover) {
+  animation-delay: 0s;
+}
+.tools-grid:hover .tool-card:nth-child(2):not(:hover) {
+  animation-delay: 0.5s;
+}
+.tools-grid:hover .tool-card:nth-child(3):not(:hover) {
+  animation-delay: 0.5s;
+}
+.tools-grid:hover .tool-card:nth-child(4):not(:hover) {
+  animation-delay: 0.5s;
+}
+*/
+
+/* Focus States for Accessibility */
+/* .tool-card:focus-within {
+  outline: 2px solid rgba(0, 212, 255, 0.5);
+  outline-offset: 4px;
+  transform: translateY(-5px);
+} */
+/* Add to your existing ToolCards.css */
+
+.tool-icon-wrapper {
+  width: 70px;  /* Adjust size as needed */
+  height: 70px; /* Adjust size as needed */
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  margin-bottom: 15px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.tool-icon {
+  font-size: 2.5rem; /* Remove if using Lottie */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Lottie animation container */
+.tool-lottie-animation {
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+}

@@ -1,0 +1,145 @@
+.scanp-container {
+  max-width: 960px;
+  margin: 50px auto;
+  padding: 16px;
+  margin-top:  100px;
+}
+.scanp-card {
+  background: radial-gradient(120% 140% at 15% 20%, rgba(0, 136, 255, 0.08), rgba(12, 18, 34, 0.96));
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+}
+.text-gradient {
+  background: linear-gradient(135deg, #00d4ff, #8a4fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.scanp-subtitle {
+  color: #9fb3c8;
+  margin-top: 4px;
+}
+
+.scanp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #0b1020;
+}
+.chip-running, .chip-pending { background: #ffd166; }
+.chip-completed { background: #8ae48f; }
+.chip-failed, .chip-canceled, .chip-cancelled { background: #ff9b9b; }
+
+.scanp-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+.meta-label { color: #8aa2c2; font-size: 0.9rem; }
+.meta-value { color: #e2e8f0; font-weight: 600; }
+
+.scanp-error {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: #ff9b9b;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+.error-icon { font-size: 1.1rem; }
+
+.progress-wrap {
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 14px;
+}
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  color: #cbd5e1;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.percent { color: #8ae48f; }
+
+.progress-bar-outer {
+  width: 100%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-bar-inner {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00d4ff, #8a4fff);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+  transition: width 0.4s ease;
+}
+.progress-bar-inner.status-completed { background: linear-gradient(90deg, #3dd598, #8ae48f); box-shadow: 0 0 12px rgba(61,213,152,0.35); }
+.progress-bar-inner.status-failed,
+.progress-bar-inner.status-canceled,
+.progress-bar-inner.status-cancelled { background: linear-gradient(90deg, #ff6b6b, #ff9b9b); box-shadow: 0 0 12px rgba(255,107,107,0.35); }
+
+.progress-tip {
+  margin-top: 8px;
+  color: #9fb3c8;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.progress-tip::before {
+  content: "💡";
+}
+
+.scanp-footer {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn-secondary,
+.btn-cancel {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+.btn-cancel {
+  background: linear-gradient(135deg, #0088ff, #00d4ff);
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 136, 255, 0.35);
+}
+.btn-secondary:hover,
+.btn-cancel:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .scanp-header { flex-direction: column; align-items: flex-start; }
+  .scanp-container { margin-top: 28px; }
+}

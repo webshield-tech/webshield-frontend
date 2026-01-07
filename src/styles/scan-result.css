@@ -1,0 +1,376 @@
+/* Full fixed scan-result.css */
+
+.scan-container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.scan-card {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #00d4ff, #8a4fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.scan-subtitle { 
+  color: #9fb3c8; 
+  margin-top: 6px; 
+  font-size: 1rem;
+}
+
+.toast {
+  margin: 12px 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.toast-success { 
+  background: rgba(61, 213, 152, 0.18); 
+  color: #8ae48f; 
+  border: 1px solid rgba(61, 213, 152, 0.35); 
+}
+
+.toast-error { 
+  background: rgba(255, 107, 107, 0.15); 
+  color: #ff9b9b; 
+  border: 1px solid rgba(255, 107, 107, 0.35); 
+}
+
+.scan-error { 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+  background: rgba(255, 107, 107, 0.12); 
+  border: 1px solid rgba(255, 107, 107, 0.4); 
+  color: #ff9b9b; 
+  padding: 14px; 
+  border-radius: 10px; 
+  margin: 16px 0; 
+  font-size: 0.95rem;
+}
+
+.error-text {
+  flex: 1;
+}
+
+.result-card {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.result-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.result-header h3 { 
+  margin: 0; 
+  color: #e2e8f0; 
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.result-meta { 
+  color: #9fb3c8; 
+  font-size: 0.9rem;
+}
+
+.scan-status { 
+  padding: 8px 16px; 
+  border-radius: 12px; 
+  font-size: 0.85rem; 
+  text-transform: capitalize; 
+  color: #0b1020; 
+  font-weight: 600;
+}
+
+.status-completed { background: #8ae48f; }
+.status-running, .status-pending { background: #ffd166; }
+.status-failed, .status-cancelled, .status-canceled { background: #ff9b9b; }
+
+.result-body { 
+  margin-top: 20px;
+}
+
+.result-body h4 {
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.result-pre {
+  background: #0b1220;
+  color: #cbd5e1;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  max-height: 400px;
+  overflow: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* FIXED: Result Actions with properly sized icons */
+.result-actions { 
+  display: flex; 
+  gap: 16px; 
+  flex-wrap: wrap; 
+  margin-top: 30px; 
+  padding-top: 24px; 
+  border-top: 1px solid rgba(0, 212, 255, 0.1); 
+}
+
+/* Common button styles with icons */
+.tool-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 20px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+  font-size: 1.1rem;
+  border: px solid;
+  position: relative;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.tool-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* AI Report button styling - WITH LARGE ICON */
+.tool-button.ai-button {
+  background: linear-gradient(135deg, rgba(138, 79, 255, 0.15), rgba(138, 79, 255, 0.08));
+  border-color: rgba(138, 79, 255, 0.4);
+  color: #b388ff;
+}
+
+.tool-button.ai-button:hover {
+  background: linear-gradient(135deg, rgba(138, 79, 255, 0.25), rgba(138, 79, 255, 0.15));
+  border-color: rgba(138, 79, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(138, 79, 255, 0.3);
+}
+
+/* View Report button */
+.tool-button.view-button {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: #00d4ff;
+}
+
+.tool-button.view-button:hover {
+  background: rgba(0, 212, 255, 0.22);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.25);
+}
+
+/* Download Report button */
+.tool-button.download-button {
+  background: rgba(105, 240, 174, 0.12);
+  border-color: rgba(105, 240, 174, 0.3);
+  color: #69f0ae;
+}
+
+.tool-button.download-button:hover {
+  background: rgba(105, 240, 174, 0.22);
+  border-color: rgba(105, 240, 174, 0.5);
+  box-shadow: 0 10px 30px rgba(105, 240, 174, 0.25);
+}
+
+/* Disabled state */
+.tool-button.ai-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Icon containers - ALL LARGE */
+.ai-icon-container,
+.view-icon-container,
+.download-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+/* AI Lottie Animation - LARGE */
+.ai-lottie {
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+}
+
+/* Emoji fallbacks for other buttons */
+.view-icon-container .emoji-icon,
+.download-icon-container .emoji-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+/* Loading spinner */
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  text-align: center;
+  color: #9fb3c8;
+  padding: 40px 0;
+  font-size: 1.1rem;
+}
+
+.form-actions { 
+  display: flex; 
+  gap: 16px; 
+  flex-wrap: wrap; 
+  margin-top: 28px; 
+  padding-top: 24px; 
+  border-top: 1px solid rgba(255, 255, 255, 0.08); 
+}
+
+.btn-secondary, .scan-button {
+  border: none;
+  border-radius: 10px;
+  padding: 14px 24px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  flex: 1;
+  min-width: 180px;
+}
+
+.btn-secondary { 
+  background: rgba(255, 255, 255, 0.08); 
+  color: #e2e8f0; 
+}
+
+.btn-secondary:hover { 
+  background: rgba(255, 255, 255, 0.15); 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.scan-button { 
+  background: linear-gradient(135deg, #0088ff, #00d4ff); 
+  color: white; 
+  box-shadow: 0 10px 25px rgba(0, 136, 255, 0.35); 
+}
+
+.scan-button:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 15px 35px rgba(0, 136, 255, 0.5); 
+  background: linear-gradient(135deg, #0099ff, #00e5ff);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .scan-card {
+    padding: 20px;
+  }
+  
+  .result-actions {
+    flex-direction: column;
+  }
+  
+  .tool-button {
+    min-width: 100%;
+    padding: 16px 20px;
+    font-size: 1.05rem;
+  }
+  
+  .ai-icon-container,
+  .view-icon-container,
+  .download-icon-container {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .view-icon-container .emoji-icon,
+  .download-icon-container .emoji-icon {
+    font-size: 1.6rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn-secondary, .scan-button {
+    min-width: 100%;
+    padding: 14px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scan-card {
+    padding: 16px;
+  }
+  
+  .text-gradient {
+    font-size: 1.7rem;
+  }
+  
+  .tool-button {
+    padding: 14px 18px;
+    font-size: 1rem;
+    gap: 12px;
+  }
+  
+  .ai-icon-container,
+  .view-icon-container,
+  .download-icon-container {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .view-icon-container .emoji-icon,
+  .download-icon-container .emoji-icon {
+    font-size: 1.4rem;
+  }
+  
+  .result-pre {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+}
