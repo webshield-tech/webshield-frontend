@@ -59,10 +59,16 @@ const ScanProgress = () => {
           navigate(`/scan-result/${scanId}`, { replace: true });
           return;
         }
-        if (["failed", "canceled", "cancelled"].includes(st)) {
-          setError(`Scan ${st}.`);
-          return;
-        }
+        if (st === "cancelled" || st === "canceled") {
+  setError(`Scan cancelled.`);
+  return;
+}
+
+if (st === "failed") {
+  // Wait a bit more and check again - sometimes backend shows failed temporarily
+  timer = window.setTimeout(poll, POLL_MS);
+  return;
+}
         timer = window.setTimeout(poll, POLL_MS);
       } catch (e: any) {
         setError(e?.response?.data?.error || "Failed to fetch scan status");
