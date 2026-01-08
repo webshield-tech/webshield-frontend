@@ -22,3 +22,4 @@ export interface ScanItem {
   createdAt: string;
   updatedAt?: string;
 }
+

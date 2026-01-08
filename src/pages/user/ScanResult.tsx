@@ -1,3 +1,5 @@
+ 
+/* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,6 +14,7 @@ import "../../styles/scan-result.css";
 import aiAnimation from "../../assets/icons/aiSearching.json";
 import eyeAnimation from "../../assets/icons/found.json";
 import downloadAnimation from "../../assets/icons/Downloading.json";
+import saveTextAsPdf from "../../utils/saveAsPdf";
 
 type ToastType = "success" | "error" | "";
 
@@ -25,6 +28,8 @@ const ScanResult = () => {
     message: "",
   });
   const [generating, setGenerating] = useState(false);
+  // Modal state for viewing report
+  const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -75,52 +80,95 @@ const ScanResult = () => {
         showToast("success", "PDF opened in new tab.");
         return;
       }
+      // Assume text report
       const text =
         typeof res.data === "string"
           ? res.data
           : new TextDecoder().decode(res.data);
-      showToast("success", text || "Report received (non-PDF).");
+
+      // Try extract a message if this is an error-y JSON, otherwise show the text
+      let errorJson: null | { message?: string; error?: string } = null;
+      try {
+        errorJson = JSON.parse(text);
+      } catch {}
+      if (
+        errorJson &&
+        (errorJson?.error?.toLowerCase().includes("not generated") ||
+          errorJson?.message?.toLowerCase().includes("generate"))
+      ) {
+        // Show clearly as an error right below the action buttons/modal
+        setToast({
+          type: "error",
+          message:
+            errorJson.message ||
+            errorJson.error ||
+            "Report not generated yet. Please generate the report first.",
+        });
+        setReportModal({ open: false, content: "" });
+      } else {
+        setToast({ type: "", message: "" }); // clear any error toast
+        setReportModal({ open: true, content: text });
+      }
     } catch (e: any) {
-      showToast("error", e?.response?.data?.error || "Failed to view report");
+      setToast({
+        type: "error",
+        message:
+          e?.response?.data?.error ||
+          "Failed to view report",
+      });
+      setReportModal({ open: false, content: "" });
     }
   };
 
-  const handleDownload = async () => {
-    if (!scanId) return;
-    try {
-      const res = await downloadReport(scanId);
-      const ct = res.headers["content-type"] || "";
-      const dispo = res.headers["content-disposition"] || "";
-      const match = dispo.match(/filename="?(.+)"?/i);
-      const filename = match
-        ? match[1]
-        : `report-${scanId}.${ct.includes("pdf") ? "pdf" : "txt"}`;
+const handleDownload = async () => {
+  if (!scanId) return;
+  try {
+    const res = await downloadReport(scanId);
+    const ct = res.headers["content-type"] || "";
+    const dispo = res.headers["content-disposition"] || "";
+    const match = dispo.match(/filename="?(.+)"?/i);
+    const filename = match
+      ? match[1]
+      : `report-${scanId}.${ct.includes("pdf") ? "pdf" : "txt"}`;
 
-      const blob = new Blob([res.data], { type: ct || "application/pdf" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-      showToast("success", `Downloaded ${filename}`);
-    } catch (e: any) {
-      const msg = e?.response?.data
-        ? typeof e.response.data === "string"
-          ? e.response.data
-          : new TextDecoder().decode(e.response.data)
-        : e?.response?.data?.error;
-      showToast("error", msg || "Failed to download report");
+    // If txt, generate PDF
+    if (ct.includes("text/plain") || filename.endsWith(".txt")) {
+      // Get the text content
+      const text =
+        typeof res.data === "string"
+          ? res.data
+          : new TextDecoder().decode(res.data);
+
+      // <--- This is all you need!
+      saveTextAsPdf(filename.replace(/\.txt$/i, ".pdf"), text);
+      showToast("success", "Downloaded PDF");
+      return;
     }
-  };
 
+    // If it's already PDF: handle old PDF download as usual
+    const blob = new Blob([res.data], { type: ct || "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    showToast("success", `Downloaded ${filename}`);
+  } catch (e: any) {
+    const msg = e?.response?.data
+      ? typeof e.response.data === "string"
+        ? e.response.data
+        : new TextDecoder().decode(e.response.data)
+      : e?.response?.data?.error;
+    setToast({
+      type: "error",
+      message: msg || "Failed to download report",
+    });
+  }
+};
   return (
     <div className="scan-container">
       <div className="scan-card">
         <h2 className="text-gradient">Scan Result</h2>
         <p className="scan-subtitle">Scan ID: {scanId}</p>
-
-        {toast.message && (
-          <div className={`toast toast-${toast.type}`}>{toast.message}</div>
-        )}
 
         {error && (
           <div className="scan-error">
@@ -206,6 +254,30 @@ const ScanResult = () => {
                 Download Report
               </button>
             </div>
+
+            {/* Show error/success toast directly below action buttons for visibility */}
+            {toast.message && (
+              <div className={`toast toast-${toast.type}`}>{toast.message}</div>
+            )}
+
+            {/* Modal for viewing text reports */}
+            {reportModal.open && (
+              <div className="report-modal-overlay">
+                <div className="report-modal">
+                  <button
+                    className="modal-close"
+                    onClick={() =>
+                      setReportModal({ open: false, content: "" })
+                    }
+                  >
+                    Close
+                  </button>
+                  <pre className="modal-report-content">
+                    {reportModal.content}
+                  </pre>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <p className="loading-text">Loading...</p>
@@ -218,10 +290,7 @@ const ScanResult = () => {
           >
             ← Back to History
           </button>
-          <button
-            className="scan-button"
-            onClick={() => navigate("/dashboard")}
-          >
+          <button className="scan-button" onClick={() => navigate("/dashboard")}>
             Go to Dashboard
           </button>
         </div>

@@ -84,3 +84,28 @@ export const isValidUsername = (username: string) =>
 export const isValidEmail = (email: string) => validateEmail(email).isValid;
 export const isStrongPassword = (password: string) =>
   validatePassword(password).isValid;
+export const validateUrl = (
+  url: string
+): { isValid: boolean; message: string } => {
+  const trimmedUrl = url.trim();
+  try {
+    new URL(trimmedUrl);
+  } catch {
+    return {
+      isValid: false,
+      message: "Please enter a valid URL (e.g., https://example.com/)",
+    };
+  }
+
+  if (!/^https?:\/\/.+\..+/.test(trimmedUrl)) {
+    return {
+      isValid: false,
+      message:
+        "URL must start with http:// or https:// and have a valid domain",
+    };
+  }
+
+  return { isValid: true, message: "" };
+};
+
+export const isValidUrl = (url: string) => validateUrl(url).isValid;

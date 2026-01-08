@@ -374,3 +374,18 @@
     font-size: 0.85rem;
   }
 }
+.report-modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 2500; background: rgba(0,20,40,0.7); display: flex; justify-content: center; align-items: center;
+}
+.report-modal {
+  background: #181c2a; color: #fff; border-radius: 10px;
+  max-width: 90vw; max-height: 90vh; padding: 32px 24px; box-shadow: 0 2px 24px #0008;
+  display: flex; flex-direction: column;
+}
+.modal-close {
+  align-self: flex-end; background: #f04; color: #fff; border: none; border-radius: 4px; margin-bottom: 12px; padding: 6px 20px; font-size: 1rem; cursor: pointer;
+}
+.modal-report-content {
+  white-space: pre-wrap; overflow: auto; max-height: 70vh;
+}

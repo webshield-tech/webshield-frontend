@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getScanHistory } from "../../api/scan-api";
 import "../../styles/dashboard.css";
-import Lottie from "lottie-react";
 import successAnimation from "../../assets/icons/Success.json";
 import pendingAnimation from "../../assets/icons/pending.json";
 import foundAimation from "../../assets/icons/found.json";
@@ -18,7 +17,7 @@ import nmapAnimation from "../../assets/icons/nmap.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
-
+import Lottie from "lottie-react";
 interface Scan {
   _id: string;
   targetUrl?: string;

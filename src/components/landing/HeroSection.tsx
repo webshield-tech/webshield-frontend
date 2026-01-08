@@ -28,22 +28,14 @@ const HeroSection = () => {
           </h1>
           
           <p className="hero-description">
-            Advanced cybersecurity platform for automated vulnerability scanning, 
-            penetration testing, and security auditing using professional tools.
+            A Cyber Security platform to test your website Vulnerabilities
+
           </p>
           
           <div className="hero-stats">
             <div className="stat">
               <div className="stat-number">4</div>
               <div className="stat-label">Security Tools</div>
-            </div>
-            <div className="stat">
-              <div className="stat-number">100+</div>
-              <div className="stat-label">Vulnerability Checks</div>
-            </div>
-            <div className="stat">
-              <div className="stat-number">24/7</div>
-              <div className="stat-label">Scan Monitoring</div>
             </div>
           </div>
           
