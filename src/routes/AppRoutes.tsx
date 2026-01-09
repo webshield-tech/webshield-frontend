@@ -18,6 +18,7 @@ import ProtectedRoute from "../components/common/ProtectedRoute";
 import StartScan from "../pages/user/StartScan";
 import AboutTools from "../pages/user/AboutTools";
 import AuthRedirectWrapper from "../context/AuthRedirectWrapper";
+import NotFound from "../pages/public/NotFound";
 
 function AppRoutes() {
   return (
@@ -141,6 +142,7 @@ function AppRoutes() {
             {/* user history deep link handled by AdminUsers page */}
             <Route path="users/:userId/history" element={<AdminUsers />} />
           </Route>
+          <Route path="*" element={<NotFound />} />
 
           {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
