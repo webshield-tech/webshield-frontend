@@ -7,6 +7,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { Profile as getProfile, LogoutUser } from "../api/auth-api";
+import api from "../api/axios";
 
 interface User {
   _id: string;
@@ -28,6 +29,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  acceptTerms: () => Promise<boolean>; // ADD THIS
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -82,6 +84,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // ADD THIS FUNCTION
+  const acceptTerms = async (): Promise<boolean> => {
+    try {
+      const response = await api.post('/user/accept-terms');
+      if (response.data.success) {
+        // Update user state with agreedToTerms: true
+        setUser(prev => {
+          if (prev) {
+            return { ...prev, agreedToTerms: true };
+          }
+          return prev;
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Accept terms error:", error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       setLoading(true);
@@ -97,6 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     initializeAuth();
   }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -107,6 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         checkAuth,
         refreshUser: checkAuth,
+        acceptTerms, // ADD THIS TO CONTEXT
       }}
     >
       {children}

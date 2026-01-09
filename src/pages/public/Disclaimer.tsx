@@ -1,14 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { acceptTerms } from "../../api/auth-api";
 import "../../styles/disclaimer.css";
 
 const Disclaimer = () => {
   const navigate = useNavigate();
-  const { checkAuth, logout, user, loading, authChecked } = useAuth();
-
+  const { checkAuth, logout, user, loading, authChecked, acceptTerms } = useAuth(); 
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState("");
   const [checkboxError, setCheckboxError] = useState("");
@@ -26,7 +25,16 @@ const Disclaimer = () => {
 
   // Don't show anything while checking
   if (loading || !authChecked) {
-    return null;
+    return (
+      <div className="disclaimer-container">
+        <div className="disclaimer-card">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // If user doesn't exist (shouldn't happen with ProtectedRoute, but just in case)
@@ -37,6 +45,7 @@ const Disclaimer = () => {
 
   // If user has accepted terms (double check - in case useEffect hasn't run yet)
   if (user.agreedToTerms) {
+    navigate("/dashboard", { replace: true });
     return null;
   }
 
@@ -51,16 +60,16 @@ const Disclaimer = () => {
 
     try {
       setIsLoading(true);
-      const response = await acceptTerms();
+      
+      // Use acceptTerms from AuthContext instead of API call
+      const success = await acceptTerms();
 
-      if (response.data.success) {
-        // Update auth state and redirect immediately
-        await checkAuth();
+      if (success) {
+        // Redirect to dashboard immediately
+        // AuthContext will update the user state
         navigate("/dashboard", { replace: true });
       } else {
-        setError(
-          response.data.error || "Failed to accept terms. Please try again."
-        );
+        setError("Failed to accept terms. Please try again.");
         setIsLoading(false);
       }
     } catch (e: any) {

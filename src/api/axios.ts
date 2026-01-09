@@ -37,37 +37,42 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor - UPDATED
 api.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      console.log(`Response ${response.status} from ${response.config.url}`);
+      console.log(`📥 Response ${response.status} from ${response.config.url}`);
     }
     return response;
   },
   (error) => {
-    console.error('API Error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      message: error.message
-    });
+    const originalRequest = error.config;
     
-    if (error.response?.status === 401) {
-      // Clear any stored auth data
-      localStorage.removeItem('auth');
-      sessionStorage.removeItem('auth');
-      
-      // Only redirect if not already on auth pages
-      const currentPath = window.location.pathname;
-      const authPages = ['/login', '/signup', '/forgot-password', '/reset-password'];
-      
-      if (!authPages.includes(currentPath)) {
-        window.location.href = '/login';
-      }
+    // Don't log for auth check endpoint to reduce noise
+    if (!originalRequest.url.includes('/profile')) {
+      console.error('API Error:', {
+        status: error.response?.status,
+        url: originalRequest.url,
+        message: error.message
+      });
     }
     
+// In axios.ts response interceptor:
+if (error.response?.status === 401) {
+  localStorage.removeItem('authToken'); 
+  sessionStorage.clear(); 
+  
+  console.log('User not authenticated (401)');
+  
+  return Promise.reject({
+    isAuthError: true,
+    status: 401,
+    message: 'Authentication required'
+  });
+}
+    
     if (error.response?.status === 404) {
-      console.error('404 - Route not found on backend:', error.config?.url);
+      console.error('404 - Route not found on backend:', originalRequest.url);
     }
     
     return Promise.reject(error);
