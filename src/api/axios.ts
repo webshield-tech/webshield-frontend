@@ -1,8 +1,7 @@
 import axios from "axios";
 
 // Use environment variable or fallback
-const BASE_URL = import.meta.env.VITE_API_URL || 
-  "https://webshield-backend-production-1871.up.railway.app";
+const BASE_URL = import.meta.env.VITE_API_URL ;
 
 console.log('API Base URL:', BASE_URL);
 
@@ -18,7 +17,7 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add timestamp to avoid caching issues
+    
     if (config.method?.toLowerCase() === 'get') {
       config.params = {
         ...config.params,
@@ -42,7 +41,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      console.log(`📥 Response ${response.status} from ${response.config.url}`);
+      console.log(`Response ${response.status} from ${response.config.url}`);
     }
     return response;
   },
