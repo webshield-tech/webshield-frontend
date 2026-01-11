@@ -13,15 +13,14 @@ const Disclaimer = () => {
   const [checkboxError, setCheckboxError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Prevent rendering until auth is fully checked
-  useEffect(() => {
-    if (authChecked && !loading && user) {
-      // If user has already accepted terms, redirect immediately
-      if (user.agreedToTerms) {
-        navigate("/dashboard", { replace: true });
-      }
-    }
-  }, [authChecked, loading, user, navigate]);
+useEffect(() => {
+  if (!authChecked || loading || !user) return;
+  const acceptedThisSession = sessionStorage.getItem("termsAccepted");
+  if (user.agreedToTerms && acceptedThisSession === "true") {
+    navigate("/dashboard", { replace: true });
+  }
+}, [authChecked, loading, user, navigate]);
+
 
   // Don't show anything while checking
   if (loading || !authChecked) {
@@ -50,39 +49,40 @@ const Disclaimer = () => {
   }
 
   const handleAgree = async () => {
-    setError("");
-    setCheckboxError("");
+  setError("");
+  setCheckboxError("");
 
-    if (!checked) {
-      setCheckboxError("Please check the agreement box to continue");
-      return;
-    }
+  if (!checked) {
+    setCheckboxError("Please check the agreement box to continue");
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      
-      // Use acceptTerms from AuthContext instead of API call
-      const success = await acceptTerms();
+  try {
+    setIsLoading(true);
 
-      if (success) {
-        // Redirect to dashboard immediately
-        // AuthContext will update the user state
-        navigate("/dashboard", { replace: true });
-      } else {
-        setError("Failed to accept terms. Please try again.");
-        setIsLoading(false);
-      }
-    } catch (e: any) {
-      setError(e.response?.data?.error || "Network error. Please try again.");
-      console.error("Error accepting terms:", e);
+    const success = await acceptTerms();
+
+    if (success) {
+      sessionStorage.setItem("termsAccepted", "true");
+
+      navigate("/dashboard", { replace: true });
+    } else {
+      setError("Failed to accept terms. Please try again.");
       setIsLoading(false);
     }
-  };
+  } catch (e: any) {
+    setError(e.response?.data?.error || "Network error. Please try again.");
+    setIsLoading(false);
+  }
+};
 
-  const handleDisagree = async () => {
-    await logout();
-    navigate("/", { replace: true });
-  };
+
+const handleDisagree = async () => {
+  sessionStorage.removeItem("termsAccepted");
+  await logout();
+  navigate("/", { replace: true });
+};
+
 
   return (
     <div className="disclaimer-container">
