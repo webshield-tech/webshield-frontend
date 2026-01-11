@@ -43,6 +43,9 @@ const Profile = () => {
     );
   }
 
+  // ✅ FIX ONLY HERE
+  const termsAccepted = Boolean(userData?.agreedToTerms);
+
   return (
     <div className="profile-container">
       <div className="profile-card">
@@ -66,6 +69,7 @@ const Profile = () => {
               {userData?.role?.toUpperCase()}
             </span>
           </div>
+
           <div className="info-item">
             <span className="info-label">Scan Usage:</span>
             <span className="info-value">
@@ -73,7 +77,9 @@ const Profile = () => {
               <span className="usage-percentage">
                 (
                 {userData
-                  ? Math.round((userData.usedScan / userData.scanLimit) * 100)
+                  ? Math.round(
+                      (userData.usedScan / userData.scanLimit) * 100
+                    )
                   : 0}
                 % used)
               </span>
@@ -93,10 +99,10 @@ const Profile = () => {
             <span className="info-label">Terms Accepted:</span>
             <span
               className={`info-value ${
-                userData?.agreedToTerms ? "terms-yes" : "terms-no"
+                termsAccepted ? "terms-yes" : "terms-no"
               }`}
             >
-              {userData?.agreedToTerms ? "Yes" : "No"}
+              {termsAccepted ? "Yes" : "No"}
             </span>
           </div>
         </div>
