@@ -1,48 +1,35 @@
 import { Link } from "react-router-dom";
 import { ShieldAlert, Home, Zap } from "lucide-react";
+import "../../styles/notfound.css"; 
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b1220] via-[#0f172a] to-black text-white px-8 pt-16">
+    <div className="notfound-wrapper">
+      <div className="notfound-content">
 
-      <div className="max-w-4xl">
+        <div className="notfound-404">404</div>
 
-        {/* BIG 404 */}
-        <h1 className="text-9xl md:text-[10rem] font-extrabold leading-none text-blue-500">
-          404
-        </h1>
+        <div className="notfound-title">Page Not Found</div>
 
-        <h2 className="text-4xl font-bold mt-4">
-          Page Not Found
-        </h2>
-
-        <p className="text-gray-400 mt-3 max-w-xl">
+        <p className="notfound-text">
           This route does not exist or has been restricted by
-          <span className="text-blue-400 font-medium"> WebShield Security</span>.
+          <strong> WebShield Security</strong>.
         </p>
 
-        {/* Actions */}
-        <div className="flex gap-5 mt-8">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium"
-          >
+        <div className="notfound-actions">
+          <Link to="/" className="notfound-link">
             <Home size={18} />
             Home
           </Link>
 
-          <Link
-            to="/start-scan"
-            className="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium"
-          >
+          <Link to="/start-scan" className="notfound-link">
             <Zap size={18} />
             Run Scan
           </Link>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center gap-2 mt-6 text-sm text-gray-500">
-          <ShieldAlert size={16} className="text-blue-400" />
+        <div className="notfound-footer">
+          <ShieldAlert size={16} />
           WebShield • Real-time Protection Enabled
         </div>
 
