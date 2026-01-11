@@ -71,7 +71,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await getProfile();
       if (response.data.success) {
-        setUser(response.data.user);
+     setUser({
+  ...response.data.user,
+  agreedToTerms: Boolean(response.data.user.agreedToTerms),
+});
+
         return response.data.user;
       } else {
         setUser(null);
@@ -131,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         checkAuth,
         refreshUser: checkAuth,
-        acceptTerms, // ADD THIS TO CONTEXT
+        acceptTerms, 
       }}
     >
       {children}
