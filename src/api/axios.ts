@@ -1,6 +1,4 @@
 import axios from "axios";
-
-// Use environment variable or fallback
 const BASE_URL = import.meta.env.VITE_API_URL || 
   "https://webshield-backend-production-1871.up.railway.app";
 
@@ -37,18 +35,16 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - UPDATED
+// Response interceptor 
 api.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      console.log(`📥 Response ${response.status} from ${response.config.url}`);
+      console.log(`Response ${response.status} from ${response.config.url}`);
     }
     return response;
   },
   (error) => {
     const originalRequest = error.config;
-    
-    // Don't log for auth check endpoint to reduce noise
     if (!originalRequest.url.includes('/profile')) {
       console.error('API Error:', {
         status: error.response?.status,
@@ -57,7 +53,6 @@ api.interceptors.response.use(
       });
     }
     
-// In axios.ts response interceptor:
 if (error.response?.status === 401) {
   localStorage.removeItem('authToken'); 
   sessionStorage.clear(); 
