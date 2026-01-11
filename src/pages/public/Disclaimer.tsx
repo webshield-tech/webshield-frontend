@@ -77,12 +77,10 @@ useEffect(() => {
 };
 
 
-const handleDisagree = async () => {
-  sessionStorage.removeItem("termsAccepted");
-  await logout();
-  navigate("/", { replace: true });
-};
-
+  const handleDisagree = async () => {
+    await logout();
+    navigate("/", { replace: true });
+  };
 
   return (
     <div className="disclaimer-container">

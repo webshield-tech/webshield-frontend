@@ -71,11 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await getProfile();
       if (response.data.success) {
-     setUser({
-  ...response.data.user,
-  agreedToTerms: Boolean(response.data.user.agreedToTerms),
-});
-
+        setUser(response.data.user);
         return response.data.user;
       } else {
         setUser(null);
