@@ -12,8 +12,6 @@ function saveTextAsPdf(filename: string, content: string) {
     "Raw Scan Results",
     "END OF REPORT"
   ];
-
-  // These MUST always start at top of a fresh page!
   const forceStartOnNewPage = new Set([
     "AI Security Analysis",
     "Raw Scan Results",
@@ -44,21 +42,17 @@ function saveTextAsPdf(filename: string, content: string) {
     const isHeading = sectionHeadings.includes(trimmedLine);
     const isSep = /^=+$/.test(trimmedLine);
 
-    // Draw a horizontal rule for ASCII separator lines
     if (isSep) {
       drawSeparator();
       continue;
     }
 
-    // If this heading must *always* start at top of page, force a new page even if Y==top (except for first page after title/info)
     if (isHeading && forceStartOnNewPage.has(trimmedLine)) {
-      if (!firstPage) { // firstPage used for "Scan Information"
+      if (!firstPage) { 
         doc.addPage();
         cursorY = topMargin;
       }
     }
-
-    // Headings: bold, big font size
     if (isHeading) {
       if (cursorY !== topMargin) cursorY += lineHeight * 0.8;
       doc.setFont("courier", "bold");
@@ -68,8 +62,6 @@ function saveTextAsPdf(filename: string, content: string) {
       doc.setFont("courier", "normal");
       doc.setFontSize(fontSize);
     }
-
-    // Word wrap
     const wrappedLines = doc.splitTextToSize(origLine, pageWidth);
 
     for (let wline of wrappedLines) {
@@ -79,7 +71,6 @@ function saveTextAsPdf(filename: string, content: string) {
       }
       doc.text(wline, leftMargin, cursorY);
       cursorY += isHeading ? headingSize * 1.2 : lineHeight;
-      // After heading, switch to normal for split heading lines
       if (isHeading) {
         doc.setFont("courier", "normal");
         doc.setFontSize(fontSize);
