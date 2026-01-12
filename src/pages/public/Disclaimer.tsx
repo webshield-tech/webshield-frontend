@@ -57,11 +57,8 @@ useEffect(() => {
     setIsLoading(true);
 
     const success = await acceptTerms();
-
     if (success) {
-      sessionStorage.setItem("termsAccepted", "true");
-
-      navigate("/dashboard", { replace: true });
+      setIsLoading(false);
     } else {
       setError("Failed to accept terms. Please try again.");
       setIsLoading(false);
