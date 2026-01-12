@@ -15,10 +15,14 @@ const Disclaimer = () => {
 
 useEffect(() => {
   if (!authChecked || loading || !user) return;
-  if (user.agreedToTerms) {
+  const acceptedThisSession = sessionStorage.getItem("termsAccepted");
+  if (user.agreedToTerms && acceptedThisSession === "true") {
     navigate("/dashboard", { replace: true });
   }
 }, [authChecked, loading, user, navigate]);
+
+
+  // Don't show anything while checking
   if (loading || !authChecked) {
     return (
       <div className="disclaimer-container">
@@ -57,8 +61,11 @@ useEffect(() => {
     setIsLoading(true);
 
     const success = await acceptTerms();
+
     if (success) {
-      setIsLoading(false);
+      sessionStorage.setItem("termsAccepted", "true");
+
+      navigate("/dashboard", { replace: true });
     } else {
       setError("Failed to accept terms. Please try again.");
       setIsLoading(false);
