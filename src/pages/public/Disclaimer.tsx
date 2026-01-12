@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -5,25 +7,22 @@ import "../../styles/disclaimer.css";
 
 const Disclaimer = () => {
   const navigate = useNavigate();
-  // 🎯 Import refreshUser from context
-  const { logout, user, loading, authChecked, acceptTerms, refreshUser } = useAuth(); 
+  const { checkAuth, logout, user, loading, authChecked, acceptTerms } = useAuth(); 
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState("");
   const [checkboxError, setCheckboxError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if user has agreed to terms or is not logged in
-  useEffect(() => {
-    if (!authChecked || loading) return;
-    if (!user) {
-      navigate("/login", { replace: true });
-      return;
-    }
-    if (user.agreedToTerms) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [authChecked, loading, user, navigate]);
+useEffect(() => {
+  if (!authChecked || loading || !user) return;
+  const acceptedThisSession = sessionStorage.getItem("termsAccepted");
+  if (user.agreedToTerms && acceptedThisSession === "true") {
+    navigate("/dashboard", { replace: true });
+  }
+}, [authChecked, loading, user, navigate]);
 
+
+  // Don't show anything while checking
   if (loading || !authChecked) {
     return (
       <div className="disclaimer-container">
@@ -37,31 +36,46 @@ const Disclaimer = () => {
     );
   }
 
+  // If user doesn't exist (shouldn't happen with ProtectedRoute, but just in case)
+  if (!user) {
+    navigate("/login", { replace: true });
+    return null;
+  }
+
+  // If user has accepted terms (double check - in case useEffect hasn't run yet)
+  if (user.agreedToTerms) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
+
   const handleAgree = async () => {
-    setError("");
-    setCheckboxError("");
-    if (!checked) {
-      setCheckboxError("Please check the agreement box to continue");
-      return;
-    }
-    try {
-      setIsLoading(true);
-      const success = await acceptTerms();
-  
-      if (success) {
-        await refreshUser();
-      
-        navigate("/dashboard", { replace: true });
-      } else {
-        setError("Failed to accept terms. Please try again.");
-      }
-      setIsLoading(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      setError(e.response?.data?.error || "Network error. Please try again.");
+  setError("");
+  setCheckboxError("");
+
+  if (!checked) {
+    setCheckboxError("Please check the agreement box to continue");
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+
+    const success = await acceptTerms();
+
+    if (success) {
+      sessionStorage.setItem("termsAccepted", "true");
+
+      navigate("/dashboard", { replace: true });
+    } else {
+      setError("Failed to accept terms. Please try again.");
       setIsLoading(false);
     }
-  };
+  } catch (e: any) {
+    setError(e.response?.data?.error || "Network error. Please try again.");
+    setIsLoading(false);
+  }
+};
+
 
   const handleDisagree = async () => {
     await logout();
@@ -76,11 +90,12 @@ const Disclaimer = () => {
           <h2>Important Legal Disclaimer</h2>
           <p>Please read this carefully before proceeding</p>
         </div>
+
         {error && (
           <div className="disclaimer-message disclaimer-error">{error}</div>
         )}
+
         <div className="disclaimer-content">
-          {/* ...disclaimer sections (unchanged)... */}
           <div className="disclaimer-section">
             <h3>Purpose of Tools</h3>
             <p>
@@ -89,8 +104,47 @@ const Disclaimer = () => {
               <strong> educational and ethical hacking purposes</strong> only.
             </p>
           </div>
-          {/* ...rest omitted for brevity... */}
+
+          <div className="disclaimer-section">
+            <h3>Authorized Use Only</h3>
+            <p>
+              Users are prohibited from using tools for illegal or unauthorized
+              activity:
+            </p>
+            <ul>
+              <li>Accessing systems without explicit permission</li>
+              <li>Data theft or unauthorized access</li>
+              <li>Causing damage to systems or networks</li>
+              <li>Engaging in any form of cybercrime</li>
+            </ul>
+          </div>
+
+          <div className="disclaimer-section">
+            <h3>No Liability</h3>
+            <p>
+              We disclaim liability for harm resulting from misuse. Software is
+              provided "as is" without warranty, to the extent permitted by law.
+            </p>
+          </div>
+
+          <div className="disclaimer-section">
+            <h3>User Responsibility</h3>
+            <p>
+              You are solely responsible for following all applicable laws and
+              ensuring proper authorization before testing any system or
+              network.
+            </p>
+          </div>
+
+          <div className="disclaimer-section">
+            <h3>Security Risks</h3>
+            <p>
+              Some tools may be flagged by antivirus. Test in a controlled
+              environment and use responsibly.
+            </p>
+          </div>
         </div>
+
         <div className="checkbox-container">
           <div className="checkbox-wrapper">
             <input
@@ -108,17 +162,11 @@ const Disclaimer = () => {
             <div className="checkbox-error">{checkboxError}</div>
           )}
         </div>
+
         <div className="disclaimer-actions">
           <button
             className="disclaimer-button agree-button"
             onClick={handleAgree}
-            disabled={isLoading}
-          >
-            {isLoading ? "Processing..." : "I Agree & Continue"}
-          </button>
-          <button
-            className="disclaimer-button disagree-button"
-            onClick={handleDisagree}
             disabled={isLoading}
           >
             {isLoading ? "Processing..." : "I Agree & Continue"}
