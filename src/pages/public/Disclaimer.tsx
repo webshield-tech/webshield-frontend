@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -7,22 +5,24 @@ import "../../styles/disclaimer.css";
 
 const Disclaimer = () => {
   const navigate = useNavigate();
-  const { checkAuth, logout, user, loading, authChecked, acceptTerms } = useAuth(); 
+  const { logout, user, loading, authChecked, acceptTerms } = useAuth(); 
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState("");
   const [checkboxError, setCheckboxError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-useEffect(() => {
-  if (!authChecked || loading || !user) return;
-  const acceptedThisSession = sessionStorage.getItem("termsAccepted");
-  if (user.agreedToTerms && acceptedThisSession === "true") {
-    navigate("/dashboard", { replace: true });
-  }
-}, [authChecked, loading, user, navigate]);
-
-
-  // Don't show anything while checking
+  // Redirect if user has agreed to terms or is not logged in
+  useEffect(() => {
+    if (!authChecked || loading) return;
+    if (!user) {
+      
+      navigate("/login", { replace: true });
+      return;
+    }
+    if (user.agreedToTerms) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authChecked, loading, user, navigate]);
   if (loading || !authChecked) {
     return (
       <div className="disclaimer-container">
@@ -36,46 +36,30 @@ useEffect(() => {
     );
   }
 
-  // If user doesn't exist (shouldn't happen with ProtectedRoute, but just in case)
-  if (!user) {
-    navigate("/login", { replace: true });
-    return null;
-  }
-
-  // If user has accepted terms (double check - in case useEffect hasn't run yet)
-  if (user.agreedToTerms) {
-    navigate("/dashboard", { replace: true });
-    return null;
-  }
 
   const handleAgree = async () => {
-  setError("");
-  setCheckboxError("");
+    setError("");
+    setCheckboxError("");
 
-  if (!checked) {
-    setCheckboxError("Please check the agreement box to continue");
-    return;
-  }
+    if (!checked) {
+      setCheckboxError("Please check the agreement box to continue");
+      return;
+    }
 
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
+      const success = await acceptTerms();
+      setIsLoading(false);
+      if (!success) {
+        setError("Failed to accept terms. Please try again.");
+      }
 
-    const success = await acceptTerms();
-
-    if (success) {
-      sessionStorage.setItem("termsAccepted", "true");
-
-      navigate("/dashboard", { replace: true });
-    } else {
-      setError("Failed to accept terms. Please try again.");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      setError(e.response?.data?.error || "Network error. Please try again.");
       setIsLoading(false);
     }
-  } catch (e: any) {
-    setError(e.response?.data?.error || "Network error. Please try again.");
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const handleDisagree = async () => {
     await logout();
