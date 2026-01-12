@@ -15,14 +15,10 @@ const Disclaimer = () => {
 
 useEffect(() => {
   if (!authChecked || loading || !user) return;
-  const acceptedThisSession = sessionStorage.getItem("termsAccepted");
-  if (user.agreedToTerms && acceptedThisSession === "true") {
+  if (user.agreedToTerms) {
     navigate("/dashboard", { replace: true });
   }
 }, [authChecked, loading, user, navigate]);
-
-
-  // Don't show anything while checking
   if (loading || !authChecked) {
     return (
       <div className="disclaimer-container">

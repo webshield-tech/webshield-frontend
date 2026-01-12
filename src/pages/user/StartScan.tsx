@@ -107,10 +107,6 @@ const StartScan = () => {
       const mappedScanType = tool === "sslscan" ? "ssl" : tool;
 
      let scanTarget = url.trim().replace(/\/+$/, "");
-// if (tool === "sqlmap" && !scanTarget.includes("?")) {
-//   // If no query string, add a test id
-//   scanTarget += "?id=1";
-// }
 const scanData = {
   targetUrl: scanTarget,
   scanType: mappedScanType,

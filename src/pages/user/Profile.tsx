@@ -11,10 +11,9 @@ const Profile = () => {
   const [userData, setUserData] = useState(user);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+   useEffect(() => {
     fetchProfile();
-  }, []);
-
+  }, [user]); 
   const fetchProfile = async () => {
     try {
       setLoading(true);

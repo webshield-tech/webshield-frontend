@@ -29,7 +29,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  acceptTerms: () => Promise<boolean>; // ADD THIS
+  acceptTerms: () => Promise<boolean>; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,20 +84,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // ADD THIS FUNCTION
   const acceptTerms = async (): Promise<boolean> => {
     try {
       const response = await api.post('/user/accept-terms');
-      if (response.data.success) {
-        // Update user state with agreedToTerms: true
-        setUser(prev => {
-          if (prev) {
-            return { ...prev, agreedToTerms: true };
-          }
-          return prev;
-        });
-        return true;
-      }
+     if (response.data.success) {
+    const refreshed = await getProfile();
+    if (refreshed.data.success) setUser(refreshed.data.user);
+    return true;
+  }
       return false;
     } catch (error) {
       console.error("Accept terms error:", error);
