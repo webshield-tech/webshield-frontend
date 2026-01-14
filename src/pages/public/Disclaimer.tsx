@@ -7,7 +7,7 @@ import "../../styles/disclaimer.css";
 
 const Disclaimer = () => {
   const navigate = useNavigate();
-  const { checkAuth, logout, user, loading, authChecked, acceptTerms, login } = useAuth(); 
+  const { checkAuth, logout, user, loading, authChecked, acceptTerms } = useAuth();
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState("");
   const [checkboxError, setCheckboxError] = useState("");
