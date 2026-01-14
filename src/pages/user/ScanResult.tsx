@@ -96,17 +96,14 @@ const ScanResult = () => {
         (errorJson?.error?.toLowerCase().includes("not generated") ||
           errorJson?.message?.toLowerCase().includes("generate"))
       ) {
-        // Show clearly as an error right below the action buttons/modal
         setToast({
           type: "error",
           message:
-            errorJson.message ||
-            errorJson.error ||
             "Report not generated yet. Please generate the report first.",
         });
         setReportModal({ open: false, content: "" });
       } else {
-        setToast({ type: "", message: "" }); // clear any error toast
+        setToast({ type: "", message: "" }); 
         setReportModal({ open: true, content: text });
       }
     } catch (e: any) {
@@ -114,7 +111,7 @@ const ScanResult = () => {
         type: "error",
         message:
           e?.response?.data?.error ||
-          "Failed to view report",
+          "Failed to view report please generate report first",
       });
       setReportModal({ open: false, content: "" });
     }
@@ -131,21 +128,15 @@ const handleDownload = async () => {
       ? match[1]
       : `report-${scanId}.${ct.includes("pdf") ? "pdf" : "txt"}`;
 
-    // If txt, generate PDF
     if (ct.includes("text/plain") || filename.endsWith(".txt")) {
-      // Get the text content
       const text =
         typeof res.data === "string"
           ? res.data
           : new TextDecoder().decode(res.data);
-
-      // <--- This is all you need!
       saveTextAsPdf(filename.replace(/\.txt$/i, ".pdf"), text);
       showToast("success", "Downloaded PDF");
       return;
     }
-
-    // If it's already PDF: handle old PDF download as usual
     const blob = new Blob([res.data], { type: ct || "application/pdf" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -296,7 +287,6 @@ const handleDownload = async () => {
           <button className="scan-button" onClick={() => navigate("/start-scan")}>
             Start a New Scan
           </button>
-          
         </div>
       </div>
     </div>
