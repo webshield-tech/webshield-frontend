@@ -1,5 +1,4 @@
-/* eslint-disable prefer-const */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -18,12 +17,15 @@ import sqlmapAnimation from "../../assets/icons/sql.json";
 import sslscanAnimation from "../../assets/icons/ssl.json";
 const StartScan = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+const { user, loading: authLoading, authChecked, refreshUser } = useAuth();
 
-  const [url, setUrl] = useState("");
-  const [tool, setTool] = useState<ScanTool>("nmap");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+const [url, setUrl] = useState("");
+const [tool, setTool] = useState<ScanTool>("nmap");
+const [scanLoading, setScanLoading] = useState(false);
+const [error, setError] = useState("");
+
+if (!authChecked || authLoading) return null;
+
 
   const tools = [
     {
@@ -73,7 +75,12 @@ const StartScan = () => {
     e.preventDefault();
     setError("");
 
-    if (user && user.usedScan >= user.scanLimit) {
+   if (!user) {
+  setError("User session not ready. Please refresh the page.");
+  return;
+}
+if (user.usedScan >= user.scanLimit) {
+
       setError(
   `Scan limit reached. You've used ${Math.min(user.usedScan, user.scanLimit)} of ${user.scanLimit} scans.`
 );
@@ -89,76 +96,80 @@ const StartScan = () => {
       setError("Please enter a valid URL starting with http:// or https://");
       return;
     }
-    if (/https?:\/\/.+https?:\/\//.test(url.trim())) {
-      setError(
-        "URL contains multiple protocols. Please enter a valid single URL (e.g., https://example.com)"
-      );
-      return;
-    }
-    if (/http?:\/\/.+http?:\/\//.test(url.trim())) {
-      setError(
-        "URL contains multiple protocols. Please enter a valid single URL (e.g., http://example.com)"
-      );
-      return;
-    }
+   if (/https?:\/\/.+https?:\/\//.test(url.trim())) {
+  setError(
+    "URL contains multiple protocols. Please enter a valid single URL (e.g., https://example.com)"
+  );
+  return;
+}
 
-    try {
-      setLoading(true);
-      const mappedScanType = tool === "sslscan" ? "ssl" : tool;
 
-     let scanTarget = url.trim().replace(/\/+$/, "");
-const scanData = {
-  targetUrl: scanTarget,
-  scanType: mappedScanType,
-};
+try {
+  setScanLoading(true);
 
-      const response = await startScan(scanData);
+  const mappedScanType: ScanTool | "ssl" =
+    tool === "sslscan" ? "ssl" : tool;
 
-      if (response.data.success) {
-        const scanId = response.data.scanId || response.data.scan?._id;
-        if (scanId) {
-          navigate(`/scan-progress/${scanId}`);
-        } else {
-          setError(
-            "Scan started but no scan ID returned. Please check scan history."
-          );
-        }
-      } else {
-        setError(response.data.error || "Failed to start scan");
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error?.toLowerCase() || "";
-      if (msg.includes("already scanning") || msg.includes("in progress")) {
-        setError(
-          "You already have a scan in progress. Please wait for it to complete."
-        );
-      } else if (msg.includes("limit") || msg.includes("exceeded")) {
-        setError("Scan limit reached. Please try again later.");
-      } else if (
-        msg.includes("invalid url") ||
-        msg.includes("invalid target")
-      ) {
-        setError("Invalid target URL. Please check the format.");
-      } else if (msg.includes("timeout") || msg.includes("unreachable")) {
-        setError("Target is unreachable. Please check the URL and try again.");
-      } else if (err?.message?.includes("Network Error")) {
-        setError("Network error. Please check your connection and try again.");
-      } else {
-        setError(
-          err?.response?.data?.error ||
-            "Failed to start scan. Please try again."
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+  const scanTarget = url.trim().replace(/\/+$/, "");
+
+  const scanData = {
+    targetUrl: scanTarget,
+    scanType: mappedScanType,
   };
 
+  const response = await startScan(scanData);
+
+  if (response?.data?.success) {
+    await refreshUser();
+
+    const scanId =
+      response.data.scanId ||
+      response.data.scan?._id;
+
+    if (scanId) {
+      navigate(`/scan-progress/${scanId}`);
+    } else {
+      setError(
+        "Scan started successfully, but scan ID was not returned. Please check scan history."
+      );
+    }
+  } else {
+    setError(
+      response?.data?.error || "Failed to start scan. Please try again."
+    );
+  }
+} catch (err: any) {
+  const msg =
+    err?.response?.data?.error?.toLowerCase() || "";
+
+  if (msg.includes("already scanning") || msg.includes("in progress")) {
+    setError(
+      "You already have a scan in progress. Please wait for it to complete."
+    );
+  } else if (msg.includes("limit") || msg.includes("exceeded")) {
+    setError("Scan limit reached. Please try again later.");
+  } else if (msg.includes("invalid url") || msg.includes("invalid target")) {
+    setError("Invalid target URL. Please check the format.");
+  } else if (msg.includes("timeout") || msg.includes("unreachable")) {
+    setError("Target is unreachable. Please check the URL and try again.");
+  } else if (err?.message?.includes("Network Error")) {
+    setError("Network error. Please check your internet connection.");
+  } else {
+    setError(
+      err?.response?.data?.error ||
+        "Failed to start scan. Please try again."
+    );
+  }
+} finally {
+  setScanLoading(false);
+}
+  }
  const usedScanClamped = user
     ? Math.min(user.usedScan, user.scanLimit)
     : 0;
 const scanLimit = user?.scanLimit || 0;
-const scanUsagePercent = scanLimit
+const scanUsagePercent =
+  scanLimit > 0
     ? Math.min(Math.round((usedScanClamped / scanLimit) * 100), 100)
     : 0;
   return (
@@ -219,7 +230,7 @@ const scanUsagePercent = scanLimit
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="scan-input"
-                disabled={loading}
+                disabled={scanLoading}
               />
             </div>
             <div className="input-hint">
@@ -238,7 +249,7 @@ const scanUsagePercent = scanLimit
                 <div
                   key={t.id}
                   className={`tool-card ${tool === t.id ? "selected" : ""}`}
-                  onClick={() => !loading && setTool(t.id)}
+                  onClick={() => !scanLoading && setTool(t.id)}
                   style={{
                     borderColor:
                       tool === t.id ? t.color : "rgba(255, 255, 255, 0.08)",
@@ -314,7 +325,7 @@ const scanUsagePercent = scanLimit
               type="button"
               className="btn-secondary"
               onClick={() => navigate("/dashboard")}
-              disabled={loading}
+              disabled={scanLoading}
             >
               Back to Dashboard
             </button>
@@ -322,9 +333,9 @@ const scanUsagePercent = scanLimit
             <button
               type="submit"
               className="scan-button"
-              disabled={loading || !url.trim()}
+              disabled={scanLoading || !url.trim()}
             >
-              {loading ? (
+              {scanLoading ? (
                 <>
                   <span className="spinner"></span>
                   Initializing Scan...

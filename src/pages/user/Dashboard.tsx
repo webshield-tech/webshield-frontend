@@ -36,32 +36,38 @@ const Dashboard = () => {
   const [scans, setScans] = useState<Scan[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState("");
-  if (loading || !authChecked) {
-    return null;
-  }
+
+if (!authChecked || loading) return null;
+
+useEffect(() => {
+  if (!authChecked || loading) return;
 
   if (user && !user.agreedToTerms) {
     navigate("/disclaimer", { replace: true });
-    return null;
   }
-  useEffect(() => {
-    if (user?.agreedToTerms) {
-      const load = async () => {
-        try {
-          const res = await getScanHistory();
-          const arr = res.data?.scans || res.data?.history || [];
-          setScans(Array.isArray(arr) ? arr : []);
-        } catch (e: any) {
-          setError(e?.response?.data?.error || "Failed to load stats");
-        } finally {
-          setDashboardLoading(false);
-        }
-      };
-      load();
-    }
-  }, [user]);
+}, [authChecked, loading, user, navigate]);
 
-  const isAdmin = user?.role === "admin";
+
+ useEffect(() => {
+  if (!authChecked || loading || !user?.agreedToTerms) return;
+
+  const load = async () => {
+    try {
+      const res = await getScanHistory();
+      const arr = res.data?.scans || res.data?.history || [];
+      setScans(Array.isArray(arr) ? arr : []);
+    } catch (e: any) {
+      setError(e?.response?.data?.error || "Failed to load stats");
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
+
+  load();
+}, [authChecked, loading, user]);
+
+ const isAdmin = !!user && user.role === "admin";
+
 
   const metrics = useMemo(() => {
     const total = scans.length;

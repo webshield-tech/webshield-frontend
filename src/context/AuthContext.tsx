@@ -29,37 +29,27 @@ interface AuthContextType {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  acceptTerms: () => Promise<boolean>; 
+  acceptTerms: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
-  const login = (userData: User) => {
-    setUser(userData);
-  };
+  const login = (userData: User) => setUser(userData);
 
   const logout = async () => {
     try {
       await LogoutUser();
-    } catch (error) {
-      console.error("Logout error:", error);
     } finally {
       setUser(null);
       sessionStorage.clear();
@@ -69,56 +59,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await getProfile();
-      if (response.data.success) {
-        setUser(response.data.user);
-        return response.data.user;
+      const res = await getProfile();
+      if (res.data.success) {
+        setUser(res.data.user);
       } else {
         setUser(null);
-        return null;
       }
-    } catch (error) {
-      console.error("Auth check failed:", error);
+    } catch {
       setUser(null);
-      return null;
     }
   };
 
-  // ADD THIS FUNCTION
   const acceptTerms = async (): Promise<boolean> => {
     try {
-      const response = await api.post('/user/accept-terms');
-      if (response.data.success) {
-        // Update user state with agreedToTerms: true
-        setUser(prev => {
-          if (prev) {
-            return { ...prev, agreedToTerms: true };
-          }
-          return prev;
-        });
+      const res = await api.post("/user/accept-terms");
+      if (res.data.success) {
+        await checkAuth();
         return true;
       }
       return false;
-    } catch (error) {
-      console.error("Accept terms error:", error);
+    } catch {
       return false;
     }
   };
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const init = async () => {
       setLoading(true);
-      try {
-        await checkAuth();
-      } finally {
-        setTimeout(() => {
-          setAuthChecked(true);
-          setLoading(false);
-        }, 0);
-      }
+      await checkAuth();
+      setAuthChecked(true);
+      setLoading(false);
     };
-
-    initializeAuth();
+    init();
   }, []);
 
   return (
@@ -131,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         checkAuth,
         refreshUser: checkAuth,
-        acceptTerms, 
+        acceptTerms,
       }}
     >
       {children}

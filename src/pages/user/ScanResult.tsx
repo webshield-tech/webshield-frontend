@@ -293,6 +293,10 @@ const handleDownload = async () => {
           <button className="scan-button" onClick={() => navigate("/dashboard")}>
             Go to Dashboard
           </button>
+          <button className="scan-button" onClick={() => navigate("/start-scan")}>
+            Start a New Scan
+          </button>
+          
         </div>
       </div>
     </div>
