@@ -37,37 +37,35 @@ const Dashboard = () => {
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState("");
 
-if (!authChecked || loading) return null;
+  if (!authChecked || loading) return null;
 
-useEffect(() => {
-  if (!authChecked || loading) return;
+  useEffect(() => {
+    if (!authChecked || loading) return;
 
-  if (user && !user.agreedToTerms) {
-    navigate("/disclaimer", { replace: true });
-  }
-}, [authChecked, loading, user, navigate]);
-
-
- useEffect(() => {
-  if (!authChecked || loading || !user?.agreedToTerms) return;
-
-  const load = async () => {
-    try {
-      const res = await getScanHistory();
-      const arr = res.data?.scans || res.data?.history || [];
-      setScans(Array.isArray(arr) ? arr : []);
-    } catch (e: any) {
-      setError(e?.response?.data?.error || "Failed to load stats");
-    } finally {
-      setDashboardLoading(false);
+    if (user && !user.agreedToTerms) {
+      navigate("/disclaimer", { replace: true });
     }
-  };
+  }, [authChecked, loading, user, navigate]);
 
-  load();
-}, [authChecked, loading, user]);
+  useEffect(() => {
+    if (!authChecked || loading || !user?.agreedToTerms) return;
 
- const isAdmin = !!user && user.role === "admin";
+    const load = async () => {
+      try {
+        const res = await getScanHistory();
+        const arr = res.data?.scans || res.data?.history || [];
+        setScans(Array.isArray(arr) ? arr : []);
+      } catch (e: any) {
+        setError(e?.response?.data?.error || "Failed to load stats");
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
 
+    load();
+  }, [authChecked, loading, user]);
+
+  const isAdmin = !!user && user.role === "admin";
 
   const metrics = useMemo(() => {
     const total = scans.length;
@@ -264,18 +262,26 @@ useEffect(() => {
             animation: nmapAnimation,
             name: "Nmap",
             desc: "Network discovery & port scanning",
+            value: "nmap",
           },
           {
             animation: niktoAnimation,
             name: "Nikto",
             desc: "Web server vulnerability scanner",
+            value: "nikto",
           },
           {
             animation: sqlAnimation,
             name: "SQLMap",
             desc: "SQL injection detection",
+            value: "sqlmap",
           },
-          { animation: sslAnimation, name: "SSLScan", desc: "SSL/TLS checker" },
+          {
+            animation: sslAnimation,
+            name: "SSLScan",
+            desc: "SSL/TLS checker",
+            value: "sslscan",
+          },
         ].map((t) => (
           <div className="tool-card legacy" key={t.name}>
             <div className="tool-header">
@@ -291,7 +297,7 @@ useEffect(() => {
             <p className="tool-description legacy">{t.desc}</p>
             <button
               className="tool-button legacy"
-              onClick={() => navigate("/start-scan")}
+              onClick={() => navigate(`/start-scan?tool=${t.value}`)}
             >
               Use {t.name} Scanner
             </button>

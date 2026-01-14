@@ -1,6 +1,6 @@
  /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState,useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { startScan } from "../../api/scan-api";
 import type { ScanTool } from "../../utils/types";
@@ -17,16 +17,33 @@ import sqlmapAnimation from "../../assets/icons/sql.json";
 import sslscanAnimation from "../../assets/icons/ssl.json";
 const StartScan = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 const { user, loading: authLoading, authChecked, refreshUser } = useAuth();
 
 const [url, setUrl] = useState("");
 const [tool, setTool] = useState<ScanTool>("nmap");
 const [scanLoading, setScanLoading] = useState(false);
 const [error, setError] = useState("");
+useEffect(() => {
+  const toolParam = searchParams.get("tool");
+  if (toolParam) {
+    const toolMap: Record<string, ScanTool> = {
+      "nmap": "nmap",
+      "nikto": "nikto", 
+      "sqlmap": "sqlmap",
+      "ssl": "sslscan",    
+      "sslscan": "sslscan" 
+    };
+    
+    const mappedTool = toolMap[toolParam];
+    if (mappedTool) {
+      setTool(mappedTool);
+    }
+  }
+}, [searchParams]);
 
 if (!authChecked || authLoading) return null;
-
-
+  
   const tools = [
     {
       id: "nmap",
