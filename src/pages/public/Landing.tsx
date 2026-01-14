@@ -155,18 +155,11 @@ const Landing = () => {
               <h4>Product</h4>
               <a href="#features">Features</a>
               <a href="#tools">Tools</a>
-              <a href="#why-choose">Why Choose Us</a>
-            </div>
-
-            <div className="footer-column">
-              <h4>Legal</h4>
-              <a href="/disclaimer">Disclaimer</a>
-              <a href="/terms">Acceptable Use</a>
             </div>
 
             <div className="footer-column">
               <h4>Connect</h4>
-              <a href="mailto:husnain@example.com">Contact</a>
+              <a href="mailto:huxnain.cs@gmail.com">Contact</a>
               <a href="https://github.com/webshield-tech" target="_blank" rel="noopener noreferrer">Source Code</a>
               <a href="#cta">Get Started</a>
             </div>
@@ -178,7 +171,7 @@ const Landing = () => {
             <p>© {new Date().getFullYear()} WebShield. All rights reserved.</p>
             <p className="footer-note">
               Web Engineering Project  
-              <span className="college-highlight"> Government ANKS Degree College,KTS,Haripur</span>
+              <span className="college-highlight">Government ANKS Degree College,KTS,Haripur</span>
             </p>
           </div>
           <div className="footer-attribution">
