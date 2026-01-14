@@ -17,7 +17,16 @@
   -webkit-text-fill-color: transparent;
 }
 .scan-subtitle { color: #9fb3c8; margin-top: 6px; }
-
+.auto-select-notice {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
 /* Scan Usage Indicator */
 .scan-usage {
   margin-top: 20px;

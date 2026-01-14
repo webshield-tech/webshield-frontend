@@ -1,5 +1,5 @@
- /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState,useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { startScan } from "../../api/scan-api";
@@ -18,32 +18,32 @@ import sslscanAnimation from "../../assets/icons/ssl.json";
 const StartScan = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-const { user, loading: authLoading, authChecked, refreshUser } = useAuth();
+  const { user, loading: authLoading, authChecked, refreshUser } = useAuth();
 
-const [url, setUrl] = useState("");
-const [tool, setTool] = useState<ScanTool>("nmap");
-const [scanLoading, setScanLoading] = useState(false);
-const [error, setError] = useState("");
-useEffect(() => {
-  const toolParam = searchParams.get("tool");
-  if (toolParam) {
-    const toolMap: Record<string, ScanTool> = {
-      "nmap": "nmap",
-      "nikto": "nikto", 
-      "sqlmap": "sqlmap",
-      "ssl": "sslscan",    
-      "sslscan": "sslscan" 
-    };
-    
-    const mappedTool = toolMap[toolParam];
-    if (mappedTool) {
-      setTool(mappedTool);
+  const [url, setUrl] = useState("");
+  const [tool, setTool] = useState<ScanTool>("nmap");
+  const [scanLoading, setScanLoading] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const toolParam = searchParams.get("tool");
+    if (toolParam) {
+      const toolMap: Record<string, ScanTool> = {
+        nmap: "nmap",
+        nikto: "nikto",
+        sqlmap: "sqlmap",
+        ssl: "sslscan",
+        sslscan: "sslscan",
+      };
+
+      const mappedTool = toolMap[toolParam];
+      if (mappedTool) {
+        setTool(mappedTool);
+      }
     }
-  }
-}, [searchParams]);
+  }, [searchParams]);
 
-if (!authChecked || authLoading) return null;
-  
+  if (!authChecked || authLoading) return null;
+
   const tools = [
     {
       id: "nmap",
@@ -92,15 +92,17 @@ if (!authChecked || authLoading) return null;
     e.preventDefault();
     setError("");
 
-   if (!user) {
-  setError("User session not ready. Please refresh the page.");
-  return;
-}
-if (user.usedScan >= user.scanLimit) {
-
+    if (!user) {
+      setError("User session not ready. Please refresh the page.");
+      return;
+    }
+    if (user.usedScan >= user.scanLimit) {
       setError(
-  `Scan limit reached. You've used ${Math.min(user.usedScan, user.scanLimit)} of ${user.scanLimit} scans.`
-);
+        `Scan limit reached. You've used ${Math.min(
+          user.usedScan,
+          user.scanLimit
+        )} of ${user.scanLimit} scans.`
+      );
       return;
     }
 
@@ -113,82 +115,79 @@ if (user.usedScan >= user.scanLimit) {
       setError("Please enter a valid URL starting with http:// or https://");
       return;
     }
-   if (/https?:\/\/.+https?:\/\//.test(url.trim())) {
-  setError(
-    "URL contains multiple protocols. Please enter a valid single URL (e.g., https://example.com)"
-  );
-  return;
-}
-
-
-try {
-  setScanLoading(true);
-
-  const mappedScanType: ScanTool | "ssl" =
-    tool === "sslscan" ? "ssl" : tool;
-
-  const scanTarget = url.trim().replace(/\/+$/, "");
-
-  const scanData = {
-    targetUrl: scanTarget,
-    scanType: mappedScanType,
-  };
-
-  const response = await startScan(scanData);
-
-  if (response?.data?.success) {
-    await refreshUser();
-
-    const scanId =
-      response.data.scanId ||
-      response.data.scan?._id;
-
-    if (scanId) {
-      navigate(`/scan-progress/${scanId}`);
-    } else {
+    if (/https?:\/\/.+https?:\/\//.test(url.trim())) {
       setError(
-        "Scan started successfully, but scan ID was not returned. Please check scan history."
+        "URL contains multiple protocols. Please enter a valid single URL (e.g., https://example.com)"
       );
+      return;
     }
-  } else {
-    setError(
-      response?.data?.error || "Failed to start scan. Please try again."
-    );
-  }
-} catch (err: any) {
-  const msg =
-    err?.response?.data?.error?.toLowerCase() || "";
 
-  if (msg.includes("already scanning") || msg.includes("in progress")) {
-    setError(
-      "You already have a scan in progress. Please wait for it to complete."
-    );
-  } else if (msg.includes("limit") || msg.includes("exceeded")) {
-    setError("Scan limit reached. Please try again later.");
-  } else if (msg.includes("invalid url") || msg.includes("invalid target")) {
-    setError("Invalid target URL. Please check the format.");
-  } else if (msg.includes("timeout") || msg.includes("unreachable")) {
-    setError("Target is unreachable. Please check the URL and try again.");
-  } else if (err?.message?.includes("Network Error")) {
-    setError("Network error. Please check your internet connection.");
-  } else {
-    setError(
-      err?.response?.data?.error ||
-        "Failed to start scan. Please try again."
-    );
-  }
-} finally {
-  setScanLoading(false);
-}
-  }
- const usedScanClamped = user
-    ? Math.min(user.usedScan, user.scanLimit)
-    : 0;
-const scanLimit = user?.scanLimit || 0;
-const scanUsagePercent =
-  scanLimit > 0
-    ? Math.min(Math.round((usedScanClamped / scanLimit) * 100), 100)
-    : 0;
+    try {
+      setScanLoading(true);
+
+      const mappedScanType: ScanTool | "ssl" =
+        tool === "sslscan" ? "ssl" : tool;
+
+      const scanTarget = url.trim().replace(/\/+$/, "");
+
+      const scanData = {
+        targetUrl: scanTarget,
+        scanType: mappedScanType,
+      };
+
+      const response = await startScan(scanData);
+
+      if (response?.data?.success) {
+        await refreshUser();
+
+        const scanId = response.data.scanId || response.data.scan?._id;
+
+        if (scanId) {
+          navigate(`/scan-progress/${scanId}`);
+        } else {
+          setError(
+            "Scan started successfully, but scan ID was not returned. Please check scan history."
+          );
+        }
+      } else {
+        setError(
+          response?.data?.error || "Failed to start scan. Please try again."
+        );
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.toLowerCase() || "";
+
+      if (msg.includes("already scanning") || msg.includes("in progress")) {
+        setError(
+          "You already have a scan in progress. Please wait for it to complete."
+        );
+      } else if (msg.includes("limit") || msg.includes("exceeded")) {
+        setError("Scan limit reached. Please try again later.");
+      } else if (
+        msg.includes("invalid url") ||
+        msg.includes("invalid target")
+      ) {
+        setError("Invalid target URL. Please check the format.");
+      } else if (msg.includes("timeout") || msg.includes("unreachable")) {
+        setError("Target is unreachable. Please check the URL and try again.");
+      } else if (err?.message?.includes("Network Error")) {
+        setError("Network error. Please check your internet connection.");
+      } else {
+        setError(
+          err?.response?.data?.error ||
+            "Failed to start scan. Please try again."
+        );
+      }
+    } finally {
+      setScanLoading(false);
+    }
+  };
+  const usedScanClamped = user ? Math.min(user.usedScan, user.scanLimit) : 0;
+  const scanLimit = user?.scanLimit || 0;
+  const scanUsagePercent =
+    scanLimit > 0
+      ? Math.min(Math.round((usedScanClamped / scanLimit) * 100), 100)
+      : 0;
   return (
     <div className="scan-container">
       <div className="scan-card">
@@ -201,7 +200,7 @@ const scanUsagePercent =
           {user && (
             <div className="scan-usage">
               <div className="usage-label">
-                Your Scan Usage: 
+                Your Scan Usage:
                 <span>
                   {usedScanClamped}/{scanLimit}
                 </span>
@@ -337,6 +336,13 @@ const scanUsagePercent =
                 : "1-2 minutes"}
             </div>
           </div>
+          {/* Auto-selection notification */}
+          {searchParams.get("tool") && (
+            <div className="auto-select-notice">
+              <span style={{ color: "#00d4ff", marginRight: "8px" }}>✓</span>
+              Tool auto-selected from dashboard
+            </div>
+          )}
           <div className="form-actions">
             <button
               type="button"
