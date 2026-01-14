@@ -28,7 +28,6 @@ const ScanResult = () => {
     message: "",
   });
   const [generating, setGenerating] = useState(false);
-  // Modal state for viewing report
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
 
   const showToast = (type: ToastType, message: string) => {
