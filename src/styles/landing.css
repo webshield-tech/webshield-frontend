@@ -327,8 +327,6 @@
   margin-top: 5px;
   margin-bottom: 10px;
   line-height: 1.4;
-  display: block;  
-  clear: both;
 }
 
 .college-name .highlight {
@@ -339,17 +337,15 @@
   border-radius: 4px;
   border-left: 2px solid #00d4ff;  
   font-size: 0.85rem;
-  display: inline-block; 
-  margin-top: 4px;       
 }
 /* Footer Links */
 .footer-links { 
   flex: 2; 
   display: flex; 
   flex-wrap: wrap; 
-  gap: 30px; /* Reduced gap */
+  gap: 60px; 
+  justify-content: flex-end; 
 }
-
 .footer-column { 
   flex: 1; 
   min-width: 140px; /* Smaller min-width */
@@ -379,48 +375,41 @@
 }
 
 /* Footer Bottom */
+/* Footer Bottom */
 .footer-bottom {
-  text-align: center; 
-  padding-top: 20px; /* Reduced padding */
-  margin-top: 25px; /* Reduced margin */
+  text-align: left; 
+  padding-top: 20px;
+  margin-top: 25px;
   border-top: 1px solid rgba(0, 212, 255, 0.1);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; 
   flex-wrap: wrap;
-  gap: 12px;  /* Reduced gap */
+  gap: 12px;
 }
-
 .footer-copyright {
   color: #a0c6ff; 
-  font-size: 0.85rem;  /* Smaller */
+  font-size: 0.85rem;  
 }
 
 .footer-note {
   color: #88ccff;
-  font-size: 0.8rem;  /* Smaller */
+  font-size: 0.8rem;  
   margin-top: 4px;
 }
 
-/* College Highlight in footer */
-.college-highlight {
-  color: #00d4ff;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
 
 .author-name {
   color: #00d4ff;
   font-weight: 600;
   font-size: 0.85rem;
 }
-
 .footer-attribution {
   color: #88ccff;
-  font-size: 0.8rem;  /* Smaller */
+  font-size: 0.8rem;
   text-align: right;
+  margin-top: 5px;  
 }
-
 .footer-attribution a {
   color: #00d4ff;
   text-decoration: none;
@@ -431,18 +420,6 @@
   text-decoration: underline;
 }
 
-/* Legal links - simplified */
-.footer-column a[href="/disclaimer"],
-.footer-column a[href="/terms"] {
-  color: #ff6b6b;
-}
-
-.footer-column a[href="/disclaimer"]:hover,
-.footer-column a[href="/terms"]:hover {
-  color: #ff9e9e;
-}
-
-/* ========== END FOOTER FIXES ========== */
 
 /* Animations */
 @keyframes gradientShift { 0% {background-position:0% center;} 100% {background-position:200% center;} }
@@ -485,12 +462,17 @@
     min-width: 100%;
   }
   
-  .footer-bottom {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;  /* Reduced gap */
-  }
-  
+.footer-bottom {
+  text-align: left;  /* Changed from center to left */
+  padding-top: 20px;
+  margin-top: 25px;
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;  /* Changed from center to flex-start */
+  flex-wrap: wrap;
+  gap: 12px;
+}
   .social-links {
     justify-content: center;
     flex-wrap: wrap;
@@ -506,9 +488,13 @@
     text-align: left;
   }
   
-  .footer-attribution {
-    text-align: center;
-  }
+.footer-attribution {
+  color: #88ccff;
+  font-size: 0.8rem;
+  text-align: right; 
+  margin-top: 5px; 
+}
+
   
   .footer-lottie-wrap {
     width: 50px !important;
