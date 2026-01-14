@@ -356,3 +356,66 @@
   height: 100%;
   pointer-events: none;
 }
+/* College Name Highlight */
+.college-name {
+  color: #a0c6ff;
+  font-size: 0.9rem;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.college-name .highlight {
+  color: #00d4ff;
+  font-weight: 600;
+  background: rgba(0, 212, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #00d4ff;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.footer-logo > div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* College Highlight in footer */
+.college-highlight {
+  color: #00d4ff;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+.author-name {
+  color: #00d4ff;
+  font-weight: 600;
+}
+
+/* Legal links - simplified */
+.footer-column a[href="/disclaimer"],
+.footer-column a[href="/terms"] {
+  color: #ff6b6b;
+}
+
+.footer-column a[href="/disclaimer"]:hover,
+.footer-column a[href="/terms"]:hover {
+  color: #ff9e9e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .footer-logo {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .college-name {
+    text-align: center;
+  }
+}
