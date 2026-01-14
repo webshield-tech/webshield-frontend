@@ -115,7 +115,7 @@ const Landing = () => {
               <div>
                 <span className="logo-text">WebShield</span>
                 <p className="college-name">
-                  Developed at <span className="highlight">Iqra University</span>
+                  Developed at <span className="highlight">Govt ANKS Degree College</span>
                 </p>
               </div>
             </div>
@@ -167,7 +167,7 @@ const Landing = () => {
             <div className="footer-column">
               <h4>Connect</h4>
               <a href="mailto:husnain@example.com">Contact</a>
-              <a href="https://github.com/thehusnain/webshield-tech" target="_blank" rel="noopener noreferrer">Source Code</a>
+              <a href="https://github.com/webshield-tech" target="_blank" rel="noopener noreferrer">Source Code</a>
               <a href="#cta">Get Started</a>
             </div>
           </div>

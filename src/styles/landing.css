@@ -225,46 +225,220 @@
 }
 .button-sparkle { animation: sparkle 2s ease-in-out infinite; }
 
+/* ========== FIXED FOOTER SECTION ========== */
 /* Footer */
 .landing-footer {
   background: rgba(10, 25, 41, 0.95);
   border-top: 1px solid rgba(0, 212, 255, 0.2);
-  padding: 60px 20px 30px;
+  padding: 50px 20px 25px;
   backdrop-filter: blur(10px);
 }
 .footer-container {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; flex-wrap: wrap;
-  justify-content: space-between; gap: 50px;
-  margin-bottom: 40px;
+  max-width: 1200px; 
+  margin: 0 auto;
+  display: flex; 
+  flex-wrap: wrap;
+  justify-content: space-between; 
+  gap: 40px;
+  margin-bottom: 30px;
 }
-.footer-brand { flex: 1; min-width: 300px; }
+.footer-brand { 
+  flex: 1; 
+  min-width: 280px; 
+}
+
 .footer-logo {
   display: flex; 
-  align-items: center; 
-  gap: 0px;  /* increased from 10px */
-  margin-bottom: 20px; 
-  font-size: 1.5rem; 
+  align-items: flex-start;  /* Align to top */
+  gap: 15px;
+  margin-bottom: 15px; 
+  font-size: 1.4rem; 
   font-weight: 700; 
   color: #00d4ff;
 }
-.footer-tagline { color: #88ccff; font-size: 1.1rem; line-height: 1.6; }
-.footer-links { flex: 2; display: flex; flex-wrap: wrap; gap: 50px; }
-.footer-column { flex: 1; min-width: 150px; }
+
+.footer-logo > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-lottie-wrap {
+  width: 60px !important;   /* FIXED: Reduced from 72px */
+  height: 60px !important;  /* FIXED: Reduced from 72px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;  /* Prevent shrinking */
+}
+
+.footer-lottie {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.footer-tagline { 
+  color: #88ccff; 
+  font-size: 1rem; 
+  line-height: 1.6; 
+  margin-bottom: 15px;
+}
+
+/* Social Links - FIXED SIZE */
+.social-links {
+  display: flex;
+  gap: 10px;  /* Reduced gap */
+  margin-top: 15px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;  /* Reduced gap */
+  padding: 6px 12px;  /* Smaller padding */
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  color: #a0c6ff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(160, 198, 255, 0.1);
+  font-size: 0.8rem;  /* Smaller font */
+}
+
+.social-link:hover {
+  background: rgba(160, 198, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(160, 198, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* FIX: Social icon size - CRITICAL FIX */
+.social-icon {
+  width: 14px !important;  /* FIXED: Small size */
+  height: 14px !important; /* FIXED: Small size */
+  fill: currentColor;
+}
+
+/* College Name Highlight */
+.college-name {
+  color: #a0c6ff;
+  font-size: 0.85rem;  /* Smaller */
+  margin-top: 5px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.college-name .highlight {
+  color: #00d4ff;
+  font-weight: 600;
+  background: rgba(0, 212, 255, 0.1);
+  padding: 2px 6px;  /* Smaller padding */
+  border-radius: 4px;
+  border-left: 2px solid #00d4ff;  /* Thinner border */
+  font-size: 0.85rem;
+}
+
+/* Footer Links */
+.footer-links { 
+  flex: 2; 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 30px; /* Reduced gap */
+}
+
+.footer-column { 
+  flex: 1; 
+  min-width: 140px; /* Smaller min-width */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;  /* Reduced gap */
+}
+
 .footer-column h4 {
-  color: #66b3ff; font-size: 1.1rem;
-  margin-bottom: 20px; font-weight: 600;
+  color: #66b3ff; 
+  font-size: 0.95rem;  /* Smaller */
+  margin-bottom: 12px; 
+  font-weight: 600;
 }
+
 .footer-column a {
-  display: block; color: #b3d9ff; text-decoration: none;
-  margin-bottom: 12px; transition: all 0.3s ease; font-size: 0.95rem;
+  display: block; 
+  color: #b3d9ff; 
+  text-decoration: none;
+  transition: all 0.3s ease; 
+  font-size: 0.85rem;  /* Smaller font */
 }
-.footer-column a:hover { color: #00d4ff; transform: translateX(5px); }
+
+.footer-column a:hover { 
+  color: #00d4ff; 
+  transform: translateX(3px); /* Smaller movement */
+}
+
+/* Footer Bottom */
 .footer-bottom {
-  text-align: center; padding-top: 30px;
+  text-align: center; 
+  padding-top: 20px; /* Reduced padding */
+  margin-top: 25px; /* Reduced margin */
   border-top: 1px solid rgba(0, 212, 255, 0.1);
-  color: #88ccff; font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;  /* Reduced gap */
 }
+
+.footer-copyright {
+  color: #a0c6ff; 
+  font-size: 0.85rem;  /* Smaller */
+}
+
+.footer-note {
+  color: #88ccff;
+  font-size: 0.8rem;  /* Smaller */
+  margin-top: 4px;
+}
+
+/* College Highlight in footer */
+.college-highlight {
+  color: #00d4ff;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.author-name {
+  color: #00d4ff;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.footer-attribution {
+  color: #88ccff;
+  font-size: 0.8rem;  /* Smaller */
+  text-align: right;
+}
+
+.footer-attribution a {
+  color: #00d4ff;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.footer-attribution a:hover {
+  text-decoration: underline;
+}
+
+/* Legal links - simplified */
+.footer-column a[href="/disclaimer"],
+.footer-column a[href="/terms"] {
+  color: #ff6b6b;
+}
+
+.footer-column a[href="/disclaimer"]:hover,
+.footer-column a[href="/terms"]:hover {
+  color: #ff9e9e;
+}
+
+/* ========== END FOOTER FIXES ========== */
 
 /* Animations */
 @keyframes gradientShift { 0% {background-position:0% center;} 100% {background-position:200% center;} }
@@ -279,7 +453,7 @@
   background-clip: text;
 }
 
-/* Responsive */
+/* ========== RESPONSIVE DESIGN ========== */
 @media (max-width: 768px) {
   .nav-links { gap: 15px; }
   .nav-link { font-size: 0.9rem; }
@@ -291,14 +465,82 @@
   .cta-title { font-size: 2.5rem; }
   .cta-text { font-size: 1.1rem; }
   .cta-button.large { padding: 16px 35px; font-size: 1.1rem; }
-  .footer-container { flex-direction: column; gap: 40px; }
-  .footer-column { min-width: 100%; }
+  
+  /* Footer responsive */
+  .footer-container {
+    flex-direction: column;
+    gap: 30px;  /* Reduced gap */
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 25px;  /* Reduced gap */
+  }
+  
+  .footer-column {
+    min-width: 100%;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;  /* Reduced gap */
+  }
+  
+  .social-links {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .footer-logo {
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+  }
+  
+  .college-name {
+    text-align: left;
+  }
+  
+  .footer-attribution {
+    text-align: center;
+  }
+  
+  .footer-lottie-wrap {
+    width: 50px !important;
+    height: 50px !important;
+  }
 }
+
 @media (max-width: 480px) {
   .nav-container { flex-direction: column; gap: 20px; }
   .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
   .cta-title { font-size: 2rem; }
   .cta-text { font-size: 1rem; }
+  
+  /* Extra small footer fixes */
+  .social-link {
+    padding: 5px 10px;  /* Even smaller padding */
+    font-size: 0.75rem;
+  }
+  
+  .social-icon {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  .footer-lottie-wrap {
+    width: 45px !important;
+    height: 45px !important;
+  }
+  
+  .footer-logo {
+    gap: 10px;
+  }
+  
+  .logo-text {
+    font-size: 1.2rem;
+  }
 }
 
 /* Mobile Menu */
@@ -342,80 +584,4 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #00e5ff, #0099ff);
-}
-.footer-lottie-wrap {
-  width: 72px;   /* increased from 56px */
-  height: 72px;  /* increased from 43px */
-  display: flex;  /* fixed from -webkit-flex */
-  align-items: center;
-  justify-content: center;
-}
-
-.footer-lottie {
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-/* College Name Highlight */
-.college-name {
-  color: #a0c6ff;
-  font-size: 0.9rem;
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
-
-.college-name .highlight {
-  color: #00d4ff;
-  font-weight: 600;
-  background: rgba(0, 212, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  border-left: 3px solid #00d4ff;
-}
-
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.footer-logo > div {
-  display: flex;
-  flex-direction: column;
-}
-
-/* College Highlight in footer */
-.college-highlight {
-  color: #00d4ff;
-  font-weight: 600;
-  margin-left: 5px;
-}
-
-.author-name {
-  color: #00d4ff;
-  font-weight: 600;
-}
-
-/* Legal links - simplified */
-.footer-column a[href="/disclaimer"],
-.footer-column a[href="/terms"] {
-  color: #ff6b6b;
-}
-
-.footer-column a[href="/disclaimer"]:hover,
-.footer-column a[href="/terms"]:hover {
-  color: #ff9e9e;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .footer-logo {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-  
-  .college-name {
-    text-align: center;
-  }
 }
