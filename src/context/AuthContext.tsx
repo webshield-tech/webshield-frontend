@@ -83,8 +83,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-useEffect(() => {
-  const token = localStorage.getItem("authToken");
+  useEffect(() => {
+  // Cookie check function
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return null;
+  };
+
+  const token = getCookie('token') || localStorage.getItem("authToken");
   
   if (!token) {
     setUser(null);
@@ -92,7 +100,6 @@ useEffect(() => {
     setLoading(false);
     return;
   }
-  
   const init = async () => {
     setLoading(true);
     await checkAuth();
@@ -102,6 +109,7 @@ useEffect(() => {
   
   init();
 }, []);
+
   return (
     <AuthContext.Provider
       value={{

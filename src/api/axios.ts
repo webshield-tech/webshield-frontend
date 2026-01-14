@@ -54,8 +54,9 @@ api.interceptors.response.use(
     }
     
 if (error.response?.status === 401) {
-  localStorage.removeItem('authToken'); 
-  sessionStorage.clear(); 
+  localStorage.removeItem('authToken');
+  sessionStorage.clear();
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   
   console.log('User not authenticated (401)');
   
@@ -65,7 +66,6 @@ if (error.response?.status === 401) {
     message: 'Authentication required'
   });
 }
-    
     if (error.response?.status === 404) {
       console.error('404 - Route not found on backend:', originalRequest.url);
     }

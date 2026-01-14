@@ -114,17 +114,25 @@ function Signup() {
     try {
       setLoading(true);
 
-      const response = await signupUser({
-        username,
-        email,
-        password,
-      });
+  const response = await signupUser({
+  username,
+  email,
+  password,
+});
 
-      if (response.data.success) {
-        // Show success message in your UI
-        setFormError("Account created successfully.");
-        setTimeout(() => navigate("/login"), 2000);
-      }
+if (response.data.success) {
+  setFormError("Account created successfully.");
+  const token = response.data.token;
+  if (token) {
+    localStorage.setItem("authToken", token);
+    // Auto login after signup
+    setTimeout(() => navigate("/disclaimer"), 1000);
+  } else {
+    setFormError("Account created but login failed. Please login manually.");
+    setTimeout(() => navigate("/login"), 2000);
+  }
+
+}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const backendError = error?.response?.data?.error || "";

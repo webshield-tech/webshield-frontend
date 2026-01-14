@@ -24,10 +24,17 @@ function Login() {
 
     try {
       setLoading(true);
-      const response = await LoginUser({ email, password });
+const response = await LoginUser({ email, password });
+console.log("Login response:", response.data);
 
-      if (response.data.success) {
-        setFormError("Login successful");
+if (response.data.success) {
+  setFormError("Login successful");
+  const token = response.data.token;
+  if (token) {
+    localStorage.setItem("authToken", token);
+  } else {
+    console.error("No token received from backend");
+  }
 
         const roleFromResponse =
           response.data.user?.role || response.data?.role || null;
