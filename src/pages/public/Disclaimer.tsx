@@ -12,15 +12,20 @@ const Disclaimer = () => {
   const [error, setError] = useState("");
   const [checkboxError, setCheckboxError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // On initial load, redirect if user already accepted terms
   useEffect(() => {
-    if (!authChecked || loading) return;
-
-    if (user?.agreedToTerms) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [authChecked, loading, user?.agreedToTerms, navigate]);
+  if (!authChecked || loading) return;
+  
+  // Extra check for localStorage to prevent flash
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    navigate("/login", { replace: true });
+    return;
+  }
+  
+  if (user?.agreedToTerms) {
+    navigate("/dashboard", { replace: true });
+  }
+}, [authChecked, loading, user?.agreedToTerms, navigate]);
 
   // Show loader while checking auth
   if (loading || !authChecked) {
@@ -55,13 +60,12 @@ const Disclaimer = () => {
     try {
       setIsLoading(true);
 
-      const success = await acceptTerms();
+const success = await acceptTerms();
 
-      if (success) {
-        // Update local user state immediately
-        login({ ...user, agreedToTerms: true });
-        navigate("/dashboard", { replace: true });
-      } else {
+if (success) {
+  await checkAuth();
+  navigate("/dashboard", { replace: true });
+}else {
         setError("Failed to accept terms. Please try again.");
       }
     } catch (e: any) {

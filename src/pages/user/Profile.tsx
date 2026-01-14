@@ -42,8 +42,6 @@ const Profile = () => {
       </div>
     );
   }
-
-  // ✅ FIX ONLY HERE
   const termsAccepted = Boolean(userData?.agreedToTerms);
 
   return (

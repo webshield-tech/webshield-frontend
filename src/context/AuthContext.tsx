@@ -83,16 +83,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await checkAuth();
-      setAuthChecked(true);
-      setLoading(false);
-    };
-    init();
-  }, []);
-
+useEffect(() => {
+  const token = localStorage.getItem("authToken");
+  
+  if (!token) {
+    setUser(null);
+    setAuthChecked(true);
+    setLoading(false);
+    return;
+  }
+  
+  const init = async () => {
+    setLoading(true);
+    await checkAuth();
+    setAuthChecked(true);
+    setLoading(false);
+  };
+  
+  init();
+}, []);
   return (
     <AuthContext.Provider
       value={{
