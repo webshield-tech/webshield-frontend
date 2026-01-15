@@ -38,36 +38,6 @@ Icons: React Icons
 
 State Management: React Hooks + Context API
 
-📁 Project Structure
-text
-frontend/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── layout/         # Layout components (Header, Sidebar, Footer)
-│   │   ├── ui/             # Basic UI components (Buttons, Cards, Modals)
-│   │   └── scans/          # Scan-related components
-│   ├── pages/              # Page components
-│   │   ├── LandingPage.tsx
-│   │   ├── LoginPage.tsx
-│   │   ├── SignupPage.tsx
-│   │   ├── Dashboard.tsx
-│   │   └── ScanPages/      # Scan-related pages
-│   ├── api/                # API service layer
-│   │   ├── auth-api.ts
-│   │   ├── scan-api.ts
-│   │   └── axios.ts        # Axios configuration
-│   ├── contexts/           # React Context providers
-│   ├── hooks/              # Custom React hooks
-│   ├── utils/              # Utility functions
-│   ├── styles/             # Global styles
-│   ├── assets/             # Static assets (images, icons)
-│   └── types/              # TypeScript type definitions
-├── public/                 # Static files
-├── index.html
-├── vite.config.ts
-├── tsconfig.json
-├── tailwind.config.js
-└── package.json
 🚀 Getting Started
 Prerequisites
 Node.js 18+
