@@ -1,189 +1,508 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import HeroSection from "../../components/landing/HeroSection";
-import ToolCards from "../../components/landing/ToolCards";
-import "../../styles/landing.css";
-import Lottie from "lottie-react";
-import shieldAnimation from "../../assets/icons/Shield.json";
-const Landing = () => {
-  const [scrollY, setScrollY] = useState(0);
+/* ===============================
+   LANDING PAGE – BEAUTIFIED & PROFESSIONAL
+   COLORS UNTOUCHED
+   =============================== */
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  return (
-    <div className="landing-page">
-      {/* Navigation */}
-      <nav
-        className="landing-nav"
-        style={{
-          background: scrollY > 50 ? "rgba(10, 25, 41, 0.95)" : "transparent",
-          backdropFilter: scrollY > 50 ? "blur(10px)" : "none",
-        }}
-      >
-        <div className="nav-container">
-          <div className="nav-logo">
-            <div className="logo-lottie-wrap hero-logo">
-              <Lottie
-                animationData={shieldAnimation}
-                loop
-                className="logo-lottie"
-              />
-            </div>
-            <span className="logo-text">WebShield</span>
-          </div>
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.67;
+  letter-spacing: 0.15px;
+}
 
-          <div className="nav-links">
-            <a href="#features" className="nav-link">
-              Features
-            </a>
-            <a href="#tools" className="nav-link">
-              Tools
-            </a>
-            <Link to="/login" className="nav-button">
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </nav>
-      {/* Hero Section */}
-      <HeroSection />
+/* ===============================
+   PAGE BASE
+   =============================== */
+.landing-page {
+  color: #e6f1ff;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, #0a1929 0%, #0c0c2e 100%);
+  min-height: 100vh;
+}
 
-      {/* Tools Section */}
-      <section id="tools" className="section-wrapper">
-        <ToolCards />
-      </section>
+/* ===============================
+   NAVIGATION
+   =============================== */
+.landing-nav {
+  position: fixed;
+  top: 0;
+  left: 0; right: 0;
+  z-index: 1000;
+  border-radius: 0 0 14px 14px;
+  padding: 20px 0 18px;
+  transition: all 0.3s cubic-bezier(.51,.13,.19,1.07);
+}
 
-      {/* Features Section */}
-      <section id="features" className="features-section">
-        <div className="section-container">
-          <h2 className="section-title">
-            <span className="title-underline">Why Choose WebShield?</span>
-          </h2>
+.nav-container {
+  max-width: 1220px;
+  margin: auto;
+  padding: 0 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-          <div className="features-grid">
-            <div className="feature-card">
-           
-              <h3>Fast Scanning</h3>
-              <p>Complete vulnerability assessments in minutes, not hours</p>
-            </div>
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  cursor: pointer;
+  height: 56px;
+}
 
-            <div className="feature-card">
-              <h3>Accurate Results</h3>
-              <p>Professional-grade tools with minimal false positives</p>
-            </div>
+.logo-lottie-wrap {
+  width: 58px;
+  height: 58px;
+  background: rgba(0,212,255,0.09);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 3px;
+  box-shadow: 0 3px 16px rgba(0,212,255,0.09);
+}
 
-            <div className="feature-card">
-              <h3>Detailed Reports</h3>
-              <p>Comprehensive PDF reports with actionable insights</p>
-            </div>
+.logo-lottie {
+  width: 100%;
+  height: 100%;
+}
 
-            <div className="feature-card">
-              <h3>Secure & Private</h3>
-              <p>Your scans and data are encrypted and confidential</p>
-            </div>
-          </div>
-        </div>
-      </section>
+.logo-text {
+  font-size: 1.39rem;
+  letter-spacing: 0.7px;
+  font-style: bold;
+  font-weight: 800;
+  background: linear-gradient(90deg, #00d4ff, #0088ff 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-container">
-          <h2 className="cta-title">Ready to Secure Your Websites?</h2>
-          <Link to="/signup" className="cta-button large">
-            <span className="button-text">Start Free Trial</span>
-          </Link>
-        </div>
-      </section>
-          <footer className="landing-footer">
-        <div className="footer-container">
-          <div className="footer-brand">
-            <div className="footer-logo">
-              <div className="footer-lottie-wrap">
-                <Lottie
-                  animationData={shieldAnimation}
-                  loop
-                  className="footer-lottie"
-                />
-              </div>
-              <div>
-                <span className="logo-text">WebShield</span>
-                <p className="college-name">
-                  Developed at <span className="highlight">Govt ANKS Degree College</span>
-                </p>
-              </div>
-            </div>
-            <p className="footer-tagline">
-              Cybersecurity made accessible for everyone
-            </p>
-            <div className="social-links">
-              <a 
-                href="https://github.com/thehusnain" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="social-link"
-                aria-label="GitHub Profile"
-              >
-                <svg className="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-                <span>GitHub</span>
-              </a>
-              <a 
-                href="https://www.linkedin.com/in/husnain-fiaz-7a4761369" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="social-link"
-                aria-label="LinkedIn Profile"
-              >
-                <svg className="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-                <span>LinkedIn</span>
-              </a>
-            </div>
-          </div>
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
 
-          <div className="footer-links">
-            <div className="footer-column">
-              <h4>Product</h4>
-              <a href="#features">Features</a>
-              <a href="#tools">Tools</a>
-            </div>
+.nav-link {
+  color: #b3d9ff;
+  text-decoration: none;
+  font-size: 1.02rem;
+  position: relative;
+  padding-bottom: 6px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  transition: color 0.19s;
+}
 
-            <div className="footer-column">
-              <h4>Connect</h4>
-              <a href="mailto:huxnain.cs@gmail.com">Contact</a>
-              <a href="https://github.com/webshield-tech" target="_blank" rel="noopener noreferrer">Source Code</a>
-              <a href="#cta">Get Started</a>
-            </div>
-          </div>
-        </div>
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  height: 2.2px;
+  width: 0;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #00d4ff, #0088ff);
+  transition: width 0.32s;
+}
 
-        <div className="footer-bottom">
-          <div className="footer-copyright">
-            <p>© {new Date().getFullYear()} WebShield. All rights reserved.</p>
-            <p className="footer-note">
-              Web Engineering Project  
-              <span className="college-highlight">Government ANKS Degree College,KTS,Haripur</span>
-            </p>
-          </div>
-          <div className="footer-attribution">
-            <p>
-              Built by <span className="author-name">Husnain</span> • 
-              For educational & ethical security testing
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
+.nav-link:hover {
+  color: #00d4ff;
+}
 
-export default Landing;
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-button {
+  background: linear-gradient(135deg, #0088ff, #00d4ff);
+  color: #fff;
+  padding: 10px 32px;
+  border-radius: 12px;
+  font-size: 1.01rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 18px rgba(0,136,255,0.15);
+  transition: all 0.28s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-button:hover {
+  transform: translateY(-2.5px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(0,136,255,0.26);
+}
+
+/* ===============================
+   SECTION SYSTEM
+   =============================== */
+.section-wrapper {
+  padding: 110px 26px;
+}
+
+/* More generous spacing and nice flow */
+.section-container {
+  max-width: 1220px;
+  margin: auto;
+  padding: 0 8px;
+}
+
+/* ===============================
+   SECTION TITLES
+   =============================== */
+.section-title {
+  text-align: center;
+  margin-bottom: 44px;
+}
+
+.title-underline {
+  position: relative;
+  padding-bottom: 14px;
+  font-weight: 800;
+  font-size: 2.04rem;
+  letter-spacing: 0.9px;
+}
+
+.title-underline::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 58%;
+  height: 3.4px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #00d4ff, #0088ff);
+}
+
+.features-section {
+  background:
+    radial-gradient(circle at 0% 55%, rgba(0,212,255,0.05), transparent 59%),
+    radial-gradient(circle at 98% 51%, rgba(138,79,255,0.065), transparent 64%);
+  margin-top: 70px;
+  padding-bottom: 30px;
+}
+
+/* ===============================
+   FEATURES
+   =============================== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 34px 32px;
+  margin-top: 54px;
+}
+
+.feature-card {
+  background: rgba(255,255,255,0.035);
+  border: 1.4px solid rgba(0,212,255,0.28);
+  padding: 44px 34px 36px 34px;
+  border-radius: 22px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 2px 18px rgba(0,212,255,0.04);
+  transition: 0.38s cubic-bezier(.51,.13,.19,1.07);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  position: relative;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px) scale(1.025);
+  border-color: #00d4ff;
+  box-shadow: 0 16px 34px rgba(0,136,255,0.12);
+}
+.feature-card__icon {
+  margin-bottom: 16px;             
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;                      
+  height: 56px;
+  background: radial-gradient(circle, rgba(0,212,255,0.09) 70%, transparent 100%);
+  border-radius: 50%;
+  box-shadow: 0 2px 12px rgba(0,212,255,0.07);
+}
+.feature-card__icon svg {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 1.35rem;
+  margin-bottom: 6px;
+  color: #66b3ff;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.feature-card p {
+  font-size: 1.01rem;
+  color: #b3d9ff;
+  opacity: 0.98;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+}
+
+/* ===============================
+   CTA
+   =============================== */
+.cta-section {
+  padding: 120px 24px 90px;
+  text-align: center;
+}
+
+.cta-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.03);
+  box-shadow: 0 4px 22px rgba(0,212,255,0.03);
+}
+
+.cta-title {
+  font-size: 2.8rem;
+  line-height: 1.10;
+  font-weight: 800;
+  margin-bottom: 33px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #00d4ff, #0088ff 65%, #8A4FFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.8px;
+}
+
+.cta-button.large {
+  display: inline-block;
+  padding: 20px 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0088ff, #00d4ff);
+  color: #fff;
+  font-size: 1.23rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.7px;
+  transition: 0.38s cubic-bezier(.51,.13,.19,1.07);
+  box-shadow: 0 3px 18px rgba(0,136,255,0.09);
+}
+
+.cta-button.large:hover {
+  transform: translateY(-6px) scale(1.052);
+  box-shadow: 0 18px 38px rgba(0,136,255,0.19);
+}
+
+/* ===============================
+   FOOTER
+   =============================== */
+.landing-footer {
+  background: rgba(10,25,41,0.96);
+  border-top: 1.6px solid rgba(0,212,255,0.15);
+  padding: 54px 28px 29px 28px;
+}
+
+.footer-container {
+  max-width: 1220px;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 50px 60px;
+}
+
+.footer-brand {
+  max-width: 440px;
+  flex: 1 1 340px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 17px;
+}
+
+.footer-lottie-wrap {
+  width: 56px;
+  height: 51px;
+  background: rgba(0,212,255,0.08);
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 3px 16px rgba(0,212,255,0.07);
+}
+
+.footer-tagline {
+  font-size: 1.05rem;
+  opacity: 0.93;
+  margin-bottom: 17px;
+  font-weight: 600;
+}
+
+.social-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 22px;
+  font-size: 0.98rem;
+  color: #a0c6ff;
+  border: 1px solid rgba(160,198,255,0.17);
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.31s cubic-bezier(.51,.13,.19,1.07);
+}
+
+.social-link:hover {
+  background: rgba(160,198,255,0.18);
+  color: #00d4ff;
+  transform: translateY(-2px) scale(1.06);
+}
+
+.footer-links {
+  display: flex;
+  gap: 78px;
+  margin-left: auto;
+  align-items: flex-start;
+}
+
+.footer-column {
+  min-width: 120px;
+}
+
+.footer-column h4 {
+  color: #66b3ff;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.footer-column a {
+  display: block;
+  font-size: 0.99rem;
+  color: #b3d9ff;
+  margin-bottom: 9px;
+  text-decoration: none;
+  transition: color 0.18s;
+}
+
+.footer-column a:hover {
+  color: #00d4ff;
+  text-decoration: underline;
+}
+
+.footer-bottom-centered {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0,212,255,0.11);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-centered-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  text-align: center;
+}
+
+.footer-centered-lines p {
+  margin: 0;
+  font-size: 0.96rem;
+  color: #a0c6ff;
+}
+.footer-centered-lines .footer-note,
+.footer-centered-lines .college-highlight {
+  color: #00d4ff;
+  font-weight: 600;
+}
+.footer-centered-lines .author-name {
+  color: #8A4FFF;
+  font-weight: 700;
+}
+/* ===============================
+   RESPONSIVE
+   =============================== */
+@media (max-width: 920px) {
+  .footer-container {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .footer-links {
+    margin-left: 0;
+    gap: 32px;
+    margin-top: 17px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-wrapper {
+    padding: 70px 13px;
+  }
+  .cta-section {
+    padding: 70px 8px 70px;
+  }
+  .cta-title {
+    font-size: 2.2rem;
+  }
+  .footer-container {
+    padding: 0;
+  }
+}
+
+@media (max-width: 540px) {
+  .nav-container {
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 7px;
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  .logo-lottie-wrap,
+  .footer-lottie-wrap {
+    width: 40px; height: 40px;
+  }
+  .logo-text {
+    font-size: 1.05rem;
+  }
+  .section-title {
+    font-size: 1.1rem;
+  }
+  .cta-title {
+    font-size: 1.21rem;
+    margin-bottom: 1.4rem;
+  }
+}
+
+@media (max-width: 410px) {
+  .nav-links {
+    gap: 7px;
+  }
+  .cta-button.large {
+    padding: 12px 22px;
+    font-size: 1rem;
+  }
+}
