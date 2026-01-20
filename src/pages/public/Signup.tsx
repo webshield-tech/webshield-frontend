@@ -114,25 +114,24 @@ function Signup() {
     try {
       setLoading(true);
 
-  const response = await signupUser({
-  username,
-  email,
-  password,
-});
+      const response = await signupUser({
+        username,
+        email,
+        password,
+      });
 
-if (response.data.success) {
-  setFormError("Account created successfully.");
-  const token = response.data.token;
-  if (token) {
-    localStorage.setItem("authToken", token);
-    // Auto login after signup
-    setTimeout(() => navigate("/disclaimer"), 1000);
-  } else {
-    setFormError("Account created but login failed. Please login manually.");
-    setTimeout(() => navigate("/login"), 2000);
-  }
-
-}
+      if (response.data.success) {
+        setFormError("Account created successfully.");
+        const token = response.data.token;
+        if (token) {
+          localStorage.setItem("authToken", token);
+          // Auto login after signup
+          setTimeout(() => navigate("/disclaimer"), 1000);
+        } else {
+          setFormError("Account created but login failed. Please login manually.");
+          setTimeout(() => navigate("/login"), 2000);
+        }
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const backendError = error?.response?.data?.error || "";
@@ -156,141 +155,141 @@ if (response.data.success) {
   };
 
   return (
-    <div className="auth-container">
-      {/* Add this back button */}
+    <>
+      {/* Fixed back button - placed BEFORE the container */}
       <button 
-        className="back-to-home-btn"
         onClick={() => navigate("/")}
         style={{
-          position: 'absolute',
+          position: 'fixed', // Changed from 'absolute' to 'fixed'
           top: '20px',
           left: '20px',
-          padding: '8px 16px',
-          background: '#f0f0f0',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
+          padding: '10px 20px',
+          background: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '14px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000,
+          fontWeight: '500'
         }}
       >
         ← Back to Home
       </button>
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Create Account</h2>
 
-        {/* Form-level error */}
-        {formError && (
-          <div
-            className={`message ${
-              formError.includes("✅") ? "success-message" : "error-message"
-            }`}
-          >
-            {formError}
-          </div>
-        )}
+      <div className="auth-container">
+        <form className="auth-card" onSubmit={handleSubmit}>
+          <h2>Create Account</h2>
 
-        {/* Username field */}
-        <div className="form-group">
-          <input
-            type="text"
-            placeholder="Username (min. 3 characters)"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className={usernameError ? "input-error" : ""}
-          />
-          {usernameError && <div className="field-error">{usernameError}</div>}
-        </div>
-
-        {/* Email field */}
-        <div className="form-group">
-          <input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={emailError ? "input-error" : ""}
-          />
-          {emailError && <div className="field-error">{emailError}</div>}
-        </div>
-
-        {/* Password field */}
-        <div className="form-group">
-          <input
-            type="password"
-            placeholder="Password (8+ chars, 1 uppercase, 1 number, 1 special)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={passwordError ? "input-error" : ""}
-          />
-          {passwordError && <div className="field-error">{passwordError}</div>}
-
-          {/* Password strength indicator */}
-          {password && (
-            <div className="password-strength">
-              <div className="strength-bar">
-                <div
-                  className={`strength-fill ${
-                    Object.values(passwordDetails).filter(Boolean).length >= 4
-                      ? "strong"
-                      : Object.values(passwordDetails).filter(Boolean).length >=
-                        2
-                      ? "medium"
-                      : "weak"
-                  }`}
-                ></div>
-              </div>
-
-              <div className="password-rules">
-                <ul>
-                  <li className={passwordDetails.length ? "valid" : "invalid"}>
-                    {passwordDetails.length ? "✓" : "✗"} At least 8 characters
-                  </li>
-                  <li
-                    className={passwordDetails.uppercase ? "valid" : "invalid"}
-                  >
-                    {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
-                  </li>
-                  <li
-                    className={passwordDetails.lowercase ? "valid" : "invalid"}
-                  >
-                    {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
-                  </li>
-                  <li className={passwordDetails.number ? "valid" : "invalid"}>
-                    {passwordDetails.number ? "✓" : "✗"} 1 number
-                  </li>
-                  <li className={passwordDetails.special ? "valid" : "invalid"}>
-                    {passwordDetails.special ? "✓" : "✗"} 1 special character
-                  </li>
-                </ul>
-              </div>
+          {/* Form-level error */}
+          {formError && (
+            <div
+              className={`message ${
+                formError.includes("✅") ? "success-message" : "error-message"
+              }`}
+            >
+              {formError}
             </div>
           )}
-        </div>
 
-        {/* Confirm password */}
-        <div className="form-group">
-          <input
-            type="password"
-            placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={confirmPasswordError ? "input-error" : ""}
-          />
-          {confirmPasswordError && (
-            <div className="field-error">{confirmPasswordError}</div>
-          )}
-        </div>
+          {/* Username field */}
+          <div className="form-group">
+            <input
+              type="text"
+              placeholder="Username (min. 3 characters)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={usernameError ? "input-error" : ""}
+            />
+            {usernameError && <div className="field-error">{usernameError}</div>}
+          </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating Account..." : "Sign Up"}
-        </button>
+          {/* Email field */}
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={emailError ? "input-error" : ""}
+            />
+            {emailError && <div className="field-error">{emailError}</div>}
+          </div>
 
-        <div className="auth-footer">
-          Already have an account? <a href="/login">Login here</a>
-        </div>
-      </form>
-    </div>
-    
+          {/* Password field */}
+          <div className="form-group">
+            <input
+              type="password"
+              placeholder="Password (8+ chars, 1 uppercase, 1 number, 1 special)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={passwordError ? "input-error" : ""}
+            />
+            {passwordError && <div className="field-error">{passwordError}</div>}
+
+            {/* Password strength indicator */}
+            {password && (
+              <div className="password-strength">
+                <div className="strength-bar">
+                  <div
+                    className={`strength-fill ${
+                      Object.values(passwordDetails).filter(Boolean).length >= 4
+                        ? "strong"
+                        : Object.values(passwordDetails).filter(Boolean).length >= 2
+                        ? "medium"
+                        : "weak"
+                    }`}
+                  ></div>
+                </div>
+
+                <div className="password-rules">
+                  <ul>
+                    <li className={passwordDetails.length ? "valid" : "invalid"}>
+                      {passwordDetails.length ? "✓" : "✗"} At least 8 characters
+                    </li>
+                    <li className={passwordDetails.uppercase ? "valid" : "invalid"}>
+                      {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
+                    </li>
+                    <li className={passwordDetails.lowercase ? "valid" : "invalid"}>
+                      {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
+                    </li>
+                    <li className={passwordDetails.number ? "valid" : "invalid"}>
+                      {passwordDetails.number ? "✓" : "✗"} 1 number
+                    </li>
+                    <li className={passwordDetails.special ? "valid" : "invalid"}>
+                      {passwordDetails.special ? "✓" : "✗"} 1 special character
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Confirm password */}
+          <div className="form-group">
+            <input
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={confirmPasswordError ? "input-error" : ""}
+            />
+            {confirmPasswordError && (
+              <div className="field-error">{confirmPasswordError}</div>
+            )}
+          </div>
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
+
+          <div className="auth-footer">
+            Already have an account? <a href="/login">Login here</a>
+          </div>
+        </form>
+      </div>
+    </>
   );
 }
 
