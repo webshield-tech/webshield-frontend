@@ -128,7 +128,9 @@ function Signup() {
           // Auto login after signup
           setTimeout(() => navigate("/disclaimer"), 1000);
         } else {
-          setFormError("Account created but login failed. Please login manually.");
+          setFormError(
+            "Account created but login failed. Please login manually.",
+          );
           setTimeout(() => navigate("/login"), 2000);
         }
       }
@@ -156,23 +158,23 @@ function Signup() {
 
   return (
     <>
-      {/* Fixed back button - placed BEFORE the container */}
-      <button 
+      <button
         onClick={() => navigate("/")}
         style={{
-          position: 'fixed', // Changed from 'absolute' to 'fixed'
-          top: '20px',
-          left: '20px',
-          padding: '10px 20px',
-          background: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          padding: "10px 20px",
+          background: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+          fontSize: "14px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
           zIndex: 1000,
-          fontWeight: '500'
+          fontWeight: "500",
+        
         }}
       >
         ← Back to Home
@@ -202,7 +204,9 @@ function Signup() {
               onChange={(e) => setUsername(e.target.value)}
               className={usernameError ? "input-error" : ""}
             />
-            {usernameError && <div className="field-error">{usernameError}</div>}
+            {usernameError && (
+              <div className="field-error">{usernameError}</div>
+            )}
           </div>
 
           {/* Email field */}
@@ -226,7 +230,9 @@ function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               className={passwordError ? "input-error" : ""}
             />
-            {passwordError && <div className="field-error">{passwordError}</div>}
+            {passwordError && (
+              <div className="field-error">{passwordError}</div>
+            )}
 
             {/* Password strength indicator */}
             {password && (
@@ -236,28 +242,43 @@ function Signup() {
                     className={`strength-fill ${
                       Object.values(passwordDetails).filter(Boolean).length >= 4
                         ? "strong"
-                        : Object.values(passwordDetails).filter(Boolean).length >= 2
-                        ? "medium"
-                        : "weak"
+                        : Object.values(passwordDetails).filter(Boolean)
+                              .length >= 2
+                          ? "medium"
+                          : "weak"
                     }`}
                   ></div>
                 </div>
 
                 <div className="password-rules">
                   <ul>
-                    <li className={passwordDetails.length ? "valid" : "invalid"}>
+                    <li
+                      className={passwordDetails.length ? "valid" : "invalid"}
+                    >
                       {passwordDetails.length ? "✓" : "✗"} At least 8 characters
                     </li>
-                    <li className={passwordDetails.uppercase ? "valid" : "invalid"}>
+                    <li
+                      className={
+                        passwordDetails.uppercase ? "valid" : "invalid"
+                      }
+                    >
                       {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
                     </li>
-                    <li className={passwordDetails.lowercase ? "valid" : "invalid"}>
+                    <li
+                      className={
+                        passwordDetails.lowercase ? "valid" : "invalid"
+                      }
+                    >
                       {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
                     </li>
-                    <li className={passwordDetails.number ? "valid" : "invalid"}>
+                    <li
+                      className={passwordDetails.number ? "valid" : "invalid"}
+                    >
                       {passwordDetails.number ? "✓" : "✗"} 1 number
                     </li>
-                    <li className={passwordDetails.special ? "valid" : "invalid"}>
+                    <li
+                      className={passwordDetails.special ? "valid" : "invalid"}
+                    >
                       {passwordDetails.special ? "✓" : "✗"} 1 special character
                     </li>
                   </ul>
