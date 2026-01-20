@@ -155,141 +155,151 @@ function Signup() {
   };
 
   return (
-    <>
-      {/* Fixed back button - placed BEFORE the container */}
-      <button 
-        onClick={() => navigate("/")}
-        style={{
-          position: 'fixed', // Changed from 'absolute' to 'fixed'
-          top: '20px',
-          left: '20px',
-          padding: '10px 20px',
-          background: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          zIndex: 1000,
-          fontWeight: '500'
-        }}
-      >
-        ← Back to Home
-      </button>
+    <div className="auth-container">
+      <form className="auth-card" onSubmit={handleSubmit}>
+        {/* Back arrow button - inside the form at top left */}
+        <button 
+          type="button"
+          onClick={() => navigate("/")}
+          style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            background: 'none',
+            border: 'none',
+            fontSize: '24px',
+            cursor: 'pointer',
+            color: '#666',
+            padding: '0',
+            width: '30px',
+            height: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = '#f0f0f0';
+            e.currentTarget.style.color = '#333';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.color = '#666';
+          }}
+        >
+          ←
+        </button>
 
-      <div className="auth-container">
-        <form className="auth-card" onSubmit={handleSubmit}>
-          <h2>Create Account</h2>
+        <h2>Create Account</h2>
 
-          {/* Form-level error */}
-          {formError && (
-            <div
-              className={`message ${
-                formError.includes("✅") ? "success-message" : "error-message"
-              }`}
-            >
-              {formError}
+        {/* Form-level error */}
+        {formError && (
+          <div
+            className={`message ${
+              formError.includes("✅") ? "success-message" : "error-message"
+            }`}
+          >
+            {formError}
+          </div>
+        )}
+
+        {/* Username field */}
+        <div className="form-group">
+          <input
+            type="text"
+            placeholder="Username (min. 3 characters)"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={usernameError ? "input-error" : ""}
+          />
+          {usernameError && <div className="field-error">{usernameError}</div>}
+        </div>
+
+        {/* Email field */}
+        <div className="form-group">
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={emailError ? "input-error" : ""}
+          />
+          {emailError && <div className="field-error">{emailError}</div>}
+        </div>
+
+        {/* Password field */}
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Password (8+ chars, 1 uppercase, 1 number, 1 special)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={passwordError ? "input-error" : ""}
+          />
+          {passwordError && <div className="field-error">{passwordError}</div>}
+
+          {/* Password strength indicator */}
+          {password && (
+            <div className="password-strength">
+              <div className="strength-bar">
+                <div
+                  className={`strength-fill ${
+                    Object.values(passwordDetails).filter(Boolean).length >= 4
+                      ? "strong"
+                      : Object.values(passwordDetails).filter(Boolean).length >= 2
+                      ? "medium"
+                      : "weak"
+                  }`}
+                ></div>
+              </div>
+
+              <div className="password-rules">
+                <ul>
+                  <li className={passwordDetails.length ? "valid" : "invalid"}>
+                    {passwordDetails.length ? "✓" : "✗"} At least 8 characters
+                  </li>
+                  <li className={passwordDetails.uppercase ? "valid" : "invalid"}>
+                    {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
+                  </li>
+                  <li className={passwordDetails.lowercase ? "valid" : "invalid"}>
+                    {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
+                  </li>
+                  <li className={passwordDetails.number ? "valid" : "invalid"}>
+                    {passwordDetails.number ? "✓" : "✗"} 1 number
+                  </li>
+                  <li className={passwordDetails.special ? "valid" : "invalid"}>
+                    {passwordDetails.special ? "✓" : "✗"} 1 special character
+                  </li>
+                </ul>
+              </div>
             </div>
           )}
+        </div>
 
-          {/* Username field */}
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Username (min. 3 characters)"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={usernameError ? "input-error" : ""}
-            />
-            {usernameError && <div className="field-error">{usernameError}</div>}
-          </div>
+        {/* Confirm password */}
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className={confirmPasswordError ? "input-error" : ""}
+          />
+          {confirmPasswordError && (
+            <div className="field-error">{confirmPasswordError}</div>
+          )}
+        </div>
 
-          {/* Email field */}
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={emailError ? "input-error" : ""}
-            />
-            {emailError && <div className="field-error">{emailError}</div>}
-          </div>
+        <button type="submit" disabled={loading}>
+          {loading ? "Creating Account..." : "Sign Up"}
+        </button>
 
-          {/* Password field */}
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Password (8+ chars, 1 uppercase, 1 number, 1 special)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={passwordError ? "input-error" : ""}
-            />
-            {passwordError && <div className="field-error">{passwordError}</div>}
-
-            {/* Password strength indicator */}
-            {password && (
-              <div className="password-strength">
-                <div className="strength-bar">
-                  <div
-                    className={`strength-fill ${
-                      Object.values(passwordDetails).filter(Boolean).length >= 4
-                        ? "strong"
-                        : Object.values(passwordDetails).filter(Boolean).length >= 2
-                        ? "medium"
-                        : "weak"
-                    }`}
-                  ></div>
-                </div>
-
-                <div className="password-rules">
-                  <ul>
-                    <li className={passwordDetails.length ? "valid" : "invalid"}>
-                      {passwordDetails.length ? "✓" : "✗"} At least 8 characters
-                    </li>
-                    <li className={passwordDetails.uppercase ? "valid" : "invalid"}>
-                      {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
-                    </li>
-                    <li className={passwordDetails.lowercase ? "valid" : "invalid"}>
-                      {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
-                    </li>
-                    <li className={passwordDetails.number ? "valid" : "invalid"}>
-                      {passwordDetails.number ? "✓" : "✗"} 1 number
-                    </li>
-                    <li className={passwordDetails.special ? "valid" : "invalid"}>
-                      {passwordDetails.special ? "✓" : "✗"} 1 special character
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Confirm password */}
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={confirmPasswordError ? "input-error" : ""}
-            />
-            {confirmPasswordError && (
-              <div className="field-error">{confirmPasswordError}</div>
-            )}
-          </div>
-
-          <button type="submit" disabled={loading}>
-            {loading ? "Creating Account..." : "Sign Up"}
-          </button>
-
-          <div className="auth-footer">
-            Already have an account? <a href="/login">Login here</a>
-          </div>
-        </form>
-      </div>
-    </>
+        <div className="auth-footer">
+          Already have an account? <a href="/login">Login here</a>
+        </div>
+      </form>
+    </div>
   );
 }
 
