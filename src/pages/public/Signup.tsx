@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signupUser } from "../../api/auth-api.ts";
@@ -121,7 +122,7 @@ function Signup() {
       });
 
       if (response.data.success) {
-        setFormError("Account created successfully.");
+        setFormError("✅ Account created successfully!");
         const token = response.data.token;
         if (token) {
           localStorage.setItem("authToken", token);
@@ -134,11 +135,18 @@ function Signup() {
           setTimeout(() => navigate("/login"), 2000);
         }
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const backendError = error?.response?.data?.error || "";
-
+      
+      // 🔥 IMPROVED ERROR HANDLING FOR EMAIL VERIFICATION
       if (
+        backendError.includes("valid, deliverable email") ||
+        backendError.includes("Temporary/disposable") ||
+        backendError.includes("Invalid email address") ||
+        backendError.includes("Please provide a valid")
+      ) {
+        setEmailError("❌ Please use a real email address. Temporary/disposable emails are not allowed.");
+      } else if (
         backendError.includes("username") ||
         backendError.includes("Username")
       ) {
@@ -174,7 +182,6 @@ function Signup() {
           boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
           zIndex: 1000,
           fontWeight: "500",
-        
         }}
       >
         ← Back to Home
@@ -213,7 +220,7 @@ function Signup() {
           <div className="form-group">
             <input
               type="email"
-              placeholder="Email address"
+              placeholder="Email address (real email required)"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={emailError ? "input-error" : ""}
