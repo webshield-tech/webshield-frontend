@@ -84,8 +84,6 @@ const ScanResult = () => {
         typeof res.data === "string"
           ? res.data
           : new TextDecoder().decode(res.data);
-
-      // Try extract a message if this is an error-y JSON, otherwise show the text
       let errorJson: null | { message?: string; error?: string } = null;
       try {
         errorJson = JSON.parse(text);
@@ -121,6 +119,25 @@ const handleDownload = async () => {
   try {
     const res = await downloadReport(scanId);
     const ct = res.headers["content-type"] || "";
+    
+    // Check if this is an error JSON response
+    if (ct.includes("application/json")) {
+      try {
+        const errorData = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+        if (errorData.success === false || errorData.error) {
+          // This is the error response from backend
+          setToast({
+            type: "error",
+            message: errorData.message || errorData.error || "Report not generated yet"
+          });
+          return;
+        }
+      } catch (e) {
+        // Not valid JSON, continue processing as a file
+      }
+    }
+    
+    // If we get here, it's a file download
     const dispo = res.headers["content-disposition"] || "";
     const match = dispo.match(/filename="?(.+)"?/i);
     const filename = match
@@ -133,25 +150,42 @@ const handleDownload = async () => {
           ? res.data
           : new TextDecoder().decode(res.data);
       saveTextAsPdf(filename.replace(/\.txt$/i, ".pdf"), text);
-      showToast("success", "Downloaded PDF");
+      showToast("success", "Downloaded PDF"); // Use showToast for auto-hide
       return;
     }
+    
     const blob = new Blob([res.data], { type: ct || "application/pdf" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
-    showToast("success", `Downloaded ${filename}`);
+    showToast("success", `Downloaded ${filename}`); // Use showToast for auto-hide
+    
   } catch (e: any) {
+    // This catches network errors or 404/500 responses that throw
     const msg = e?.response?.data
       ? typeof e.response.data === "string"
         ? e.response.data
         : new TextDecoder().decode(e.response.data)
       : e?.response?.data?.error;
-    setToast({
-      type: "error",
-      message: msg || "Failed to download report",
-    });
+    
+    // Try to parse JSON error message
+    try {
+      const errorData = typeof msg === "string" ? JSON.parse(msg) : msg;
+      if (errorData.message || errorData.error) {
+        setToast({
+          type: "error",
+          message: errorData.message || errorData.error || "Failed to download report"
+        });
+        return;
+      }
+    } catch {
+      // Not JSON, show raw error
+      setToast({ 
+        type: "error", 
+        message: msg || "Failed to download report" 
+      });
+    }
   }
 };
   return (
