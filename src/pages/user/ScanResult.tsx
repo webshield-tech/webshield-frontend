@@ -1,5 +1,5 @@
  
-/* eslint-disable no-empty */
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -67,52 +67,84 @@ const ScanResult = () => {
     }
   };
 
-  const handleView = async () => {
-    if (!scanId) return;
+ const handleView = async () => {
+  if (!scanId) return;
+  try {
+    const res = await viewReport(scanId);
+    const ct = res.headers["content-type"] || "";
+    
+    // If it's a PDF file
+    if (ct.includes("application/pdf")) {
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      showToast("success", "PDF opened in new tab.");
+      return;
+    }
+    
+    // Get the response data
+    let data = res.data;
+    
+    // If response is binary, decode it
+    if (typeof data !== "string") {
+      try {
+        data = new TextDecoder().decode(data);
+      } catch {
+        data = JSON.stringify(data);
+      }
+    }
+    
+    // Try to parse as JSON
     try {
-      const res = await viewReport(scanId);
-      const ct = res.headers["content-type"] || "";
-      if (ct.includes("application/pdf")) {
-        const blob = new Blob([res.data], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
-        showToast("success", "PDF opened in new tab.");
+      const jsonData = JSON.parse(data);
+      
+      // Handle error JSON
+      if (jsonData.success === false || jsonData.error) {
+        setToast({
+          type: "error",
+          message: jsonData.message || jsonData.error || "Report not generated yet"
+        });
+        setReportModal({ open: false, content: "" });
         return;
       }
-      // Assume text report
-      const text =
-        typeof res.data === "string"
-          ? res.data
-          : new TextDecoder().decode(res.data);
-      let errorJson: null | { message?: string; error?: string } = null;
-      try {
-        errorJson = JSON.parse(text);
-      } catch {}
+      
+      // Handle success JSON with report
+      if (jsonData.success === true && jsonData.report?.content) {
+        setToast({ type: "", message: "" });
+        setReportModal({ open: true, content: jsonData.report.content });
+        return;
+      }
+      
+      // Handle other JSON
+      setToast({ type: "", message: "" });
+      setReportModal({ open: true, content: JSON.stringify(jsonData, null, 2) });
+      return;
+    } catch {
+      // Not JSON, treat as plain text
       if (
-        errorJson &&
-        (errorJson?.error?.toLowerCase().includes("not generated") ||
-          errorJson?.message?.toLowerCase().includes("generate"))
+        data.toLowerCase().includes("not generated") ||
+        data.toLowerCase().includes("generate")
       ) {
         setToast({
           type: "error",
-          message:
-            "Report not generated yet. Please generate the report first.",
+          message: "Report not generated yet. Please generate the report first.",
         });
         setReportModal({ open: false, content: "" });
       } else {
-        setToast({ type: "", message: "" }); 
-        setReportModal({ open: true, content: text });
+        setToast({ type: "", message: "" });
+        setReportModal({ open: true, content: data });
       }
-    } catch (e: any) {
-      setToast({
-        type: "error",
-        message:
-          e?.response?.data?.error ||
-          "Failed to view report please generate report first",
-      });
-      setReportModal({ open: false, content: "" });
     }
-  };
+  } catch (e: any) {
+    setToast({
+      type: "error",
+      message:
+        e?.response?.data?.error ||
+        "Failed to view report please generate report first",
+    });
+    setReportModal({ open: false, content: "" });
+  }
+};
 
 const handleDownload = async () => {
   if (!scanId) return;
@@ -132,6 +164,7 @@ const handleDownload = async () => {
           });
           return;
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         // Not valid JSON, continue processing as a file
       }
