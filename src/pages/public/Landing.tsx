@@ -190,7 +190,7 @@ const Landing = () => {
             </div>
             <div className="footer-column">
               <h4>Connect</h4>
-              <a href="mailto:huxnain.cs@gmail.com">Contact</a>
+              <a href="mailto:info@webshield.tech">Contact</a>
               <a href="https://github.com/webshield-tech" target="_blank" rel="noopener noreferrer">
                 Source Code
               </a>
