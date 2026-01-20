@@ -157,6 +157,24 @@ if (response.data.success) {
 
   return (
     <div className="auth-container">
+      {/* Add this back button */}
+      <button 
+        className="back-to-home-btn"
+        onClick={() => navigate("/")}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          padding: '8px 16px',
+          background: '#f0f0f0',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '14px'
+        }}
+      >
+        ← Back to Home
+      </button>
       <form className="auth-card" onSubmit={handleSubmit}>
         <h2>Create Account</h2>
 
@@ -272,6 +290,7 @@ if (response.data.success) {
         </div>
       </form>
     </div>
+    
   );
 }
 
