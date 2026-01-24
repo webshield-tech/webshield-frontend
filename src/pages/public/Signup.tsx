@@ -1,82 +1,163 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoginUser } from "../../api/auth-api";
-import { useAuth } from "../../context/AuthContext";
+import { signupUser } from "../../api/auth-api.ts";
+import {
+  validateUsername,
+  validateEmail,
+  validatePassword,
+} from "../../utils/validators";
 import "../../styles/auth.css";
 
-function Login() {
+function Signup() {
   const navigate = useNavigate();
-  const { checkAuth, user } = useAuth();
 
+  // States
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Error states for each field
+  const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [formError, setFormError] = useState("");
+
+  // Password strength details
+  const [passwordDetails, setPasswordDetails] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
+  // Real-time validation effects
+  useEffect(() => {
+    if (username) {
+      const validation = validateUsername(username);
+      setUsernameError(validation.message);
+    } else {
+      setUsernameError("");
+    }
+  }, [username]);
+
+  useEffect(() => {
+    if (email) {
+      const validation = validateEmail(email);
+      setEmailError(validation.message);
+    } else {
+      setEmailError("");
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (password) {
+      const validation = validatePassword(password);
+      setPasswordError(validation.message);
+      setPasswordDetails(validation.details);
+    } else {
+      setPasswordError("");
+      setPasswordDetails({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false,
+      });
+    }
+  }, [password]);
+
+  useEffect(() => {
+    if (confirmPassword) {
+      if (password !== confirmPassword) {
+        setConfirmPasswordError("Passwords do not match");
+      } else {
+        setConfirmPasswordError("");
+      }
+    } else {
+      setConfirmPasswordError("");
+    }
+  }, [confirmPassword, password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEmailError("");
-    setPasswordError("");
     setFormError("");
+
+    // Validate all fields
+    const usernameValidation = validateUsername(username);
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
+
+    if (!usernameValidation.isValid) {
+      setUsernameError(usernameValidation.message);
+      return;
+    }
+
+    if (!emailValidation.isValid) {
+      setEmailError(emailValidation.message);
+      return;
+    }
+
+    if (!passwordValidation.isValid) {
+      setPasswordError(passwordValidation.message);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
+      return;
+    }
 
     try {
       setLoading(true);
-const response = await LoginUser({ email, password });
-console.log("Login response:", response.data);
 
-if (response.data.success) {
-  setFormError("Login successful");
-  const token = response.data.token;
-  if (token) {
-    localStorage.setItem("authToken", token);
-  } else {
-    console.error("No token received from backend");
-  }
+      const response = await signupUser({
+        username,
+        email,
+        password,
+      });
 
-        const roleFromResponse =
-          response.data.user?.role || response.data?.role || null;
-
-        await checkAuth();
-        const finalRole = roleFromResponse || user?.role;
-
-        setTimeout(() => {
-          if (finalRole === "admin") {
-            navigate("/admin", { replace: true });
-            return;
-          }
-
-          if (response.data.user?.agreedToTerms || user?.agreedToTerms) {
-            navigate("/dashboard", { replace: true });
-          } else {
-            navigate("/disclaimer", { replace: true });
-          }
-        }, 400);
+      if (response.data.success) {
+        setFormError("Account created successfully!");
+        const token = response.data.token;
+        if (token) {
+          localStorage.setItem("authToken", token);
+          // Auto login after signup
+          setTimeout(() => navigate("/disclaimer"), 1000);
+        } else {
+          setFormError(
+            "Account created but login failed. Please login manually.",
+          );
+          setTimeout(() => navigate("/login"), 2000);
+        }
       }
     } catch (error: any) {
       const backendError = error?.response?.data?.error || "";
+      
+      // ERROR HANDLING FOR EMAIL VERIFICATION
       if (
-        backendError.toLowerCase().includes("not found") ||
-        backendError.toLowerCase().includes("no user") ||
-        backendError.toLowerCase().includes("email not registered")
+        backendError.includes("valid, deliverable email") ||
+        backendError.includes("Temporary/disposable") ||
+        backendError.includes("Invalid email address") ||
+        backendError.includes("Please provide a valid")
       ) {
-        setEmailError("This email is not registered. Please sign up first.");
+        setEmailError(" Please use a real email address. Temporary/disposable emails are not allowed.");
       } else if (
-        backendError.toLowerCase().includes("invalid") ||
-        backendError.toLowerCase().includes("incorrect") ||
-        backendError.toLowerCase().includes("wrong password")
+        backendError.includes("username") ||
+        backendError.includes("Username")
       ) {
-        setPasswordError("Incorrect password. Please try again.");
+        setUsernameError("Username already exists. Please choose another.");
       } else if (
-        backendError.toLowerCase().includes("rate") ||
-        backendError.toLowerCase().includes("limit") ||
-        backendError.toLowerCase().includes("too many")
+        backendError.includes("email") ||
+        backendError.includes("Email")
       ) {
-        setFormError("Too many login attempts. Please wait 5 minutes.");
+        setEmailError("Email already registered. Please login instead.");
       } else {
-        setFormError(backendError || "Login failed. Please try again.");
+        setFormError(backendError || "Signup failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -84,62 +165,160 @@ if (response.data.success) {
   };
 
   return (
-    <div className="auth-container">
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Login</h2>
+    <>
+      <button
+        onClick={() => navigate("/")}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          padding: "10px 20px",
+          background: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+          fontSize: "14px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          zIndex: 1000,
+          fontWeight: "500",
+        }}
+      >
+        ← Back to Home
+      </button>
 
-        {formError && (
-          <div
-            className={`message ${
-              formError.includes("✅") ||
-              formError.toLowerCase().includes("success")
-                ? "success-message"
-                : "error-message"
-            }`}
-          >
-            {formError}
+      <div className="auth-container">
+        <form className="auth-card" onSubmit={handleSubmit}>
+          <h2>Create Account</h2>
+
+          {/* Form-level error */}
+          {formError && (
+            <div
+              className={`message ${
+                formError.includes("✅") ? "success-message" : "error-message"
+              }`}
+            >
+              {formError}
+            </div>
+          )}
+
+          {/* Username field */}
+          <div className="form-group">
+            <input
+              type="text"
+              placeholder="Username (min. 3 characters)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={usernameError ? "input-error" : ""}
+            />
+            {usernameError && (
+              <div className="field-error">{usernameError}</div>
+            )}
           </div>
-        )}
 
-        <div className="form-group">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={emailError ? "input-error" : ""}
-            disabled={loading}
-          />
-          {emailError && <div className="field-error">{emailError}</div>}
-        </div>
-
-        <div className="form-group">
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={passwordError ? "input-error" : ""}
-            disabled={loading}
-          />
-          {passwordError && <div className="field-error">{passwordError}</div>}
-        </div>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Authenticating..." : "Login"}
-        </button>
-
-        <div className="auth-footer">
-          <div style={{ marginBottom: "10px" }}>
-            <a href="/forgot-password" style={{ fontSize: "0.9rem" }}>
-              Forgot Password?
-            </a>
+          {/* Email field */}
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Email address (real email required)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={emailError ? "input-error" : ""}
+            />
+            {emailError && <div className="field-error">{emailError}</div>}
           </div>
-          New here? <a href="/signup">Create account</a>
-        </div>
-      </form>
-    </div>
+
+          {/* Password field */}
+          <div className="form-group">
+            <input
+              type="password"
+              placeholder="Password (8+ chars, 1 uppercase, 1 number, 1 special)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={passwordError ? "input-error" : ""}
+            />
+            {passwordError && (
+              <div className="field-error">{passwordError}</div>
+            )}
+
+            {/* Password strength indicator */}
+            {password && (
+              <div className="password-strength">
+                <div className="strength-bar">
+                  <div
+                    className={`strength-fill ${
+                      Object.values(passwordDetails).filter(Boolean).length >= 4
+                        ? "strong"
+                        : Object.values(passwordDetails).filter(Boolean)
+                              .length >= 2
+                          ? "medium"
+                          : "weak"
+                    }`}
+                  ></div>
+                </div>
+
+                <div className="password-rules">
+                  <ul>
+                    <li
+                      className={passwordDetails.length ? "valid" : "invalid"}
+                    >
+                      {passwordDetails.length ? "✓" : "✗"} At least 8 characters
+                    </li>
+                    <li
+                      className={
+                        passwordDetails.uppercase ? "valid" : "invalid"
+                      }
+                    >
+                      {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
+                    </li>
+                    <li
+                      className={
+                        passwordDetails.lowercase ? "valid" : "invalid"
+                      }
+                    >
+                      {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
+                    </li>
+                    <li
+                      className={passwordDetails.number ? "valid" : "invalid"}
+                    >
+                      {passwordDetails.number ? "✓" : "✗"} 1 number
+                    </li>
+                    <li
+                      className={passwordDetails.special ? "valid" : "invalid"}
+                    >
+                      {passwordDetails.special ? "✓" : "✗"} 1 special character
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Confirm password */}
+          <div className="form-group">
+            <input
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={confirmPasswordError ? "input-error" : ""}
+            />
+            {confirmPasswordError && (
+              <div className="field-error">{confirmPasswordError}</div>
+            )}
+          </div>
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
+
+          <div className="auth-footer">
+            Already have an account? <a href="/login">Login here</a>
+          </div>
+        </form>
+      </div>
+    </>
   );
 }
 
-export default Login;
+export default Signup;
