@@ -1,6 +1,6 @@
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_URL || 
-  "https://webshield-backend-production-1871.up.railway.app";
+  "https://webshield-backend-e051bc08c935.herokuapp.com/";
 
 console.log('API Base URL:', BASE_URL);
 
