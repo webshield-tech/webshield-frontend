@@ -83,6 +83,7 @@ body {
   font-weight: 800;
   background: linear-gradient(90deg, #00d4ff, #0088ff 80%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -215,12 +216,20 @@ body {
   align-items: flex-start;
   gap: 18px;
   position: relative;
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 
 .feature-card:hover {
-  transform: translateY(-10px) scale(1.025);
+  transform: translateY(-10px) scale(1.05) rotateX(8deg) rotateY(-5deg);
   border-color: #00d4ff;
-  box-shadow: 0 16px 34px rgba(0,136,255,0.12);
+  box-shadow: 
+    -15px 16px 34px rgba(0,136,255,0.2),
+    0 0 40px rgba(0, 212, 255, 0.15) inset;
+}
+
+.feature-card > * {
+  transform: translateZ(30px);
 }
 .feature-card__icon {
   margin-bottom: 16px;             
