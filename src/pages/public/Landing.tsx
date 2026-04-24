@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Shield, Lock, Zap, FileText, Github, Linkedin, Menu, X, ArrowRight, ExternalLink } from "lucide-react";
 import HeroSection from "../../components/landing/HeroSection";
 import ToolCards from "../../components/landing/ToolCards";
 import "../../styles/landing.css";
@@ -8,6 +9,7 @@ import shieldAnimation from "../../assets/icons/Shield.json";
 
 const Landing = () => {
   const [scrollY, setScrollY] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,196 +22,198 @@ const Landing = () => {
 
   return (
     <div className="landing-page">
+      <div className="noise-overlay"></div>
+      
       {/* Navigation */}
       <nav
-        className="landing-nav"
-        style={{
-          background: scrollY > 50 ? "rgba(10, 25, 41, 0.97)" : "transparent",
-          boxShadow: scrollY > 50 ? "0 2px 18px rgba(0,212,255,0.13)" : "none",
-          backdropFilter: scrollY > 50 ? "blur(10px)" : "none",
-          borderBottom: scrollY > 50 ? "1px solid rgba(0,212,255,0.06)" : "none"
-        }}
+        className={`landing-nav ${scrollY > 50 ? "scrolled" : ""}`}
       >
         <div className="nav-container">
           <div className="nav-logo">
-            <div className="logo-lottie-wrap hero-logo">
+            <div className="logo-wrap">
               <Lottie
                 animationData={shieldAnimation}
                 loop
                 className="logo-lottie"
               />
             </div>
-            <span className="logo-text">WebShield</span>
+            <span className="logo-text">Vuln<span className="text-primary">Spectra</span></span>
           </div>
-          <div className="nav-links">
-            <a href="#features" className="nav-link">
-              Features
+
+          <div className="mobile-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X /> : <Menu />}
+          </div>
+
+          <div className={`nav-links ${isMenuOpen ? "active" : ""}`}>
+            <a href="#features" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+              <span className="nav-link-num">01.</span> Features
             </a>
-            <a href="#tools" className="nav-link">
-              Tools
+            <a href="#tools" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+              <span className="nav-link-num">02.</span> Tools
             </a>
-            <Link to="/login" className="nav-button">
+            <Link to="/login" className="nav-button-outline">
               Sign In
             </Link>
-            
+            <Link to="/signup" className="nav-button-primary">
+              Get Started
+            </Link>
           </div>
         </div>
       </nav>
+
       {/* Hero Section */}
       <HeroSection />
 
       {/* Tools Section */}
       <section id="tools" className="section-wrapper">
+        <div className="section-header">
+          <h2 className="section-title">
+            <span className="title-tag">// Security Suite</span>
+            Advanced Scanning Suite
+          </h2>
+        </div>
         <ToolCards />
       </section>
 
       {/* Features Section */}
       <section id="features" className="features-section">
         <div className="section-container">
-          <h2 className="section-title">
-            <span className="title-underline">Why Choose WebShield?</span>
-          </h2>
+          <div className="section-header">
+            <h2 className="section-title">
+              <span className="title-tag">// Core Advantages</span>
+              Why Choose Vuln Spectra?
+            </h2>
+          </div>
 
           <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-card__icon">
-                <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#192A4D" opacity="0.14"/>
-                  <path d="M15 21H27" stroke="#00d4ff" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M21 15V27" stroke="#00d4ff" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+            <div className="feature-card-premium">
+              <div className="feature-card-glow"></div>
+              <div className="feature-icon-wrap">
+                <Zap size={32} />
               </div>
               <h3>Fast Scanning</h3>
-              <p>Complete vulnerability assessments in minutes, not hours</p>
+              <p>Complete vulnerability assessments in minutes, not hours. Optimized for speed and accuracy.</p>
+              <div className="feature-card-footer">
+                <span className="status-online">● STABLE</span>
+              </div>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-card__icon">
-                <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#192A4D" opacity="0.14"/>
-                  <path d="M14 28L28 14" stroke="#00d4ff" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M14 14L28 28" stroke="#00d4ff" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+            <div className="feature-card-premium">
+              <div className="feature-card-glow"></div>
+              <div className="feature-icon-wrap">
+                <Lock size={32} />
               </div>
               <h3>Accurate Results</h3>
-              <p>Professional-grade tools with minimal false positives</p>
+              <p>Professional-grade tools with minimal false positives. Built on industry standards.</p>
+              <div className="feature-card-footer">
+                <span className="status-online">● STABLE</span>
+              </div>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-card__icon">
-                <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#192A4D" opacity="0.14"/>
-                  <path d="M21 15V27" stroke="#00d4ff" strokeWidth="2.2" strokeLinecap="round"/>
-                  <path d="M15 21L27 21" stroke="#00d4ff" strokeWidth="2.2" strokeLinecap="round"/>
-                </svg>
+            <div className="feature-card-premium">
+              <div className="feature-card-glow"></div>
+              <div className="feature-icon-wrap">
+                <FileText size={32} />
               </div>
               <h3>Detailed Reports</h3>
-              <p>Comprehensive PDF reports with actionable insights</p>
+              <p>Comprehensive PDF reports with actionable insights and remediation steps for developers.</p>
+              <div className="feature-card-footer">
+                <span className="status-online">● STABLE</span>
+              </div>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-card__icon">
-                <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#192A4D" opacity="0.14"/>
-                  <path d="M17 28V14H25V28" stroke="#00d4ff" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+            <div className="feature-card-premium">
+              <div className="feature-card-glow"></div>
+              <div className="feature-icon-wrap">
+                <Shield size={32} />
               </div>
               <h3>Secure & Private</h3>
-              <p>Your scans and data are encrypted and confidential</p>
+              <p>Your scans and data are encrypted and strictly confidential. We prioritize your privacy.</p>
+              <div className="feature-card-footer">
+                <span className="status-online">● STABLE</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="cta-section">
+      <section className="cta-section-premium">
         <div className="cta-container">
-          <h2 className="cta-title">Ready to Secure Your Websites?</h2>
-          <Link to="/signup" className="cta-button large">
-            <span className="button-text">Start Free Trial</span>
-          </Link>
+          <div className="cta-content">
+            <h2 className="cta-title">Ready to Secure Your Infrastructure?</h2>
+            <p className="cta-subtitle">Join hundreds of developers securing their web applications with Vuln Spectra's automated tools.</p>
+            <Link to="/signup" className="cta-button-main">
+              <span className="button-glitch">Start Free Trial</span>
+              <ArrowRight size={20} />
+            </Link>
+          </div>
         </div>
       </section>
-      <footer className="landing-footer">
+
+      {/* Footer */}
+      <footer className="landing-footer-premium">
         <div className="footer-container">
-          <div className="footer-brand">
+          <div className="footer-brand-section">
             <div className="footer-logo">
-              <div className="footer-lottie-wrap">
+              <div className="logo-wrap-small">
                 <Lottie
                   animationData={shieldAnimation}
                   loop
                   className="footer-lottie"
                 />
               </div>
-              <div>
-                <span className="logo-text">WebShield</span>
-                <p className="college-name">
-                  Developed at{" "}
-                  <span className="highlight">
-                    Govt ANKS Degree College
-                  </span>
-                </p>
-              </div>
+              <span className="logo-text">Vuln Spectra</span>
             </div>
-            <p className="footer-tagline">
-              Cybersecurity made accessible for everyone
+            <p className="footer-desc">
+              Next-generation cybersecurity platform designed for modern web developers and security researchers.
             </p>
-            <div className="social-links">
-              <a
-                href="https://github.com/thehusnain"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-link"
-                aria-label="GitHub Profile"
-              >
-                <svg className="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-                <span>GitHub</span>
+            <div className="social-links-premium">
+              <a href="https://github.com/thehusnain" target="_blank" rel="noopener noreferrer" className="social-icon-btn">
+                <Github size={20} />
               </a>
-              <a
-                href="https://www.linkedin.com/in/husnain-fiaz-7a4761369"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-link"
-                aria-label="LinkedIn Profile"
-              >
-                <svg className="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-                <span>LinkedIn</span>
+              <a href="https://www.linkedin.com/in/husnain-fiaz-7a4761369" target="_blank" rel="noopener noreferrer" className="social-icon-btn">
+                <Linkedin size={20} />
               </a>
             </div>
           </div>
-          {/* Footer Links */}
-          <div className="footer-links">
-            <div className="footer-column">
+
+          <div className="footer-links-grid">
+            <div className="footer-col">
               <h4>Product</h4>
               <a href="#features">Features</a>
               <a href="#tools">Tools</a>
+              <a href="/pricing">Pricing</a>
             </div>
-            <div className="footer-column">
-              <h4>Connect</h4>
-              <a href="mailto:info@webshield.tech">Contact</a>
-              <a href="https://github.com/webshield-tech" target="_blank" rel="noopener noreferrer">
-                Source Code
+            <div className="footer-col">
+              <h4>Company</h4>
+              <a href="/about">About</a>
+              <a href="/contact">Contact</a>
+              <a href="/disclaimer">Disclaimer</a>
+            </div>
+            <div className="footer-col">
+              <h4>Resources</h4>
+              <a href="https://github.com/vuln-spectra-tech" target="_blank" rel="noopener noreferrer">
+                Open Source <ExternalLink size={12} />
               </a>
-              <a href="/signup">Get Started</a>
+              <a href="/docs">Documentation</a>
+              <a href="/blog">Blog</a>
             </div>
           </div>
         </div>
-       <div className="footer-bottom-centered">
-  <div className="footer-centered-lines">
-    <p>© {new Date().getFullYear()} WebShield. All rights reserved.</p>
-    <p className="footer-note">
-      Web Engineering Project<br/>
-      <span className="college-highlight">Government ANKS Degree College,KTS,Haripur</span>
-    </p>
-    <p className="footer-attribution">
-      Built by <span className="author-name">Husnain</span> • For educational & ethical security testing
-    </p>
-  </div>
-</div>
+
+        <div className="footer-bottom-premium">
+          <div className="footer-bottom-content">
+            <p className="copyright">© {new Date().getFullYear()} Vuln Spectra Core. All rights reserved.</p>
+            <div className="footer-tech-tag">
+              <span className="tech-label">System Status:</span>
+              <span className="tech-value">Online</span>
+            </div>
+            <p className="footer-credit">
+              Designed & Built by <span className="author">Husnain Fiaz</span>
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

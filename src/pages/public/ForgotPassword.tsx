@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Mail, ChevronLeft, Loader2, ShieldCheck } from "lucide-react";
 import { forgotPassword } from "../../api/auth-api";
 import "../../styles/auth.css";
 
@@ -31,35 +33,52 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="auth-container">
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Forgot Password</h2>
-        {message && (
-          <div
-            className={`message ${
-              message.toLowerCase().includes("fail")
-                ? "error-message"
-                : "success-message"
-            }`}
-          >
-            {message}
+    <div className="auth-page-premium">
+      <div className="noise-overlay"></div>
+      
+      <div className="auth-content-wrap">
+        <header className="auth-header">
+          <Link to="/login" className="back-link">
+            <ChevronLeft size={18} />
+            <span>RETURN_TO_LOGIN</span>
+          </Link>
+          <div className="auth-logo-premium">
+            <div className="logo-glow"></div>
+            <ShieldCheck size={48} className="logo-icon" />
           </div>
-        )}
-        <div className="form-group">
-          <input
-            type="email"
-            placeholder="Your registered email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Send Reset Link"}
-        </button>
-      </form>
+          <h1 className="text-gradient">RECOVERY_PROTOCOL</h1>
+          <p>INITIALIZE_PASSWORD_RESET_SEQUENCE</p>
+        </header>
+
+        <form className="auth-form-premium glass-panel" onSubmit={handleSubmit}>
+          {message && (
+            <div className={`auth-alert ${message.toLowerCase().includes("fail") ? "error" : "success"}`}>
+              {message}
+            </div>
+          )}
+          
+          <div className="auth-input-group">
+            <label>EMAIL_ADDRESS</label>
+            <div className="input-wrap">
+              <Mail size={18} className="i-icon" />
+              <input
+                type="email"
+                placeholder="operator@vulnspectra.io"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="auth-submit-btn" disabled={loading}>
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "REQUEST_RESET_LINK"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
 
 export default ForgotPassword;
+

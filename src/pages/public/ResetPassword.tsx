@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { Lock, ChevronLeft, Loader2, ShieldCheck, Key } from "lucide-react";
 import { resetPassword } from "../../api/auth-api";
 import "../../styles/auth.css";
 
@@ -16,7 +17,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (!token) {
-      setError("Reset link is missing or invalid. Please use the link from your email.");
+      setError("RESET_TOKEN_MISSING_OR_INVALID");
     }
   }, [token]);
 
@@ -46,54 +47,72 @@ const ResetPassword = () => {
       setLoading(true);
       const res = await resetPassword({ token, newPassword: password });
       if (res.data?.success) {
-        setSuccess("Password reset successful! Redirecting to login...");
-        setTimeout(() => navigate("/login"), 1200);
+        setSuccess("PASSWORD_RESET_SUCCESSFUL // REDIRECTING...");
+        setTimeout(() => navigate("/login"), 1500);
       } else {
-        setError(res.data?.error || "Failed to reset password. Please try again.");
+        setError(res.data?.error || "FAILED_TO_RESET_CREDENTIALS");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Failed to reset password. Please try again.");
+      setError(err?.response?.data?.error || "PROTOCOL_FAILURE_RETRY_REQUIRED");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2 className="auth-title">Reset Password</h2>
-        {error && <div className="auth-message error">{error}</div>}
-        {success && <div className="auth-message success">{success}</div>}
+    <div className="auth-page-premium">
+      <div className="noise-overlay"></div>
+      
+      <div className="auth-content-wrap">
+        <header className="auth-header">
+          <Link to="/login" className="back-link">
+            <ChevronLeft size={18} />
+            <span>ABORT_RESET</span>
+          </Link>
+          <div className="auth-logo-premium">
+            <div className="logo-glow"></div>
+            <ShieldCheck size={48} className="logo-icon" />
+          </div>
+          <h1 className="text-gradient">CREDENTIAL_RESET</h1>
+          <p>ESTABLISH_NEW_SECURITY_KEY</p>
+        </header>
 
-       <form onSubmit={handleSubmit} autoComplete="off">
-  <div className="auth-field">
-    <input
-      type="password"
-      name="new-password"
-      autoComplete="new-password"
-      placeholder="New password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      disabled={loading}
-    />
-  </div>
-  <div className="auth-field">
-    <input
-      type="password"
-      name="confirm-new-password"
-      autoComplete="new-password"
-      placeholder="Confirm new password"
-      value={confirm}
-      onChange={(e) => setConfirm(e.target.value)}
-      disabled={loading}
-    />
-  </div>
-  <button className="auth-button" type="submit" disabled={loading || !token}>
-    {loading ? "Resetting..." : "Reset Password"}
-  </button>
-</form>
+        <form className="auth-form-premium glass-panel" onSubmit={handleSubmit} autoComplete="off">
+          {error && <div className="auth-alert error">{error}</div>}
+          {success && <div className="auth-alert success">{success}</div>}
 
+          <div className="auth-input-group">
+            <label>NEW_PASSPHRASE</label>
+            <div className="input-wrap">
+              <Lock size={18} className="i-icon" />
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="auth-input-group">
+            <label>CONFIRM_PASSPHRASE</label>
+            <div className="input-wrap">
+              <Key size={18} className="i-icon" />
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="auth-submit-btn" disabled={loading || !token}>
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "UPDATE_CREDENTIALS"}
+          </button>
+        </form>
       </div>
     </div>
   );

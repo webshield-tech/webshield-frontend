@@ -11,129 +11,96 @@ const ToolCards = () => {
     {
       name: "Nmap",
       animation: nmapAnimation,
-      color: "#00d4ff",
-      description: "Network discovery & security auditing",
+      color: "#00f2ff",
+      description: "Network discovery & security auditing suite",
       features: ["Port Scanning", "Service Detection", "OS Fingerprinting"],
       delay: "0.1s",
       toolId: "nmap",
+      tag: "NETWORK"
     },
     {
       name: "Nikto",
       animation: niktoAnimation,
-      color: "#ff6b6b",
-      description: "Web server vulnerability scanner",
+      color: "#ff0055",
+      description: "Comprehensive web server vulnerability scanner",
       features: ["Dangerous Files", "Outdated Software", "Misconfigurations"],
-      delay: "0.3s",
+      delay: "0.2s",
       toolId: "nikto",
+      tag: "WEB_SERVER"
     },
     {
       name: "SQLMap",
       animation: sqlAnimation,
       color: "#ffd54f",
-      description: "SQL injection detection & exploitation",
+      description: "Automated SQL injection and database takeover",
       features: [
         "Database Fingerprint",
         "Data Extraction",
         "File System Access",
       ],
-      delay: "0.5s",
+      delay: "0.3s",
       toolId: "sqlmap",
+      tag: "DATABASE"
     },
     {
       name: "SSLScan",
       animation: sslAnimation,
-      color: "#69f0ae",
-      description: "SSL/TLS configuration analyzer",
+      color: "#00ff9d",
+      description: "SSL/TLS configuration and cipher analyzer",
       features: ["Cipher Check", "Certificate Info", "Protocol Support"],
-      delay: "0.7s",
+      delay: "0.4s",
       toolId: "sslscan",
+      tag: "ENCRYPTION"
     },
   ];
 
   return (
-    <div className="tools-section">
-      <h2 className="section-title">
-        <span className="title-underline">Professional Security Tools</span>
-      </h2>
-      <p className="section-subtitle">
-        Powered by industry-standard cybersecurity tools used by professionals
-        worldwide
-      </p>
-
-      <div className="tools-grid">
+    <div className="tools-container-premium">
+      <div className="tools-grid-premium">
         {tools.map((tool, _index) => (
           <div
             key={tool.name}
-            className="tool-card"
-            data-tool={tool.toolId}
+            className="tool-card-premium"
             style={
               {
-                animationDelay: tool.delay,
-                borderColor: `${tool.color}30`,
-                "--hover-glow": tool.color.replace("#", ""),
+                "--tool-color": tool.color,
+                "--tool-color-rgb": tool.color === "#00f2ff" ? "0, 242, 255" : 
+                                   tool.color === "#ff0055" ? "255, 0, 85" :
+                                   tool.color === "#ffd54f" ? "255, 213, 79" : "0, 255, 157",
+                animationDelay: tool.delay
               } as React.CSSProperties
             }
           >
-            <div className="tool-card-inner">
-              <div className="tool-header">
-                <div
-                  className="tool-icon-wrapper"
-                  style={{
-                    background: `linear-gradient(135deg, ${tool.color}20, ${tool.color}10)`,
-                    borderColor: `${tool.color}40`,
-                  }}
-                >
-                  <div className="tool-icon" style={{ color: tool.color }}>
-                    <Lottie
-                      animationData={tool.animation}
-                      loop
-                      className="tool-lottie-animation"
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </div>
+            <div className="card-accent-line"></div>
+            <div className="card-tag">{tool.tag}</div>
+            
+            <div className="tool-card-content">
+              <div className="tool-icon-section">
+                <div className="tool-icon-glow"></div>
+                <div className="tool-lottie-container">
+                  <Lottie
+                    animationData={tool.animation}
+                    loop
+                    className="tool-lottie"
+                  />
                 </div>
-                <h3
-                  style={{
-                    background: `linear-gradient(135deg, ${tool.color}, ${tool.color}cc)`,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  {tool.name}
-                </h3>
               </div>
 
-              <p
-                className="tool-description"
-                style={{ borderLeftColor: `${tool.color}40` }}
-              >
-                {tool.description}
-              </p>
+              <h3 className="tool-name-premium">{tool.name}</h3>
+              <p className="tool-desc-premium">{tool.description}</p>
 
-              <div className="tool-features">
+              <div className="tool-features-premium">
                 {tool.features.map((feature, i) => (
-                  <div key={i} className="feature">
-                    <span
-                      className="feature-icon"
-                      style={{
-                        background: `linear-gradient(135deg, ${tool.color}30, ${tool.color}20)`,
-                        color: tool.color,
-                      }}
-                    >
-                      ✓
-                    </span>
-                    <span>{feature}</span>
+                  <div key={i} className="feature-pill">
+                    <span className="pill-dot"></span>
+                    {feature}
                   </div>
                 ))}
               </div>
-
-              <div
-                className="tool-glow"
-                style={{
-                  background: `radial-gradient(ellipse at center, ${tool.color}20 0%, transparent 70%)`,
-                }}
-              ></div>
             </div>
+
+            <div className="card-corner-top"></div>
+            <div className="card-corner-bottom"></div>
           </div>
         ))}
       </div>
@@ -142,3 +109,4 @@ const ToolCards = () => {
 };
 
 export default ToolCards;
+

@@ -17,14 +17,15 @@ import ScanResult from "../pages/user/ScanResult";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import StartScan from "../pages/user/StartScan";
 import AboutTools from "../pages/user/AboutTools";
+import Osint from "../pages/user/Osint";
 import { useAuth } from "../context/AuthContext"; 
 import LoadingScreen from "../components/common/LoadingScreen";
 import NotFound from "../pages/public/NotFound";
+import MainLayout from "../components/layout/MainLayout";
 
 function AppRoutes() {
   const { user, loading } = useAuth();
 
-  // Show loading while checking auth
   if (loading) {
     return <LoadingScreen />;
   }
@@ -32,95 +33,50 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes - always accessible */}
+        {/* Public routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Disclaimer - only for authenticated users who haven't accepted terms */}
+        {/* Disclaimer - special handling: needs auth but blocks access to other pages */}
         <Route 
           path="/disclaimer" 
           element={
-            user ? (
-              !user.agreedToTerms ? (
-                <Disclaimer />
-              ) : (
-                <Navigate to="/dashboard" replace />
-              )
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-
-        {/* Protected routes - require auth and terms acceptance */}
-        <Route 
-          path="/dashboard" 
-          element={
             <ProtectedRoute>
-              {user?.agreedToTerms ? <Dashboard /> : <Navigate to="/disclaimer" replace />}
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              {user?.agreedToTerms ? <Profile /> : <Navigate to="/disclaimer" replace />}
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/start-scan" 
-          element={
-            <ProtectedRoute>
-              {user?.agreedToTerms ? <StartScan /> : <Navigate to="/disclaimer" replace />}
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/scan-progress/:scanId" 
-          element={
-            <ProtectedRoute>
-              {user?.agreedToTerms ? <ScanProgress /> : <Navigate to="/disclaimer" replace />}
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/scan-result/:scanId" 
-          element={
-            <ProtectedRoute>
-              {user?.agreedToTerms ? <ScanResult /> : <Navigate to="/disclaimer" replace />}
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/scan-history" 
-          element={
-            <ProtectedRoute>
-              {user?.agreedToTerms ? <ScanHistory /> : <Navigate to="/disclaimer" replace />}
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/about-tools" 
-          element={
-            <ProtectedRoute>
-              {user?.agreedToTerms ? <AboutTools /> : <Navigate to="/disclaimer" replace />}
+              {user?.agreedToTerms ? <Navigate to="/dashboard" replace /> : <Disclaimer />}
             </ProtectedRoute>
           } 
         />
 
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminRoute />}>
+        {/* Main Application Area (Protected) */}
+        <Route 
+          element={
+            <ProtectedRoute>
+              {user?.agreedToTerms ? <MainLayout /> : <Navigate to="/disclaimer" replace />}
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/start-scan" element={<StartScan />} />
+          <Route path="/scan-history" element={<ScanHistory />} />
+          <Route path="/scan-progress/:scanId" element={<ScanProgress />} />
+          <Route path="/scan-result/:scanId" element={<ScanResult />} />
+          <Route path="/about-tools" element={<AboutTools />} />
+          <Route path="/osint" element={<Osint />} />
+        </Route>
+
+        {/* Admin Section (Protected + AdminOnly) */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute adminOnly>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AdminDashboard />} />
           <Route path="scans" element={<AdminScans />} />
           <Route path="users" element={<AdminUsers />} />

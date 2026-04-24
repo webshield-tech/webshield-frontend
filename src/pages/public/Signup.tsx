@@ -1,323 +1,264 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { signupUser } from "../../api/auth-api.ts";
+import { useState, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
-  validateUsername,
-  validateEmail,
-  validatePassword,
-} from "../../utils/validators";
+  User, Mail, Lock, Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { signupUser } from "../../api/auth-api.ts";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
+
+/* ---- Password analysis ---- */
+function analysePassword(pw: string) {
+  const checks = {
+    length:    pw.length >= 8,
+    uppercase: /[A-Z]/.test(pw),
+    lowercase: /[a-z]/.test(pw),
+    number:    /[0-9]/.test(pw),
+    special:   /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw),
+  };
+  const score = Object.values(checks).filter(Boolean).length;
+  return { checks, score };
+}
+
+function strengthLabel(score: number) {
+  if (score <= 1) return { label: "Too weak",  cls: "weak" };
+  if (score === 2) return { label: "Weak",      cls: "weak" };
+  if (score === 3) return { label: "Fair",      cls: "fair" };
+  if (score === 4) return { label: "Good",      cls: "good" };
+  return { label: "Strong", cls: "strong" };
+}
 
 function Signup() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // States
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername]             = useState("");
+  const [email, setEmail]                   = useState("");
+  const [password, setPassword]             = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]               = useState(false);
+  const [formError, setFormError]           = useState("");
+  const [formSuccess, setFormSuccess]       = useState("");
+  const [fieldErrors, setFieldErrors]       = useState<Record<string, string>>({});
+  const [pwTouched, setPwTouched]           = useState(false);
 
-  // Error states for each field
-  const [usernameError, setUsernameError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  const [formError, setFormError] = useState("");
+  const { checks, score } = useMemo(() => analysePassword(password), [password]);
+  const strength = strengthLabel(score);
 
-  // Password strength details
-  const [passwordDetails, setPasswordDetails] = useState({
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    number: false,
-    special: false,
-  });
+  const setFieldError = (key: string, msg: string) =>
+    setFieldErrors(prev => ({ ...prev, [key]: msg }));
+  const clearFieldError = (key: string) =>
+    setFieldErrors(prev => { const n = { ...prev }; delete n[key]; return n; });
 
-  // Real-time validation effects
-  useEffect(() => {
-    if (username) {
-      const validation = validateUsername(username);
-      setUsernameError(validation.message);
-    } else {
-      setUsernameError("");
-    }
-  }, [username]);
-
-  useEffect(() => {
-    if (email) {
-      const validation = validateEmail(email);
-      setEmailError(validation.message);
-    } else {
-      setEmailError("");
-    }
-  }, [email]);
-
-  useEffect(() => {
-    if (password) {
-      const validation = validatePassword(password);
-      setPasswordError(validation.message);
-      setPasswordDetails(validation.details);
-    } else {
-      setPasswordError("");
-      setPasswordDetails({
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        special: false,
-      });
-    }
-  }, [password]);
-
-  useEffect(() => {
-    if (confirmPassword) {
-      if (password !== confirmPassword) {
-        setConfirmPasswordError("Passwords do not match");
-      } else {
-        setConfirmPasswordError("");
-      }
-    } else {
-      setConfirmPasswordError("");
-    }
-  }, [confirmPassword, password]);
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!username.trim())            errs.username = "Username is required.";
+    else if (username.length < 3)    errs.username = "Username must be at least 3 characters.";
+    if (!email.trim())               errs.email    = "Email is required.";
+    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = "Please enter a valid email.";
+    if (!password)                   errs.password = "Password is required.";
+    else if (score < 3)              errs.password = "Password is too weak. Please make it stronger.";
+    if (password !== confirmPassword) errs.confirm = "Passwords do not match.";
+    return errs;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError("");
-
-    // Validate all fields
-    const usernameValidation = validateUsername(username);
-    const emailValidation = validateEmail(email);
-    const passwordValidation = validatePassword(password);
-
-    if (!usernameValidation.isValid) {
-      setUsernameError(usernameValidation.message);
-      return;
-    }
-
-    if (!emailValidation.isValid) {
-      setEmailError(emailValidation.message);
-      return;
-    }
-
-    if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.message);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setConfirmPasswordError("Passwords do not match");
-      return;
-    }
+    setFormError(""); setFormSuccess("");
+    const errs = validate();
+    if (Object.keys(errs).length > 0) { setFieldErrors(errs); return; }
+    setFieldErrors({});
 
     try {
       setLoading(true);
-
-      const response = await signupUser({
-        username,
-        email,
-        password,
-      });
+      const response = await signupUser({ username, email, password });
 
       if (response.data.success) {
-        setFormError("Account created successfully!");
+        setFormSuccess("Account created! Redirecting…");
         const token = response.data.token;
         if (token) {
           localStorage.setItem("authToken", token);
-          // Auto login after signup
-          setTimeout(() => navigate("/disclaimer"), 1000);
+          if (response.data.user) login(response.data.user);
+          setTimeout(() => navigate("/disclaimer"), 800);
         } else {
-          setFormError(
-            "Account created but login failed. Please login manually.",
-          );
-          setTimeout(() => navigate("/login"), 2000);
+          setTimeout(() => navigate("/login"), 1500);
         }
       }
     } catch (error: any) {
-      const backendError = error?.response?.data?.error || "";
-      
-      // ERROR HANDLING FOR EMAIL VERIFICATION
-      if (
-        backendError.includes("valid, deliverable email") ||
-        backendError.includes("Temporary/disposable") ||
-        backendError.includes("Invalid email address") ||
-        backendError.includes("Please provide a valid")
-      ) {
-        setEmailError(" Please use a real email address. Temporary/disposable emails are not allowed.");
-      } else if (
-        backendError.includes("username") ||
-        backendError.includes("Username")
-      ) {
-        setUsernameError("Username already exists. Please choose another.");
-      } else if (
-        backendError.includes("email") ||
-        backendError.includes("Email")
-      ) {
-        setEmailError("Email already registered. Please login instead.");
-      } else {
-        setFormError(backendError || "Signup failed. Please try again.");
-      }
+      const msg = error?.response?.data?.error || "";
+      if (msg.toLowerCase().includes("username")) setFieldError("username", "That username is already taken.");
+      else if (msg.toLowerCase().includes("email")) setFieldError("email", "That email is already registered.");
+      else setFormError(msg || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          padding: "10px 20px",
-          background: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-          fontSize: "14px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          zIndex: 1000,
-          fontWeight: "500",
-        }}
+    <div className="auth-page">
+      <motion.div
+        className="auth-card wide"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        ← Back to Home
-      </button>
+        {/* Logo */}
+        <div className="auth-logo-wrap">
+          <motion.div
+            className="auth-logo-icon"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+          >
+            <Shield size={28} />
+          </motion.div>
+          <h1>Create your account</h1>
+          <p className="auth-subtitle">Join Vuln Spectra and start scanning securely</p>
+        </div>
 
-      <div className="auth-container">
-        <form className="auth-card" onSubmit={handleSubmit}>
-          <h2>Create Account</h2>
+        {/* Alerts */}
+        {formError && (
+          <motion.div className="auth-alert error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <AlertCircle size={16} /><span>{formError}</span>
+          </motion.div>
+        )}
+        {formSuccess && (
+          <motion.div className="auth-alert success" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <CheckCircle2 size={16} /><span>{formSuccess}</span>
+          </motion.div>
+        )}
 
-          {/* Form-level error */}
-          {formError && (
-            <div
-              className={`message ${
-                formError.includes("✅") ? "success-message" : "error-message"
-              }`}
-            >
-              {formError}
+        {/* --- Left column --- */}
+        <form onSubmit={handleSubmit} noValidate style={{ display: 'contents' }}>
+
+          {/* Username */}
+          <div className="auth-field">
+            <label htmlFor="su-username">Username</label>
+            <div className={`input-wrap ${fieldErrors.username ? "has-error" : ""}`}>
+              <User className="i-icon" size={17} />
+              <input
+                id="su-username"
+                type="text"
+                placeholder="your_username"
+                value={username}
+                onChange={e => { setUsername(e.target.value); clearFieldError("username"); }}
+                disabled={loading}
+                autoComplete="username"
+              />
             </div>
-          )}
-
-          {/* Username field */}
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Username (min. 3 characters)"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={usernameError ? "input-error" : ""}
-            />
-            {usernameError && (
-              <div className="field-error">{usernameError}</div>
-            )}
+            {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
           </div>
 
-          {/* Email field */}
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Email address (real email required)"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={emailError ? "input-error" : ""}
-            />
-            {emailError && <div className="field-error">{emailError}</div>}
+          {/* Email */}
+          <div className="auth-field">
+            <label htmlFor="su-email">Email address</label>
+            <div className={`input-wrap ${fieldErrors.email ? "has-error" : ""}`}>
+              <Mail className="i-icon" size={17} />
+              <input
+                id="su-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={e => { setEmail(e.target.value); clearFieldError("email"); }}
+                disabled={loading}
+                autoComplete="email"
+              />
+            </div>
+            {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
           </div>
 
-          {/* Password field */}
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Password (8+ chars, 1 uppercase, 1 number, 1 special)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={passwordError ? "input-error" : ""}
-            />
-            {passwordError && (
-              <div className="field-error">{passwordError}</div>
-            )}
+          {/* Password */}
+          <div className="auth-field">
+            <label htmlFor="su-password">Password</label>
+            <div className={`input-wrap ${fieldErrors.password ? "has-error" : ""}`}>
+              <Lock className="i-icon" size={17} />
+              <input
+                id="su-password"
+                type="password"
+                placeholder="Create a strong password"
+                value={password}
+                onChange={e => { setPassword(e.target.value); clearFieldError("password"); setPwTouched(true); }}
+                disabled={loading}
+                autoComplete="new-password"
+              />
+            </div>
+            {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
-            {/* Password strength indicator */}
-            {password && (
-              <div className="password-strength">
-                <div className="strength-bar">
-                  <div
-                    className={`strength-fill ${
-                      Object.values(passwordDetails).filter(Boolean).length >= 4
-                        ? "strong"
-                        : Object.values(passwordDetails).filter(Boolean)
-                              .length >= 2
-                          ? "medium"
-                          : "weak"
-                    }`}
-                  ></div>
+            {/* Live strength meter */}
+            {pwTouched && password.length > 0 && (
+              <div className="pw-strength">
+                <div className="pw-bars">
+                  {[1,2,3,4,5].map(i => {
+                    let barClass = "";
+                    if (i <= score) {
+                      barClass = score <= 2 ? "active-weak" : score === 3 ? "active-fair" : score === 4 ? "active-good" : "active-strong";
+                    }
+                    return <div key={i} className={`pw-bar ${barClass}`} />;
+                  })}
                 </div>
-
-                <div className="password-rules">
-                  <ul>
-                    <li
-                      className={passwordDetails.length ? "valid" : "invalid"}
-                    >
-                      {passwordDetails.length ? "✓" : "✗"} At least 8 characters
-                    </li>
-                    <li
-                      className={
-                        passwordDetails.uppercase ? "valid" : "invalid"
-                      }
-                    >
-                      {passwordDetails.uppercase ? "✓" : "✗"} 1 uppercase letter
-                    </li>
-                    <li
-                      className={
-                        passwordDetails.lowercase ? "valid" : "invalid"
-                      }
-                    >
-                      {passwordDetails.lowercase ? "✓" : "✗"} 1 lowercase letter
-                    </li>
-                    <li
-                      className={passwordDetails.number ? "valid" : "invalid"}
-                    >
-                      {passwordDetails.number ? "✓" : "✗"} 1 number
-                    </li>
-                    <li
-                      className={passwordDetails.special ? "valid" : "invalid"}
-                    >
-                      {passwordDetails.special ? "✓" : "✗"} 1 special character
-                    </li>
-                  </ul>
+                <span className={`pw-label ${strength.cls}`}>{strength.label}</span>
+                <div className="pw-checklist">
+                  {[
+                    { key: "length",    label: "8+ characters" },
+                    { key: "uppercase", label: "Uppercase" },
+                    { key: "lowercase", label: "Lowercase" },
+                    { key: "number",    label: "Number" },
+                    { key: "special",   label: "Special char" },
+                  ].map(({ key, label }) => (
+                    <div key={key} className={`pw-check-item ${checks[key as keyof typeof checks] ? "met" : ""}`}>
+                      <div className="pw-check-dot" />
+                      {label}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Confirm password */}
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={confirmPasswordError ? "input-error" : ""}
-            />
-            {confirmPasswordError && (
-              <div className="field-error">{confirmPasswordError}</div>
-            )}
+          {/* Confirm Password */}
+          <div className="auth-field">
+            <label htmlFor="su-confirm">Confirm password</label>
+            <div className={`input-wrap ${fieldErrors.confirm ? "has-error" : ""}`}>
+              <Lock className="i-icon" size={17} />
+              <input
+                id="su-confirm"
+                type="password"
+                placeholder="Re-enter your password"
+                value={confirmPassword}
+                onChange={e => { setConfirmPassword(e.target.value); clearFieldError("confirm"); }}
+                disabled={loading}
+                autoComplete="new-password"
+              />
+            </div>
+            {fieldErrors.confirm && <span className="field-error">{fieldErrors.confirm}</span>}
           </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Creating Account..." : "Sign Up"}
-          </button>
+          {/* Submit */}
+          <motion.button
+            type="submit"
+            className="auth-submit-btn"
+            disabled={loading}
+            whileTap={{ scale: 0.98 }}
+          >
+            {loading ? (
+              <><Loader2 size={18} className="animate-spin" /><span>Creating account…</span></>
+            ) : (
+              <><span>Create account</span><ArrowRight size={18} /></>
+            )}
+          </motion.button>
 
+          {/* Footer */}
           <div className="auth-footer">
-            Already have an account? <a href="/login">Login here</a>
+            <p>
+              Already have an account?
+              <Link to="/login" className="auth-link">Sign in</Link>
+            </p>
           </div>
         </form>
-      </div>
-    </>
+      </motion.div>
+    </div>
   );
 }
 

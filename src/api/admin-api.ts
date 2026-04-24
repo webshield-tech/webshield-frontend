@@ -6,3 +6,5 @@ export const adminGetUserHistory = (userId: string) => api.get(`/admin/users/${u
 export const adminDeleteScan = (scanId: string) => api.delete(`/admin/scan/${scanId}`);
 export const adminUpdateUserLimit = (userId: string, scanLimit: number) =>
   api.post("/admin/update-limit", { userId, scanLimit });
+export const adminToggleUserBlock = (userId: string) => 
+  api.post("/admin/toggle-block", { userId });

@@ -1,23 +1,26 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { 
+  Shield, 
+  Activity, 
+  Clock, 
+  AlertTriangle, 
+  Play, 
+  ArrowUpRight,
+  Search,
+  CheckCircle2
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getScanHistory } from "../../api/scan-api";
 import "../../styles/dashboard.css";
-import successAnimation from "../../assets/icons/Success.json";
-import pendingAnimation from "../../assets/icons/pending.json";
-import foundAimation from "../../assets/icons/found.json";
-import startAnimation from "../../assets/icons/start.json";
-import HistoryAnimation from "../../assets/icons/History.json";
-import infoAnimation from "../../assets/icons/info.json";
-import profileAnimation from "../../assets/icons/profile.json";
-import logoutAnimation from "../../assets/icons/logout.json";
 import nmapAnimation from "../../assets/icons/nmap.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
 import Lottie from "lottie-react";
+
 interface Scan {
   _id: string;
   targetUrl?: string;
@@ -32,20 +35,10 @@ interface Scan {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { logout, user, loading, authChecked } = useAuth();
+  const { user, loading, authChecked } = useAuth();
   const [scans, setScans] = useState<Scan[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState("");
-
-  if (!authChecked || loading) return null;
-
-  useEffect(() => {
-    if (!authChecked || loading) return;
-
-    if (user && !user.agreedToTerms) {
-      navigate("/disclaimer", { replace: true });
-    }
-  }, [authChecked, loading, user, navigate]);
 
   useEffect(() => {
     if (!authChecked || loading || !user?.agreedToTerms) return;
@@ -56,7 +49,7 @@ const Dashboard = () => {
         const arr = res.data?.scans || res.data?.history || [];
         setScans(Array.isArray(arr) ? arr : []);
       } catch (e: any) {
-        setError(e?.response?.data?.error || "Failed to load stats");
+        setError(e?.response?.data?.error || "Failed to load dashboard data");
       } finally {
         setDashboardLoading(false);
       }
@@ -64,8 +57,6 @@ const Dashboard = () => {
 
     load();
   }, [authChecked, loading, user]);
-
-  const isAdmin = !!user && user.role === "admin";
 
   const metrics = useMemo(() => {
     const total = scans.length;
@@ -80,7 +71,7 @@ const Dashboard = () => {
       return sum + (Array.isArray(vulns) ? vulns.length : 0);
     }, 0);
     const successRate = total ? Math.round((completed / total) * 100) : 0;
-    return { completed, pending, vulnerabilities, successRate };
+    return { total, completed, pending, vulnerabilities, successRate };
   }, [scans]);
 
   const recent = useMemo(() => {
@@ -93,243 +84,134 @@ const Dashboard = () => {
       .slice(0, 5);
   }, [scans]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
-
   return (
-    <div className="dashboard">
-      <div className="nav-strip">
-        <span>WebShield • Secure. Scan. Repeat.</span>
-        <div className="nav-right">
-          <button onClick={() => navigate("/start-scan")}>Start Scan</button>
-          <button onClick={() => navigate("/about-tools")}>Tools Info</button>
-          {isAdmin && (
-            <button
-              onClick={() => navigate("/admin-dashboard")}
-              style={{
-                backgroundColor: "#ff6b6b",
-                color: "white",
-                border: "none",
-              }}
-            >
-              Admin Dashboard
-            </button>
-          )}
+    <div className="dashboard-v2">
+      <div className="dashboard-header-section">
+        <div className="welcome-text">
+          <h1>Welcome, <span className="highlight">{user?.username || "Operator"}</span></h1>
+          <p>System status is nominal. Security protocols active.</p>
         </div>
-      </div>
-
-      <div className="top-bar">
-        <div className="top-left">
-          <div className="logo-circle">
-            <img
-              src="/logo.gif"
-              alt="WebShield Logo"
-              className="logo-animated"
-            />
-          </div>
-
-          <div>
-            <h2 className="text-color">WebShield Dashboard</h2>
-            <p className="welcome-text">
-              Welcome back, {user?.username || user?.email || "User"}!
-              {isAdmin && " (Administrator)"}
-            </p>
-          </div>
-        </div>
-
-        <div className="top-right">
-          <button
-            className="pill-btn ghost pill-icon"
-            onClick={() => navigate("/profile")}
-          >
-            <Lottie
-              animationData={profileAnimation}
-              loop
-              className="profile-pill-lottie"
-            />
-            <span>Profile</span>
-          </button>
-          <button className="pill-btn danger pill-icon" onClick={handleLogout}>
-            <Lottie
-              animationData={logoutAnimation}
-              loop
-              className="logout-pill-lottie"
-            />
-            <span>Logout</span>
-          </button>
-        </div>
+        <button className="initialize-btn" onClick={() => navigate("/start-scan")}>
+          <Play size={20} fill="currentColor" />
+          <span>Launch New Scan</span>
+        </button>
       </div>
 
       {error && (
-        <div className="banner-error">
-          <span> {error}</span>
+        <div className="dashboard-alert error">
+          <AlertTriangle size={18} />
+          <span>{error}</span>
         </div>
       )}
 
-      <div className="quick-row">
-        <button className="quick-card" onClick={() => navigate("/start-scan")}>
-          <div className="stat-icon">
-            <Lottie
-              animationData={startAnimation}
-              loop
-              className="stat-lottie"
-            />
+      {/* Stats Cards */}
+      <section className="metrics-grid">
+        <div className="metric-card total">
+          <div className="metric-icon">
+            <Activity size={24} />
           </div>
-          <div className="quick-text">
-            <div className="quick-title">Start Scan</div>
-            <div className="quick-sub">Launch a new security scan</div>
+          <div className="metric-info">
+            <label>Total Scans</label>
+            <h3>{dashboardLoading ? "..." : metrics.total}</h3>
           </div>
-        </button>
-        <button
-          className="quick-card"
-          onClick={() => navigate("/scan-history")}
-        >
-          <div className="stat-icon">
-            <Lottie
-              animationData={HistoryAnimation}
-              loop
-              className="stat-lottie"
-            />
-          </div>
-          <div className="quick-text">
-            <div className="quick-title">Scan History</div>
-            <div className="quick-sub">Review past scans</div>
-          </div>
-        </button>
-        <button className="quick-card" onClick={() => navigate("/about-tools")}>
-          <div className="stat-icon">
-            <Lottie
-              animationData={infoAnimation}
-              loop
-              className="stat-lottie"
-            />
-          </div>
-          <div className="quick-text">
-            <div className="quick-title">Learn Tools</div>
-            <div className="quick-sub">Know what each tool does</div>
-          </div>
-        </button>
-      </div>
+          <div className="metric-trend success">+12%</div>
+        </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Lottie
-              animationData={successAnimation}
-              loop
-              className="stat-lottie"
-            />
+        <div className="metric-card pending">
+          <div className="metric-icon">
+            <Clock size={24} />
           </div>
-          <div className="stat-value">
-            {dashboardLoading ? "…" : metrics.completed}
+          <div className="metric-info">
+            <label>Active Tasks</label>
+            <h3>{dashboardLoading ? "..." : metrics.pending}</h3>
           </div>
-          <div className="stat-label">Scans Completed</div>
+          <div className="metric-sub">Queue depth: {metrics.pending}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Lottie
-              animationData={pendingAnimation}
-              loop
-              className="stat-lottie"
-            />
-          </div>
-          <div className="stat-value">
-            {dashboardLoading ? "…" : metrics.pending}
-          </div>
-          <div className="stat-label">Pending / Running</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Lottie
-              animationData={foundAimation}
-              loop
-              className="stat-lottie"
-            />
-          </div>
-          <div className="stat-value">
-            {dashboardLoading ? "…" : metrics.vulnerabilities}
-          </div>
-          <div className="stat-label">Vulnerabilities Found</div>
-        </div>
-      </div>
 
-      <h3 className="section-title">Available Security Tools</h3>
-      <div className="tools-grid legacy-look">
-        {[
-          {
-            animation: nmapAnimation,
-            name: "Nmap",
-            desc: "Network discovery & port scanning",
-            value: "nmap",
-          },
-          {
-            animation: niktoAnimation,
-            name: "Nikto",
-            desc: "Web server vulnerability scanner",
-            value: "nikto",
-          },
-          {
-            animation: sqlAnimation,
-            name: "SQLMap",
-            desc: "SQL injection detection",
-            value: "sqlmap",
-          },
-          {
-            animation: sslAnimation,
-            name: "SSLScan",
-            desc: "SSL/TLS checker",
-            value: "sslscan",
-          },
-        ].map((t) => (
-          <div className="tool-card legacy" key={t.name}>
-            <div className="tool-header">
-              <div className="tool-icon legacy">
-                <Lottie
-                  animationData={t.animation}
-                  loop
-                  className="tool-lottie"
-                />
+        <div className="metric-card security">
+          <div className="metric-icon">
+            <Shield size={24} />
+          </div>
+          <div className="metric-info">
+            <label>Vulnerabilities</label>
+            <h3 className={metrics.vulnerabilities > 0 ? "text-error" : ""}>
+              {dashboardLoading ? "..." : metrics.vulnerabilities}
+            </h3>
+          </div>
+          <div className="metric-trend danger">Alert High</div>
+        </div>
+
+        <div className="metric-card success-rate">
+          <div className="metric-icon">
+            <CheckCircle2 size={24} />
+          </div>
+          <div className="metric-info">
+            <label>Success Rate</label>
+            <h3>{dashboardLoading ? "..." : `${metrics.successRate}%`}</h3>
+          </div>
+          <div className="progress-mini">
+            <div className="progress-fill" style={{ width: `${metrics.successRate}%` }}></div>
+          </div>
+        </div>
+      </section>
+
+      <div className="main-grid">
+        {/* Tools Section */}
+        <section className="tools-section glass-panel">
+          <div className="section-header">
+            <h3>Security Tools</h3>
+            <Link to="/about-tools" className="view-all">Details <ArrowUpRight size={14} /></Link>
+          </div>
+          <div className="tools-grid-v2">
+            {[
+              { name: "Nmap", animation: nmapAnimation, val: "nmap", desc: "Network Mapper", color: "cyan" },
+              { name: "Nikto", animation: niktoAnimation, val: "nikto", desc: "Web Scanner", color: "magenta" },
+              { name: "SQLMap", animation: sqlAnimation, val: "sqlmap", desc: "DB Injection", color: "gold" },
+              { name: "SSLScan", animation: sslAnimation, val: "sslscan", desc: "TLS Auditor", color: "green" }
+            ].map(t => (
+              <div key={t.name} className={`tool-card-v2 ${t.color}`} onClick={() => navigate(`/start-scan?tool=${t.val}`)}>
+                <div className="tool-animation">
+                  <Lottie animationData={t.animation} loop={true} />
+                </div>
+                <div className="tool-info">
+                  <h4>{t.name}</h4>
+                  <p>{t.desc}</p>
+                </div>
               </div>
-              <h3 className="tool-title legacy">{t.name}</h3>
-            </div>
-            <p className="tool-description legacy">{t.desc}</p>
-            <button
-              className="tool-button legacy"
-              onClick={() => navigate(`/start-scan?tool=${t.value}`)}
-            >
-              Use {t.name} Scanner
-            </button>
+            ))}
           </div>
-        ))}
-      </div>
+        </section>
 
-      <div className="recent-scans">
-        <h3>Recent Scans</h3>
-        {recent.length === 0 && !dashboardLoading && (
-          <p className="muted">No scans yet.</p>
-        )}
-        {recent.map((s) => (
-          <div className="scan-item" key={s._id}>
-            <div>
-              <strong>{s.targetUrl ?? s.url ?? "Unknown target"}</strong>
-              <p
-                style={{
-                  color: "#88ccff",
-                  fontSize: "0.9rem",
-                  marginTop: "5px",
-                }}
-              >
-                {(s.scanType ?? s.tool ?? "").toUpperCase() || "—"} •{" "}
-                {s.createdAt ? new Date(s.createdAt).toLocaleString() : "N/A"}
-              </p>
-            </div>
-            <div className={`scan-status status-${s.status}`}>
-              {s.status === "running" ? "In Progress" : s.status}
-            </div>
+        {/* Recent Activity */}
+        <section className="activity-section glass-panel">
+          <div className="section-header">
+            <h3>Recent Operations</h3>
+            <Link to="/scan-history" className="view-all">Full History <ArrowUpRight size={14} /></Link>
           </div>
-        ))}
+          <div className="activity-list">
+            {recent.length === 0 && !dashboardLoading && (
+              <div className="empty-activity">
+                <Shield size={40} opacity={0.1} />
+                <p>No recent scans detected</p>
+              </div>
+            )}
+            {recent.map((s) => (
+              <div className="activity-item" key={s._id} onClick={() => navigate(`/scan-result/${s._id}`)}>
+                <div className="activity-target">
+                  <span className="target-host">{s.targetUrl ?? s.url ?? "Unknown"}</span>
+                  <div className="target-meta">
+                    <span className="tool-tag">{(s.scanType ?? s.tool ?? "").toUpperCase()}</span>
+                    <span className="dot">•</span>
+                    <span className="time-ago">{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "N/A"}</span>
+                  </div>
+                </div>
+                <div className={`status-pill ${s.status}`}>
+                  {s.status}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -29,15 +29,9 @@ export const generateAIReportForScan = (scanId: string) => {
   return api.post(`/scan/${scanId}/report/generate`);
 };
 
-// Download report
-export const downloadReport = (scanId: string) => {
-  return api.get(`/scan/${scanId}/report/download`, {
-    responseType: "arraybuffer",
-  });
-};
-// View report
-export const viewReport = (scanId: string) => {
-  return api.get(`/scan/${scanId}/report/view`, {
-    responseType: "arraybuffer",
-  });
-};
+// Download report (returns JSON with text content - PDF generated client-side)
+export const downloadReport = (scanId: string) =>
+  api.get(`/scan/${scanId}/report/download`);
+// View report (returns JSON with content)
+export const viewReport = (scanId: string) =>
+  api.get(`/scan/${scanId}/report/view`);

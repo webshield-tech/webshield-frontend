@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Shield, Trash2, Clock, User, ExternalLink, ChevronLeft, Search } from "lucide-react";
 import { adminGetAllScans, adminDeleteScan } from "../../api/admin-api";
-import "../../styles/admin-dashboard.css";
+import "../../styles/admin.css";
 
 type Scan = {
   _id: string;
@@ -17,6 +19,7 @@ export default function AdminScans() {
   const [scans, setScans] = useState<Scan[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const load = async () => {
@@ -30,10 +33,7 @@ export default function AdminScans() {
         }
         setScans(Array.isArray(data.scans) ? data.scans : []);
       } catch (err: any) {
-        console.error("Load scans error:", err);
-        setError(
-          err?.response?.data?.error || err?.message || "Failed to load scans"
-        );
+        setError(err?.response?.data?.error || err?.message || "Failed to load scans");
       } finally {
         setLoading(false);
       }
@@ -42,90 +42,86 @@ export default function AdminScans() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    const ok = window.confirm(
-      "Delete this scan? This action cannot be undone."
-    );
-    if (!ok) return;
+    if (!window.confirm("Permanently delete this scan entry? This action cannot be undone.")) return;
     try {
       setDeleting(id);
       await adminDeleteScan(id);
       setScans((s) => s.filter((x) => x._id !== id));
     } catch (err: any) {
-      console.error("Delete scan error:", err);
-      alert(
-        err?.response?.data?.error || err?.message || "Failed to delete scan"
-      );
+      alert(err?.response?.data?.error || "Deletion protocol failure.");
     } finally {
       setDeleting(null);
     }
   };
 
-  const formatDate = (iso?: string) =>
-    iso ? new Date(iso).toLocaleString() : "";
+  const formatDate = (iso?: string) => iso ? new Date(iso).toLocaleString() : "";
 
   return (
-    <div className="admin-simple" style={{ paddingTop: 8 }}>
-      <div className="admin-simple-header">
-        <h1>All Scans</h1>
-        <p className="muted">
-          All recorded scans (admin view). You can delete a scan from here.
-        </p>
+    <div className="admin-page-v2">
+      <div className="admin-content-wrap">
+        <header className="admin-header-v2">
+          <div className="header-info">
+            <h1>Scan Repository</h1>
+            <p>Global registry of all operational security scans</p>
+          </div>
+          <nav className="admin-sub-nav">
+            <Link to="/admin" className="nav-link">Overview</Link>
+            <Link to="/admin/scans" className={`nav-link ${location.pathname === '/admin/scans' ? 'active' : ''}`}>Scans</Link>
+            <Link to="/admin/users" className="nav-link">Users</Link>
+          </nav>
+        </header>
+
+        {loading ? (
+          <div className="admin-loading">
+            <div className="cyber-loader"></div>
+            <span>Querying global database…</span>
+          </div>
+        ) : error ? (
+          <div className="alert-box error">{error}</div>
+        ) : (
+          <div className="admin-panel-card glass-panel full-width">
+            <div className="panel-head">
+              <Shield size={18} />
+              <h3>Global Operation Logs</h3>
+            </div>
+            <div className="admin-list">
+              {scans.length === 0 ? (
+                <div className="empty-state-mini">
+                  <p>No scans found in the system registry</p>
+                </div>
+              ) : (
+                scans.map((s) => (
+                  <div key={s._id} className="admin-list-item">
+                    <div className="item-info">
+                      <div className="target-row">
+                        <span className="title">{s.targetUrl || "Unknown Target"}</span>
+                        <a href={s.targetUrl} target="_blank" rel="noreferrer" className="link-icon"><ExternalLink size={14} /></a>
+                      </div>
+                      <div className="meta-row">
+                        <span className="tool-tag">{(s.scanType || "unknown").toUpperCase()}</span>
+                        <span className="dot">•</span>
+                        <span className="meta"><User size={12} /> {s.userId?.username || "Unknown Operator"}</span>
+                      </div>
+                    </div>
+                    <div className="item-side actions">
+                      <div className={`status-badge ${s.status}`}>{s.status}</div>
+                      <span className="time">{formatDate(s.createdAt)}</span>
+                      <button 
+                        className="admin-action-btn danger" 
+                        onClick={() => handleDelete(s._id)}
+                        disabled={deleting === s._id}
+                        title="Delete Entry"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
-
-      {loading ? (
-        <div className="admin-loading">Loading scans…</div>
-      ) : error ? (
-        <div className="admin-error">Error: {error}</div>
-      ) : scans.length === 0 ? (
-        <div className="muted">No scans found</div>
-      ) : (
-        <div className="list-card" style={{ padding: 8 }}>
-          <ul className="list-items">
-            {scans.map((s) => (
-              <li
-                key={s._id}
-                className="list-item"
-                style={{ alignItems: "center" }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div className="item-main">
-                    <a
-                      className="item-title link"
-                      href={s.targetUrl || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {s.targetUrl || "Unknown"}
-                    </a>
-                    <span className="item-meta"> — {s.scanType ?? "—"} </span>
-                  </div>
-                  <div className="item-meta">
-                    {formatDate(s.createdAt)} — by{" "}
-                    {s.userId?.username ?? s.userId ?? "unknown"}
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <button
-                    onClick={() => handleDelete(s._id)}
-                    disabled={deleting === s._id}
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 8,
-                      background: "#ff6b6b",
-                      color: "white",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {deleting === s._id ? "Deleting…" : "Delete"}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

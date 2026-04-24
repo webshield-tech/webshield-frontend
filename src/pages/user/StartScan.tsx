@@ -1,20 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { 
+  Shield, 
+  Globe, 
+  Zap, 
+  Terminal, 
+  Info, 
+  AlertCircle, 
+  ArrowRight, 
+  Loader2,
+  ChevronLeft
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { startScan } from "../../api/scan-api";
 import type { ScanTool } from "../../utils/types";
 import "../../styles/start-scan.css";
 import Lottie from "lottie-react";
-import checkAnimaton from "../../assets/icons/Success.json";
-import startAnimation from "../../assets/icons/start.json";
-import infoAnimation from "../../assets/icons/info.json";
-import clipboardAnimation from "../../assets/icons/History.json";
-import clockAnimation from "../../assets/icons/watch.json";
 import nmapAnimation from "../../assets/icons/nmap.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
 import sqlmapAnimation from "../../assets/icons/sql.json";
 import sslscanAnimation from "../../assets/icons/ssl.json";
+import autoAnimation from "../../assets/icons/Success.json"; 
+
 const StartScan = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,6 +32,7 @@ const StartScan = () => {
   const [tool, setTool] = useState<ScanTool>("nmap");
   const [scanLoading, setScanLoading] = useState(false);
   const [error, setError] = useState("");
+
   useEffect(() => {
     const toolParam = searchParams.get("tool");
     if (toolParam) {
@@ -34,409 +43,195 @@ const StartScan = () => {
         ssl: "sslscan",
         sslscan: "sslscan",
       };
-
       const mappedTool = toolMap[toolParam];
-      if (mappedTool) {
-        setTool(mappedTool);
-      }
+      if (mappedTool) setTool(mappedTool);
     }
   }, [searchParams]);
 
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    {
-      id: "nmap",
-      name: "Nmap",
-      desc: "Network discovery & port scanning",
-      animation: nmapAnimation,
-      color: "#00d4ff",
-    },
-    {
-      id: "nikto",
-      name: "Nikto",
-      desc: "Web server vulnerability scanner",
-      animation: niktoAnimation,
-      color: "#ff6b6b",
-    },
-    {
-      id: "sqlmap",
-      name: "SQLMap",
-      desc: "SQL injection detection",
-      animation: sqlmapAnimation,
-      color: "#ffd54f",
-    },
-    {
-      id: "sslscan",
-      name: "SSLScan",
-      desc: "SSL/TLS configuration checker",
-      animation: sslscanAnimation,
-      color: "#69f0ae",
-    },
+    { id: "auto", name: "Auto-Scan", desc: "Full Security Audit", anim: autoAnimation, color: "#fff", tag: "ALL-IN-ONE" },
+    { id: "nmap", name: "Nmap", desc: "Network Reconnaissance", anim: nmapAnimation, color: "#00f2ff", tag: "RECON" },
+    { id: "nikto", name: "Nikto", desc: "Web Server Scanner", anim: niktoAnimation, color: "#ff0055", tag: "WEB VULN" },
+    { id: "sqlmap", name: "SQLMap", desc: "SQL Injection Probe", anim: sqlmapAnimation, color: "#ffd54f", tag: "DB AUDIT" },
+    { id: "sslscan", name: "SSLScan", desc: "TLS Configuration", anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION" },
   ] as const;
-
-  const isValidUrl = (urlString: string) => {
-    try {
-      const u = new URL(urlString.trim());
-      return (
-        (u.protocol === "http:" || u.protocol === "https:") &&
-        !/https?:\/\/.+https?:\/\//.test(urlString.trim()) &&
-        !urlString.trim().includes(" ")
-      );
-    } catch {
-      return false;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!user) {
-      setError("User session not ready. Please refresh the page.");
-      return;
-    }
-    if (user.usedScan >= user.scanLimit) {
-      setError(
-        `Scan limit reached. You've used ${Math.min(
-          user.usedScan,
-          user.scanLimit
-        )} of ${user.scanLimit} scans.`
-      );
+    if (user && user.usedScan >= user.scanLimit) {
+      setError("Quota Exceeded: You have reached your daily scan limit.");
       return;
     }
 
-    if (!url.trim()) {
-      setError("Please enter a target URL");
-      return;
-    }
-
-    if (!isValidUrl(url)) {
-      setError("Please enter a valid URL starting with http:// or https://");
-      return;
-    }
-    if (/https?:\/\/.+https?:\/\//.test(url.trim())) {
-      setError(
-        "URL contains multiple protocols. Please enter a valid single URL (e.g., https://example.com)"
-      );
+    if (!url.trim() || !url.startsWith("http")) {
+      setError("Invalid Target: Please provide a valid URL (starting with http:// or https://).");
       return;
     }
 
     try {
       setScanLoading(true);
-
-      const mappedScanType: ScanTool | "ssl" =
-        tool === "sslscan" ? "ssl" : tool;
-
-      const scanTarget = url.trim().replace(/\/+$/, "");
-
-      const scanData = {
-        targetUrl: scanTarget,
-        scanType: mappedScanType,
-      };
-
+      const scanData = { targetUrl: url.trim().replace(/\/+$/, ""), scanType: tool === "sslscan" ? "ssl" : tool };
       const response = await startScan(scanData);
 
       if (response?.data?.success) {
         await refreshUser();
-
         const scanId = response.data.scanId || response.data.scan?._id;
-
-        if (scanId) {
-          navigate(`/scan-progress/${scanId}`);
-        } else {
-          setError(
-            "Scan started successfully, but scan ID was not returned. Please check scan history."
-          );
-        }
+        if (scanId) navigate(`/scan-progress/${scanId}`);
+        else setError("System Error: Scan initiation successful but ID not received.");
       } else {
-        setError(
-          response?.data?.error || "Failed to start scan. Please try again."
-        );
+        setError(response?.data?.error || "Initialization Failed: The scan could not be started.");
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.error?.toLowerCase() || "";
-
-      if (msg.includes("already scanning") || msg.includes("in progress")) {
-        setError(
-          "You already have a scan in progress. Please wait for it to complete."
-        );
-      } else if (msg.includes("limit") || msg.includes("exceeded")) {
-        setError("Scan limit reached. Please try again later.");
-      } else if (
-        msg.includes("invalid url") ||
-        msg.includes("invalid target")
-      ) {
-        setError("Invalid target URL. Please check the format.");
-      } else if (msg.includes("timeout") || msg.includes("unreachable")) {
-        setError("Target is unreachable. Please check the URL and try again.");
-      } else if (err?.message?.includes("Network Error")) {
-        setError("Network error. Please check your internet connection.");
-      } else {
-        setError(
-          err?.response?.data?.error ||
-            "Failed to start scan. Please try again."
-        );
-      }
+      setError(err?.response?.data?.error || "Target Unreachable: Please check the URL and try again.");
     } finally {
       setScanLoading(false);
     }
   };
-  const usedScanClamped = user ? Math.min(user.usedScan, user.scanLimit) : 0;
+
   const scanLimit = user?.scanLimit || 0;
-  const scanUsagePercent =
-    scanLimit > 0
-      ? Math.min(Math.round((usedScanClamped / scanLimit) * 100), 100)
-      : 0;
+  const usedScans = user ? Math.min(user.usedScan, scanLimit) : 0;
+  const usagePercent = scanLimit > 0 ? (usedScans / scanLimit) * 100 : 0;
+
   return (
-    <div className="scan-container">
-      <div className="scan-card">
-        <div className="scan-header">
-          <h2 className="text-gradient">Start Vulnerability Scan</h2>
-          <p className="scan-subtitle">
-            Scan websites for security vulnerabilities using professional tools
-          </p>
-
-          {user && (
-            <div className="scan-usage">
-              <div className="usage-label">
-                Your Scan Usage:
-                <span>
-                  {usedScanClamped}/{scanLimit}
-                </span>
-              </div>
-              <div className="usage-bar">
-                <div
-                  className="usage-fill"
-                  style={{
-                    width: `${scanUsagePercent}%`,
-                    background:
-                      scanUsagePercent >= 90
-                        ? "#ff6b6b"
-                        : scanUsagePercent >= 70
-                        ? "#ffd54f"
-                        : "#00d4ff",
-                  }}
-                ></div>
-              </div>
-              <div className="usage-percent">{scanUsagePercent}% used</div>
-            </div>
-          )}
-        </div>
-
-        {error && (
-          <div className="scan-error">
-            <div className="error-text">{error}</div>
+    <div className="scan-page-premium">
+      <div className="noise-overlay"></div>
+      
+      <div className="scan-content-wrap">
+        <header className="scan-header-v2">
+          <Link to="/dashboard" className="back-btn-v2">
+            <ChevronLeft size={20} />
+            <span>Dashboard</span>
+          </Link>
+          <div className="header-text">
+            <h1>Initialize Security Scan</h1>
+            <p>Target Audit Protocol v3.0 // Select your module and target URL</p>
           </div>
-        )}
+        </header>
 
-        <form className="scan-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">
-              Target Website URL
-              <span
-                className="tooltip"
-                data-tooltip="Enter the full URL of the website you want to scan"
-              ></span>
-            </label>
-            <div className="input-with-icon">
-              <input
-                type="text"
-                placeholder="https://example.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="scan-input"
-                disabled={scanLoading}
-              />
-            </div>
-            <div className="input-hint">
-              Enter full URL with protocol (http:// or https://)
-            </div>
-          </div>
+        <div className="scan-main-grid-v2">
+          {/* Main Form Section */}
+          <div className="form-panel glass-panel">
+            {error && (
+              <div className="alert-box error">
+                <AlertCircle size={20} />
+                <span>{error}</span>
+              </div>
+            )}
 
-          <div className="form-group">
-            <label className="form-label">Select Security Tool</label>
-            <p className="form-description">
-              Choose the appropriate tool for your security testing needs
-            </p>
-
-            <div className="tools-grid">
-              {tools.map((t) => (
-                <div
-                  key={t.id}
-                  className={`tool-card ${tool === t.id ? "selected" : ""}`}
-                  onClick={() => !scanLoading && setTool(t.id)}
-                  style={{
-                    borderColor:
-                      tool === t.id ? t.color : "rgba(255, 255, 255, 0.08)",
-                    background:
-                      tool === t.id
-                        ? `${t.color}15`
-                        : "rgba(255, 255, 255, 0.03)",
-                  }}
-                >
-                  <div className="tool-icon" style={{ color: t.color }}>
-                    <Lottie
-                      animationData={t.animation}
-                      loop
-                      className="tool-lottie-animation"
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </div>
-                  <div className="tool-content">
-                    <div className="tool-header">
-                      <h4>{t.name}</h4>
-                      {tool === t.id && (
-                        <span className="selected-badge">Selected</span>
-                      )}
-                    </div>
-                    <p className="tool-desc">{t.desc}</p>
+            <form className="scan-form-v2" onSubmit={handleSubmit}>
+              <div className="input-group">
+                <div className="label-row">
+                  <label>Target Identifier (URL)</label>
+                  <div className="usage-indicator">
+                    Quota: <strong>{usedScans} / {scanLimit}</strong>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="url-input-wrap">
+                  <Globe className="input-icon" size={20} />
+                  <input
+                    type="text"
+                    placeholder="https://example.com"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    disabled={scanLoading}
+                    required
+                  />
+                </div>
+                <div className="usage-bar">
+                  <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
+                </div>
+              </div>
+
+              <div className="module-group">
+                <label>Security Module Selection</label>
+                <div className="module-selector">
+                  {tools.map((t) => (
+                    <div
+                      key={t.id}
+                      className={`module-card ${tool === t.id ? "selected" : ""}`}
+                      onClick={() => !scanLoading && setTool(t.id)}
+                      style={{ "--accent-color": t.color } as any}
+                    >
+                      <div className="module-tag">{t.tag}</div>
+                      <div className="module-icon">
+                        <Lottie animationData={t.anim} loop className="lottie-mini" />
+                      </div>
+                      <div className="module-info">
+                        <h3>{t.name}</h3>
+                        <p>{t.desc}</p>
+                      </div>
+                      <div className="selection-indicator">
+                        <Zap size={14} fill="currentColor" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim()}>
+                {scanLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={22} />
+                    <span>Launching Engine...</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield size={22} />
+                    <span>Execute Scan Sequence</span>
+                    <ArrowRight size={22} />
+                  </>
+                )}
+              </button>
+            </form>
           </div>
 
-          <div className="tool-info">
-            <h4>
-              <div className="info-icon-container">
-                <Lottie
-                  animationData={infoAnimation}
-                  loop
-                  className="small-lottie"
-                />
+          {/* Info Panel */}
+          <aside className="info-panel-v2">
+            <div className="info-card glass-panel">
+              <div className="card-header">
+                <Info size={18} className="text-primary" />
+                <span>Module Specifications</span>
               </div>
-              About {tools.find((t) => t.id === tool)?.name}
-            </h4>
-            <p>
-              {tool === "nmap" &&
-                "Nmap discovers hosts/services by sending packets and analyzing responses."}
-              {tool === "nikto" &&
-                "Nikto scans web servers for dangerous files and misconfigurations."}
-              {tool === "sqlmap" &&
-                "SQLMap automates detecting and exploiting SQL injection flaws."}
-              {tool === "sslscan" &&
-                "SSLScan checks SSL/TLS cipher suites and protocol support."}
-            </p>
-            <div className="info-tip">
-              <div className="clock-icon-container">
-                <Lottie
-                  animationData={clockAnimation}
-                  loop
-                  className="small-lottie"
-                />
-              </div>
-              Estimated scan time:{" "}
-              {tool === "nmap"
-                ? "2-3 minutes"
-                : tool === "nikto"
-                ? "3-5 minutes"
-                : tool === "sqlmap"
-                ? "4-6 minutes"
-                : "1-2 minutes"}
-            </div>
-          </div>
-          {/* Auto-selection notification */}
-          {searchParams.get("tool") && (
-            <div className="auto-select-notice">
-              <span style={{ color: "#00d4ff", marginRight: "8px" }}>✓</span>
-              Tool auto-selected from dashboard
-            </div>
-          )}
-          <div className="form-actions">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => navigate("/dashboard")}
-              disabled={scanLoading}
-            >
-              Back to Dashboard
-            </button>
-
-            <button
-              type="submit"
-              className="scan-button"
-              disabled={scanLoading || !url.trim()}
-            >
-              {scanLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Initializing Scan...
-                </>
-              ) : (
-                <>
-                  <div className="button-icon-container">
-                    <Lottie
-                      animationData={startAnimation}
-                      loop
-                      className="small-lottie"
-                    />
+              <div className="module-details">
+                <h2 style={{ color: tools.find(t => t.id === tool)?.color }}>
+                  {tools.find(t => t.id === tool)?.name} Active
+                </h2>
+                <p className="desc-text">
+                  {tool === "auto" && "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap for a comprehensive vulnerability report."}
+                  {tool === "nmap" && "Advanced port reconnaissance and OS fingerprinting engine. Scans all common TCP ports and identifies running services."}
+                  {tool === "nikto" && "Comprehensive web server scanner. Identifies 6700+ dangerous files/programs, outdated versions, and server configuration issues."}
+                  {tool === "sqlmap" && "Automatic SQL injection detection and database takeover tool. Probes for various injection types including boolean, error, and time-based."}
+                  {tool === "sslscan" && "SSL/TLS security auditor. Evaluates cipher suites, certificate validity, and identifies weak encryption protocols."}
+                </p>
+                <div className="stat-grid">
+                  <div className="stat-item">
+                    <label>Est. Duration</label>
+                    <strong>{tool === "auto" ? "10-15m" : tool === "nmap" ? "2-3m" : tool === "nikto" ? "3-5m" : tool === "sqlmap" ? "4-6m" : "1-2m"}</strong>
                   </div>
-                  Start Security Scan
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+                  <div className="stat-item">
+                    <label>Intensity</label>
+                    <strong>{tool === "auto" || tool === "nmap" || tool === "sqlmap" ? "High" : "Medium"}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div className="important-notes">
-          <h4 className="notes-title">
-            <div className="notes-icon-container">
-              <Lottie
-                animationData={clipboardAnimation}
-                loop
-                className="small-lottie"
-              />
-            </div>
-            Important Legal & Ethical Notes
-          </h4>
-          <div className="notes-content">
-            <div className="note-item">
-              <div className="note-icon-container">
-                <Lottie
-                  animationData={checkAnimaton}
-                  loop={false}
-                  autoplay={true}
-                  className="small-lottie checkmark"
-                />
+            <div className="info-card warning glass-panel">
+              <div className="card-header">
+                <AlertCircle size={18} className="text-accent" />
+                <span>Engagement Rules</span>
               </div>
-              <span>
-                Only scan websites you own or have explicit permission to test
-              </span>
+              <ul className="rules-list">
+                <li>Explicit authorization is required for target.</li>
+                <li>All scan operations are logged to your identity.</li>
+                <li>Avoid aggressive scanning on production systems.</li>
+              </ul>
             </div>
-            <div className="note-item">
-              <div className="note-icon-container">
-                <Lottie
-                  animationData={checkAnimaton}
-                  loop={false}
-                  autoplay={true}
-                  className="small-lottie checkmark"
-                />
-              </div>
-              <span>
-                This tool is for educational and authorized security testing
-                only
-              </span>
-            </div>
-            <div className="note-item">
-              <Lottie
-                animationData={checkAnimaton}
-                loop={false}
-                autoplay={true}
-                className="small-lottie checkmark"
-              />
-              <span>Scans may be logged by target servers and your ISP</span>
-            </div>
-            <div className="note-item">
-              <Lottie
-                animationData={checkAnimaton}
-                loop={false}
-                autoplay={true}
-                className="small-lottie checkmark"
-              />
-              <span>Respect rate limits and avoid aggressive scanning</span>
-            </div>
-          </div>
+          </aside>
         </div>
       </div>
     </div>

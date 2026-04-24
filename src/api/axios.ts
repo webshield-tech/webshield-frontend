@@ -1,6 +1,6 @@
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_URL || 
-  "https://webshield-backend-e051bc08c935.herokuapp.com/";
+  "http://localhost:5000/";
 
 console.log('API Base URL:', BASE_URL);
 
@@ -21,6 +21,11 @@ api.interceptors.request.use(
         ...config.params,
         _t: Date.now()
       };
+    }
+    
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     if (import.meta.env.DEV) {

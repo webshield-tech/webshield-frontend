@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Terminal, ShieldCheck, Activity, Cpu, ArrowRight } from "lucide-react";
 import "./HeroSection.css";
 
 const HeroSection = () => {
@@ -6,14 +7,15 @@ const HeroSection = () => {
     <div className="hero-section">
       {/* Animated background elements */}
       <div className="hero-bg">
-        <div className="bg-grid"></div>
-        <div className="bg-orbits">
-          <div className="orbit orbit-1"></div>
-          <div className="orbit orbit-2"></div>
-          <div className="orbit orbit-3"></div>
+        <div className="bg-perspective-grid"></div>
+        <div className="bg-data-streams">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="data-stream"></div>
+          ))}
         </div>
+        <div className="bg-glow-orb"></div>
         <div className="bg-particles">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(30)].map((_, i) => (
             <div key={i} className="particle"></div>
           ))}
         </div>
@@ -21,31 +23,71 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="hero-content">
+        <div className="hero-top-badge">
+          <span className="badge-dot"></span>
+          <span className="badge-text">System Online // Secure Protocol</span>
+        </div>
+        
         <div className="hero-text">
-          <h1 className="hero-title">
-            <span className="title-gradient">WebShield</span>
-            <span className="title-sub">Website Vulnerability Scanner</span>
+          <h1 className="hero-title" data-text="VULN SPECTRA">
+            <span className="title-glitch-wrap">
+              <span className="title-main">VULN SPECTRA</span>
+              <span className="title-glitch title-glitch-1">VULN SPECTRA</span>
+              <span className="title-glitch title-glitch-2">VULN SPECTRA</span>
+            </span>
+            <span className="title-sub">Next-Gen Vulnerability Scanner</span>
           </h1>
           
           <p className="hero-description">
-            A Cyber Security platform to test your website Vulnerabilities
-
+            Enterprise-grade security infrastructure for the modern web. 
+            Automated scanning, real-time threat intelligence, and comprehensive security audits.
           </p>
           
-          <div className="hero-stats">
-            <div className="stat">
-              <div className="stat-number">4</div>
-              <div className="stat-label">Security Tools</div>
+          <div className="hero-stats-premium">
+            <div className="stat-card">
+              <div className="stat-icon"><Activity size={20} /></div>
+              <div className="stat-info">
+                <div className="stat-value">99.9%</div>
+                <div className="stat-label">ACCURACY</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon"><Cpu size={20} /></div>
+              <div className="stat-info">
+                <div className="stat-value">50ms</div>
+                <div className="stat-label">LATENCY</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon"><ShieldCheck size={20} /></div>
+              <div className="stat-info">
+                <div className="stat-value">AES-256</div>
+                <div className="stat-label">ENCRYPTION</div>
+              </div>
             </div>
           </div>
           
-          <div className="hero-actions">
-            <Link to="/signup" className="cta-button primary">
-              <span className="button-text">Get Started Free</span>
-              <span className="button-arrow">→</span>
+          <div className="hero-actions-premium">
+            <Link to="/signup" className="hero-btn-primary">
+              <Terminal size={18} />
+              <span className="btn-text">INITIALIZE_SCAN</span>
+              <ArrowRight size={18} className="btn-arrow" />
             </Link>
-            
+            <Link to="/login" className="hero-btn-secondary">
+              <span className="btn-text">ACCESS_DASHBOARD</span>
+            </Link>
           </div>
+        </div>
+      </div>
+
+      <div className="scroll-indicator-premium">
+        <div className="mouse">
+          <div className="wheel"></div>
+        </div>
+        <div className="arrows">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
     </div>

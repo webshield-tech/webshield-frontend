@@ -6,7 +6,7 @@ function saveTextAsPdf(filename: string, content: string) {
 
   // List of all headings
   const sectionHeadings = [
-    "WEBSHIELD SECURITY SCAN REPORT",
+    "VULN SPECTRA SECURITY SCAN REPORT",
     "Scan Information",
     "AI Security Analysis",
     "Raw Scan Results",

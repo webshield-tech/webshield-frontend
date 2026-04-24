@@ -1,0 +1,224 @@
+.history-v2 {
+  padding: 40px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.history-header-v2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  gap: 32px;
+}
+
+.title-area h1 {
+  font-size: 2.2rem;
+  font-family: 'Orbitron', sans-serif;
+  background: linear-gradient(to right, #fff, var(--cyber-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 12px;
+}
+
+.title-area p {
+  color: var(--cyber-text-dim);
+  font-size: 0.95rem;
+}
+
+.search-area {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  max-width: 500px;
+}
+
+.search-bar-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.search-bar-wrap .search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cyber-text-dim);
+}
+
+.search-bar-wrap input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.search-bar-wrap input:focus {
+  border-color: var(--cyber-primary);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+}
+
+.filter-options-btn {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: var(--cyber-text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-options-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* History Grid */
+.history-grid-v2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.history-card-v2 {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.history-card-v2:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(10px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #333;
+}
+
+.history-card-v2.completed .card-accent { background: var(--cyber-success); }
+.history-card-v2.running .card-accent { background: var(--cyber-primary); }
+.history-card-v2.failed .card-accent { background: var(--cyber-error); }
+
+.card-body {
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.target-url {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.target-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--cyber-text-dim);
+}
+
+.tool-name {
+  color: var(--cyber-primary);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.timestamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-end {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.status-tag {
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-tag.completed { background: rgba(0, 255, 157, 0.1); color: var(--cyber-success); }
+.status-tag.running { background: rgba(0, 242, 255, 0.1); color: var(--cyber-primary); }
+.status-tag.failed { background: rgba(255, 77, 77, 0.1); color: var(--cyber-error); }
+
+.icon-arrow {
+  color: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.history-card-v2:hover .icon-arrow {
+  color: var(--cyber-primary);
+  transform: translateX(5px);
+}
+
+/* States */
+.loading-state, .empty-state {
+  padding: 80px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.new-scan-btn {
+  margin-top: 12px;
+  padding: 12px 24px;
+  background: var(--cyber-primary);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .history-header-v2 {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .search-area {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .card-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .card-end {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

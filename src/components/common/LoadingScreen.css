@@ -1,14 +1,10 @@
+/* LoadingScreen.css - PREMIUM CYBER UI */
 .cyber-loading-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #030a10;
-  background-image: 
-    radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
-  background-size: 100% 100%, 30px 30px, 30px 30px;
+  background-color: var(--cyber-bg);
   position: relative;
   overflow: hidden;
 }
@@ -17,7 +13,7 @@
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(180deg, rgba(0,212,255,0) 0%, rgba(0,212,255,0.05) 50%, rgba(0,212,255,0) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(var(--cyber-primary-rgb), 0.05) 50%, transparent 100%);
   animation: scanline 4s linear infinite;
   pointer-events: none;
 }
@@ -53,9 +49,9 @@
   position: absolute;
   width: 80px;
   height: 80px;
-  background: rgba(0, 212, 255, 0.1);
-  border: 2px solid #00d4ff;
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5) inset, 0 0 20px rgba(0, 212, 255, 0.2);
+  background: rgba(var(--cyber-primary-rgb), 0.1);
+  border: 2px solid var(--cyber-primary);
+  box-shadow: 0 0 15px var(--cyber-primary-glow) inset, 0 0 20px rgba(var(--cyber-primary-rgb), 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +61,7 @@
   content: "";
   width: 40%;
   height: 40%;
-  border: 1px solid rgba(0, 255, 157, 0.5);
+  border: 1px solid rgba(var(--cyber-success-rgb), 0.5);
 }
 
 .front  { transform: translateZ(40px); }
@@ -73,7 +69,7 @@
 .right  { transform: rotateY(90deg) translateZ(40px); }
 .left   { transform: rotateY(-90deg) translateZ(40px); }
 .top    { transform: rotateX(90deg) translateZ(40px); }
-.bottom { transform: rotateX(-90deg) translateZ(40px); background: rgba(0, 212, 255, 0.3); box-shadow: 0 0 40px #00d4ff; }
+.bottom { transform: rotateX(-90deg) translateZ(40px); background: rgba(var(--cyber-primary-rgb), 0.3); box-shadow: 0 0 40px var(--cyber-primary); }
 
 @keyframes rotateCube {
   0% { transform: rotateX(-20deg) rotateY(0deg); }
@@ -85,10 +81,10 @@
   font-family: 'Orbitron', sans-serif;
   color: #fff;
   font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: 4px;
+  font-weight: 900;
+  letter-spacing: 6px;
   position: relative;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4);
+  text-shadow: 0 0 10px var(--cyber-primary-glow), 0 0 20px rgba(var(--cyber-primary-rgb), 0.4);
   margin-bottom: 1.5rem;
 }
 
@@ -103,14 +99,14 @@
 
 .glitch-text::before {
   left: 2px;
-  text-shadow: -2px 0 #ff00c1;
+  text-shadow: -2px 0 var(--cyber-accent);
   clip: rect(44px, 450px, 56px, 0);
   animation: glitch-anim 5s infinite linear alternate-reverse;
 }
 
 .glitch-text::after {
   left: -2px;
-  text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
+  text-shadow: -2px 0 var(--cyber-primary), 2px 2px var(--cyber-accent);
   clip: rect(44px, 450px, 56px, 0);
   animation: glitch-anim2 5s infinite linear alternate-reverse;
 }
@@ -136,39 +132,37 @@
 /* PROGRESS BAR */
 .cyber-progress-bar {
   width: 300px;
-  height: 4px;
-  background: rgba(0, 212, 255, 0.2);
-  border-radius: 2px;
-  margin-bottom: 1rem;
+  height: 2px;
+  background: rgba(var(--cyber-primary-rgb), 0.1);
+  margin-bottom: 1.5rem;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
 }
 
 .cyber-progress-fill {
   height: 100%;
-  background: #00d4ff;
+  background: var(--cyber-primary);
   width: 0%;
   animation: progressFill 2s ease-in-out infinite;
-  box-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
+  box-shadow: 0 0 10px var(--cyber-primary), 0 0 20px var(--cyber-primary);
 }
 
 @keyframes progressFill {
   0% { width: 0%; transform: translateX(-10%); }
-  50% { width: 40%; }
+  50% { width: 60%; }
   100% { width: 100%; transform: translateX(110%); }
 }
 
 .cyber-status-text {
-  font-family: 'Rajdhani', sans-serif;
-  color: #00d4ff;
-  font-size: 0.9rem;
+  font-family: 'Fira Code', monospace;
+  color: var(--cyber-primary);
+  font-size: 0.75rem;
   letter-spacing: 2px;
   opacity: 0.8;
-  animation: pulse 1.5s infinite alternate;
+  animation: pulseStatus 1.5s infinite alternate;
 }
 
-@keyframes pulse {
+@keyframes pulseStatus {
   0% { opacity: 0.4; }
-  100% { opacity: 1; text-shadow: 0 0 8px #00d4ff; }
+  100% { opacity: 1; text-shadow: 0 0 8px var(--cyber-primary-glow); }
 }

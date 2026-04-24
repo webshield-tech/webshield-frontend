@@ -15,11 +15,11 @@ const LoadingScreen: React.FC = () => {
             <div className="face bottom"></div>
           </div>
         </div>
-        <h2 className="glitch-text" data-text="INITIALIZING WEBSHIELD">INITIALIZING WEBSHIELD</h2>
+        <h2 className="glitch-text" data-text="Vuln Spectra OS v3.0">Vuln Spectra OS v3.0</h2>
         <div className="cyber-progress-bar">
           <div className="cyber-progress-fill"></div>
         </div>
-        <p className="cyber-status-text">ESTABLISHING SECURE CONNECTION...</p>
+        <p className="cyber-status-text">Initializing secure protocols...</p>
       </div>
     </div>
   );

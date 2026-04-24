@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Users, History, Edit3, Shield, Clock, ExternalLink, AlertCircle } from "lucide-react";
 import {
   adminGetStats,
   adminGetUserHistory,
   adminUpdateUserLimit,
+  adminToggleUserBlock
 } from "../../api/admin-api";
-import "../../styles/admin-dashboard.css";
+import "../../styles/admin.css";
 
 type RecentUser = {
   userId?: string;
@@ -13,6 +16,7 @@ type RecentUser = {
   username: string;
   email?: string;
   createdAt?: string;
+  isBlocked?: boolean;
 };
 type Scan = {
   _id: string;
@@ -26,11 +30,10 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<RecentUser[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedUserScans, setSelectedUserScans] = useState<Scan[] | null>(
-    null
-  );
+  const [selectedUserScans, setSelectedUserScans] = useState<Scan[] | null>(null);
   const [selectedUser, setSelectedUser] = useState<RecentUser | null>(null);
   const [updating, setUpdating] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const load = async () => {
@@ -42,17 +45,9 @@ export default function AdminUsers() {
         if (!data || data.success === false) {
           throw new Error(data?.error || "Failed to load users");
         }
-
-        setUsers(
-          Array.isArray(data.recentUsers)
-            ? data.recentUsers.map((u: any) => ({ ...u }))
-            : []
-        );
+        setUsers(Array.isArray(data.recentUsers) ? data.recentUsers : []);
       } catch (err: any) {
-        console.error("Load users error:", err);
-        setError(
-          err?.response?.data?.error || err?.message || "Failed to load users"
-        );
+        setError(err?.response?.data?.error || err?.message || "Failed to load users");
       } finally {
         setLoading(false);
       }
@@ -72,160 +67,151 @@ export default function AdminUsers() {
       }
       setSelectedUserScans(Array.isArray(data.scans) ? data.scans : []);
     } catch (err: any) {
-      console.error("User history error:", err);
-      alert(
-        err?.response?.data?.error ||
-          err?.message ||
-          "Failed to load user history"
-      );
+      alert(err?.response?.data?.error || "Failed to retrieve history logs.");
     }
   };
 
   const handleUpdateLimit = async (user: RecentUser) => {
     const id = user._id || (user as any).userId;
-    const input = window.prompt(
-      `Set new scan limit for ${user.username} (leave empty to cancel):`,
-      "10"
-    );
+    const input = window.prompt(`Set new scan quota for ${user.username}:`, "10");
     if (!input) return;
     const val = Number(input);
     if (Number.isNaN(val) || val < 0) {
-      alert("Please enter a valid non-negative number");
+      alert("Invalid input. Please enter a positive integer.");
       return;
     }
-
     try {
       setUpdating(true);
       const res = await adminUpdateUserLimit(id, val);
       if (res.data?.success) {
-        alert("Scan limit updated");
+        alert("Scan quota updated successfully.");
       } else {
-        throw new Error(res.data?.error || "Failed to update");
+        throw new Error(res.data?.error || "Update failed");
       }
     } catch (err: any) {
-      console.error("Update limit error:", err);
-      alert(
-        err?.response?.data?.error ||
-          err?.message ||
-          "Failed to update scan limit"
-      );
+      alert(err?.response?.data?.error || "Failed to modify quota.");
     } finally {
       setUpdating(false);
     }
   };
 
-  const formatDate = (iso?: string) =>
-    iso ? new Date(iso).toLocaleString() : "";
+  const handleToggleBlock = async (user: RecentUser) => {
+    const id = user._id || (user as any).userId;
+    const action = user.isBlocked ? "unblock" : "block";
+    const confirm = window.confirm(`Are you sure you want to ${action} operator ${user.username}?`);
+    if (!confirm) return;
+    
+    try {
+      setUpdating(true);
+      const res = await adminToggleUserBlock(id);
+      if (res.data?.success) {
+        setUsers(users.map(u => {
+          const uid = u._id || (u as any).userId;
+          if (uid === id) {
+            return { ...u, isBlocked: !u.isBlocked };
+          }
+          return u;
+        }));
+        alert(`Operator ${action}ed successfully.`);
+      } else {
+        throw new Error(res.data?.error || "Failed to toggle block status");
+      }
+    } catch (err: any) {
+      alert(err?.response?.data?.error || "Action failed.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const formatDate = (iso?: string) => iso ? new Date(iso).toLocaleString() : "";
 
   return (
-    <div className="admin-simple" style={{ paddingTop: 8 }}>
-      <div className="admin-simple-header">
-        <h1>Users</h1>
-        <p className="muted">
-          Recent users (quick access). Select a user to view scan history or
-          update limits.
-        </p>
-      </div>
+    <div className="admin-page-v2">
+      <div className="admin-content-wrap">
+        <header className="admin-header-v2">
+          <div className="header-info">
+            <h1>Operator Registry</h1>
+            <p>Managing system access and scan quotas</p>
+          </div>
+          <nav className="admin-sub-nav">
+            <Link to="/admin" className="nav-link">Overview</Link>
+            <Link to="/admin/scans" className="nav-link">Scans</Link>
+            <Link to="/admin/users" className={`nav-link ${location.pathname === '/admin/users' ? 'active' : ''}`}>Users</Link>
+          </nav>
+        </header>
 
-      {loading ? (
-        <div className="admin-loading">Loading users…</div>
-      ) : error ? (
-        <div className="admin-error">Error: {error}</div>
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            gap: 16,
-            alignItems: "flex-start",
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ minWidth: 320, flex: "0 0 420px" }}>
-            <div className="list-card">
-              <h3>Recent users</h3>
-              <ul className="list-items">
-                {users.map((u: any, i) => (
-                  <li
-                    key={u._id || i}
-                    className="list-item"
-                    style={{ alignItems: "center" }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <div className="item-main">
-                        <span className="item-title">{u.username}</span>
-                        <span className="item-meta"> — {u.email ?? "—"}</span>
-                      </div>
-                      <div className="item-meta">{formatDate(u.createdAt)}</div>
+        {loading ? (
+          <div className="admin-loading">
+            <div className="cyber-loader"></div>
+            <span>Fetching user nodes…</span>
+          </div>
+        ) : error ? (
+          <div className="alert-box error">{error}</div>
+        ) : (
+          <div className="admin-grid-layout">
+            <section className="admin-panel-card glass-panel">
+              <div className="panel-head">
+                <Users size={18} />
+                <h3>Registered Operators</h3>
+              </div>
+              <div className="admin-list">
+                {users.map((u, i) => (
+                  <div key={u._id || i} className="admin-list-item">
+                    <div className="item-info">
+                      <span className="title">{u.username}</span>
+                      <span className="meta">{u.email}</span>
+                      <span className="time">Joined: {formatDate(u.createdAt)}</span>
                     </div>
-
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button
-                        onClick={() => viewHistory(u)}
-                        style={{ padding: "6px 10px", borderRadius: 8 }}
+                    <div className="item-side actions">
+                      <button className="admin-action-btn" onClick={() => viewHistory(u)} title="View Logs"><Clock size={16} /></button>
+                      <button className="admin-action-btn" onClick={() => handleUpdateLimit(u)} title="Update Quota"><Edit3 size={16} /></button>
+                      <button 
+                        className={`admin-action-btn ${u.isBlocked ? 'blocked' : 'active'}`} 
+                        onClick={() => handleToggleBlock(u)}
+                        title={u.isBlocked ? 'Unblock Operator' : 'Block Operator'}
                       >
-                        History
-                      </button>
-                      <button
-                        onClick={() => handleUpdateLimit(u)}
-                        disabled={updating}
-                        style={{ padding: "6px 10px", borderRadius: 8 }}
-                      >
-                        {updating ? "Updating…" : "Set Limit"}
+                        <Shield size={16} />
                       </button>
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          </div>
+              </div>
+            </section>
 
-          <div style={{ flex: 1, minWidth: 320 }}>
-            <div className="list-card">
-              <h3>
-                {selectedUser
-                  ? `Scans for ${selectedUser.username}`
-                  : "Selected user scans"}
-              </h3>
-              {selectedUserScans === null ? (
-                <div className="muted">
-                  {selectedUser ? "Loading..." : "Select a user to view scans"}
-                </div>
-              ) : selectedUserScans.length === 0 ? (
-                <div className="muted">No scans for this user</div>
-              ) : (
-                <ul className="list-items">
-                  {selectedUserScans.map((s) => (
-                    <li key={s._id} className="list-item">
-                      <div className="item-main">
-                        <a
-                          className="item-title link"
-                          href={s.targetUrl || "#"}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {s.targetUrl ?? "Unknown"}
-                        </a>
-                        <span className="item-meta">
-                          {" "}
-                          — {s.scanType ?? "—"}
-                        </span>
+            <section className="admin-panel-card glass-panel">
+              <div className="panel-head">
+                <Shield size={18} />
+                <h3>{selectedUser ? `Operation Logs: ${selectedUser.username}` : 'Operator Activity'}</h3>
+              </div>
+              <div className="admin-list">
+                {selectedUserScans === null ? (
+                  <div className="empty-state-mini">
+                    <AlertCircle size={32} opacity={0.2} />
+                    <p>{selectedUser ? 'Retrieving logs…' : 'Select an operator to view activity'}</p>
+                  </div>
+                ) : selectedUserScans.length === 0 ? (
+                  <div className="empty-state-mini">
+                    <p>No activity recorded for this operator</p>
+                  </div>
+                ) : (
+                  selectedUserScans.map((s) => (
+                    <div key={s._id} className="admin-list-item">
+                      <div className="item-info">
+                        <span className="title">{s.targetUrl}</span>
+                        <span className="meta">{(s.scanType || "unknown").toUpperCase()}</span>
                       </div>
-                      <div className="item-extra">
-                        <span className={`scan-status ${s.status ?? ""}`}>
-                          {s.status ?? "—"}
-                        </span>
-                        <div className="item-time">
-                          {formatDate(s.createdAt)}
-                        </div>
+                      <div className="item-side">
+                        <span className={`status-badge ${s.status}`}>{s.status}</span>
+                        <span className="time">{formatDate(s.createdAt)}</span>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
