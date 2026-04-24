@@ -9,7 +9,7 @@ import {
   AlertTriangle, 
   Play, 
   ArrowUpRight,
-  Search,
+  Info,
   CheckCircle2
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -91,10 +91,16 @@ const Dashboard = () => {
           <h1>Welcome, <span className="highlight">{user?.username || "Operator"}</span></h1>
           <p>System status is nominal. Security protocols active.</p>
         </div>
-        <button className="initialize-btn" onClick={() => navigate("/start-scan")}>
-          <Play size={20} fill="currentColor" />
-          <span>Launch New Scan</span>
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button className="initialize-btn" onClick={() => navigate("/about-tools")}>
+            <Info size={20} />
+            <span>About Tools</span>
+          </button>
+          <button className="initialize-btn" onClick={() => navigate("/start-scan")}>
+            <Play size={20} fill="currentColor" />
+            <span>Launch New Scan</span>
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -196,7 +202,17 @@ const Dashboard = () => {
               </div>
             )}
             {recent.map((s) => (
-              <div className="activity-item" key={s._id} onClick={() => navigate(`/scan-result/${s._id}`)}>
+              <div
+                className="activity-item"
+                key={s._id}
+                onClick={() =>
+                  navigate(
+                    s.status === "running" || s.status === "pending"
+                      ? `/scan-progress/${s._id}`
+                      : `/scan-result/${s._id}`
+                  )
+                }
+              >
                 <div className="activity-target">
                   <span className="target-host">{s.targetUrl ?? s.url ?? "Unknown"}</span>
                   <div className="target-meta">

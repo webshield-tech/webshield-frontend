@@ -17,7 +17,6 @@ import ScanResult from "../pages/user/ScanResult";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import StartScan from "../pages/user/StartScan";
 import AboutTools from "../pages/user/AboutTools";
-import Osint from "../pages/user/Osint";
 import { useAuth } from "../context/AuthContext"; 
 import LoadingScreen from "../components/common/LoadingScreen";
 import NotFound from "../pages/public/NotFound";
@@ -65,7 +64,6 @@ function AppRoutes() {
           <Route path="/scan-progress/:scanId" element={<ScanProgress />} />
           <Route path="/scan-result/:scanId" element={<ScanResult />} />
           <Route path="/about-tools" element={<AboutTools />} />
-          <Route path="/osint" element={<Osint />} />
         </Route>
 
         {/* Admin Section (Protected + AdminOnly) */}

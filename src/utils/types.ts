@@ -1,4 +1,4 @@
-export type ScanTool = "nmap" | "nikto" | "sqlmap" | "sslscan";
+export type ScanTool = "auto" | "nmap" | "nikto" | "sqlmap" | "sslscan";
 
 export interface User {
   _id: string;
@@ -22,4 +22,3 @@ export interface ScanItem {
   createdAt: string;
   updatedAt?: string;
 }
-

@@ -22,6 +22,7 @@ import {
   generateAIReportForScan,
   viewReport,
   downloadReport,
+  startScan,
 } from "../../api/scan-api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -40,6 +41,7 @@ const ScanResult = () => {
   const [generating, setGenerating] = useState(false);
   const [exploiting, setExploiting] = useState(false);
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
+  const [reportLanguage, setReportLanguage] = useState("english");
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -62,7 +64,34 @@ const ScanResult = () => {
   const vulnerabilities = useMemo(() => {
     if (!data?.results) return [];
     const res = data.results;
-    if (Array.isArray(res.vulnerabilities)) return res.vulnerabilities;
+    if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
+      return res.vulnerabilities;
+    }
+    if (Array.isArray(res.findings) && res.findings.length > 0) {
+      const critical = new Set((res.criticalFindings || []).map((x: string) => String(x)));
+      const high = new Set((res.highFindings || []).map((x: string) => String(x)));
+      const medium = new Set((res.mediumFindings || []).map((x: string) => String(x)));
+      return res.findings.map((finding: string) => ({
+        title: finding,
+        severity: critical.has(finding)
+          ? "Critical"
+          : high.has(finding)
+          ? "High"
+          : medium.has(finding)
+          ? "Medium"
+          : "Low",
+        description: finding,
+        recommendation: "Review this finding and harden configuration before production.",
+      }));
+    }
+    if (Array.isArray(res.openPorts) && res.openPorts.length > 0) {
+      return res.openPorts.map((port: string) => ({
+        title: `Open Port: ${port}`,
+        severity: "Medium",
+        description: `Network service exposed on ${port}.`,
+        recommendation: "Close unnecessary ports or restrict access using firewall rules.",
+      }));
+    }
     if (Array.isArray(res.vulns)) return res.vulns;
     return [];
   }, [data]);
@@ -71,7 +100,7 @@ const ScanResult = () => {
     if (!scanId) return;
     setGenerating(true);
     try {
-      const res = await generateAIReportForScan(scanId);
+      const res = await generateAIReportForScan(scanId, reportLanguage);
       if (res.data?.success) {
         showToast("success", "AI Report generated successfully!");
         // Refresh data so local state knows report exists
@@ -90,7 +119,7 @@ const ScanResult = () => {
   const handleView = async () => {
     if (!scanId) return;
     try {
-      const res = await viewReport(scanId);
+      const res = await viewReport(scanId, reportLanguage);
       const reportData = res.data;
 
       if (reportData?.success && reportData?.report?.content) {
@@ -107,7 +136,7 @@ const ScanResult = () => {
   const handleDownload = async () => {
     if (!scanId) return;
     try {
-      const res = await downloadReport(scanId);
+      const res = await downloadReport(scanId, reportLanguage);
       const reportData = res.data;
 
       if (reportData?.success && reportData?.report?.content) {
@@ -134,7 +163,9 @@ const ScanResult = () => {
     showToast("error", "Initiating exploit simulation…");
 
     try {
-      const response = await api.post("/api/exploit", {
+      const baseUrl = String(api.defaults.baseURL || "").replace(/\/+$/, "");
+      const exploitPath = baseUrl.endsWith("/api") ? "/exploit" : "/api/exploit";
+      const response = await api.post(exploitPath, {
         scanId,
         targetUrl: data?.targetUrl || data?.url,
         vulnTitle,
@@ -149,6 +180,49 @@ const ScanResult = () => {
       showToast("error", e?.response?.data?.error || "Connection error during exploit simulation.");
     } finally {
       setExploiting(false);
+    }
+  };
+
+  const handleAutoExploit = async () => {
+    if (!vulnerabilities.length) {
+      showToast("error", "No finding available for simulation.");
+      return;
+    }
+    const prioritized =
+      vulnerabilities.find((v: any) =>
+        ["critical", "high"].includes(String(v?.severity || "").toLowerCase())
+      ) || vulnerabilities[0];
+    await handleExploit(prioritized.title || prioritized.name || "Top Finding");
+  };
+
+  const handleRetryFailedScan = async () => {
+    if (!data?.targetUrl || !data?.scanType) {
+      showToast("error", "Cannot retry this scan.");
+      return;
+    }
+    try {
+      const normalizedTool = String(data.scanType).toLowerCase();
+      const retryScanType =
+        normalizedTool === "sslscan"
+          ? "ssl"
+          : normalizedTool === "auto"
+          ? "all"
+          : normalizedTool;
+      const response = await startScan({
+        targetUrl: data.targetUrl,
+        scanType: retryScanType,
+      });
+      const newScanId =
+        response.data?.scanId ||
+        response.data?.scan?._id ||
+        response.data?.scans?.[0]?._id;
+      if (!newScanId) {
+        showToast("error", "Retry started but scan id not received.");
+        return;
+      }
+      navigate(`/scan-progress/${newScanId}`);
+    } catch (e: any) {
+      showToast("error", e?.response?.data?.error || "Retry failed.");
     }
   };
 
@@ -181,6 +255,19 @@ const ScanResult = () => {
             </div>
           </div>
           <div className="header-right">
+            <select
+              className="action-btn secondary"
+              value={reportLanguage}
+              onChange={(e) => setReportLanguage(e.target.value)}
+              disabled={generating}
+              style={{ paddingRight: "2.2rem" }}
+              title="Report language"
+            >
+              <option value="english">English</option>
+              <option value="urdu">Urdu</option>
+              <option value="hindi">Hindi</option>
+              <option value="arabic">Arabic</option>
+            </select>
             <button className="action-btn secondary" onClick={handleDownload} disabled={generating}>
               <Download size={18} />
               <span>Download PDF</span>
@@ -233,6 +320,18 @@ const ScanResult = () => {
                   <Search size={18} />
                   <span>New Scan</span>
                 </button>
+                {data?.status === "completed" && vulnerabilities.length > 0 && (
+                  <button className="sidebar-action-btn" onClick={handleAutoExploit} disabled={exploiting}>
+                    <Sparkles size={18} />
+                    <span>{exploiting ? "Simulating…" : "AI Auto Exploit (Safe Demo)"}</span>
+                  </button>
+                )}
+                {data?.status === "failed" && (
+                  <button className="sidebar-action-btn" onClick={handleRetryFailedScan}>
+                    <Loader2 size={18} />
+                    <span>Retry Failed Scan</span>
+                  </button>
+                )}
               </div>
             </aside>
 

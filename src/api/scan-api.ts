@@ -25,13 +25,16 @@ export const cancelScan = (scanId: string) => {
 };
 
 // Generate AI report
-export const generateAIReportForScan = (scanId: string) => {
-  return api.post(`/scan/${scanId}/report/generate`);
+export const generateAIReportForScan = (
+  scanId: string,
+  language: string = "english"
+) => {
+  return api.post(`/scan/${scanId}/report/generate`, { language });
 };
 
 // Download report (returns JSON with text content - PDF generated client-side)
-export const downloadReport = (scanId: string) =>
-  api.get(`/scan/${scanId}/report/download`);
+export const downloadReport = (scanId: string, language: string = "english") =>
+  api.get(`/scan/${scanId}/report/download`, { params: { language } });
 // View report (returns JSON with content)
-export const viewReport = (scanId: string) =>
-  api.get(`/scan/${scanId}/report/view`);
+export const viewReport = (scanId: string, language: string = "english") =>
+  api.get(`/scan/${scanId}/report/view`, { params: { language } });

@@ -37,6 +37,8 @@ const StartScan = () => {
     const toolParam = searchParams.get("tool");
     if (toolParam) {
       const toolMap: Record<string, ScanTool> = {
+        auto: "auto",
+        all: "auto",
         nmap: "nmap",
         nikto: "nikto",
         sqlmap: "sqlmap",
@@ -63,7 +65,7 @@ const StartScan = () => {
     setError("");
 
     if (user && user.usedScan >= user.scanLimit) {
-      setError("Quota Exceeded: You have reached your daily scan limit.");
+      setError(`Daily limit reached (${user.scanLimit}). Buy Premium to run more scans.`);
       return;
     }
 
@@ -74,12 +76,18 @@ const StartScan = () => {
 
     try {
       setScanLoading(true);
-      const scanData = { targetUrl: url.trim().replace(/\/+$/, ""), scanType: tool === "sslscan" ? "ssl" : tool };
+      const scanData = {
+        targetUrl: url.trim().replace(/\/+$/, ""),
+        scanType: tool === "sslscan" ? "ssl" : tool === "auto" ? "all" : tool,
+      };
       const response = await startScan(scanData);
 
       if (response?.data?.success) {
         await refreshUser();
-        const scanId = response.data.scanId || response.data.scan?._id;
+        const scanId =
+          response.data.scanId ||
+          response.data.scan?._id ||
+          response.data.scans?.[0]?._id;
         if (scanId) navigate(`/scan-progress/${scanId}`);
         else setError("System Error: Scan initiation successful but ID not received.");
       } else {

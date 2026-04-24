@@ -71,9 +71,9 @@ export const Navbar = () => {
             <Clock size={18} />
             <span>History</span>
           </Link>
-          <Link to="/osint" className="nav-link">
-            <Search size={18} />
-            <span>OSINT</span>
+          <Link to="/about-tools" className="nav-link">
+            <Info size={18} />
+            <span>About Tools</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className="nav-link admin-link">
@@ -137,9 +137,9 @@ export const Navbar = () => {
             <Clock size={20} />
             <span>History</span>
           </Link>
-          <Link to="/osint" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-            <Search size={20} />
-            <span>OSINT</span>
+          <Link to="/about-tools" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
+            <Info size={20} />
+            <span>About Tools</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>

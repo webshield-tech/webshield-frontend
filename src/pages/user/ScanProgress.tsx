@@ -13,9 +13,10 @@ import {
   CheckCircle2,
   Cpu,
   Database,
-  Wifi
+  Wifi,
+  RefreshCw
 } from "lucide-react";
-import { cancelScan, getScanResultsById } from "../../api/scan-api";
+import { cancelScan, getScanResultsById, startScan } from "../../api/scan-api";
 import { AutoScanProgress } from "../../components/AutoScanProgress";
 import "../../styles/scan-progress.css";
 
@@ -31,6 +32,7 @@ const ScanProgress = () => {
   const [target, setTarget] = useState<string | undefined>();
   const [startedAt, setStartedAt] = useState<string | undefined>();
   const [logs, setLogs] = useState<string[]>([]);
+  const [pollErrors, setPollErrors] = useState(0);
 
   const statusLabel = useMemo(() => {
     if (status === "running")   return "Scan in Progress";
@@ -68,10 +70,14 @@ const ScanProgress = () => {
         const res = await getScanResultsById(scanId);
         const data = res.data?.scan || res.data;
         const st = data?.status || "pending";
+        const rawTool = String(data?.scanType || data?.tool || "").toLowerCase();
+        const normalizedToolForUi = rawTool === "all" ? "auto" : rawTool;
+        setPollErrors(0);
         setStatus(st);
-        setTool(data?.scanType || data?.tool);
+        setTool(normalizedToolForUi);
         setTarget(data?.targetUrl || data?.url);
         setStartedAt(data?.startedAt || data?.createdAt);
+        setError((prev) => (prev === "Failed to fetch scan status." ? "" : prev));
 
         if (st === "failed") {
           const backendError =
@@ -91,7 +97,19 @@ const ScanProgress = () => {
           }
         }
 
-        if (st === "running") setPercent((p) => Math.min(96, p + Math.floor(Math.random() * 5)));
+        if (st === "running") {
+          const startTime = data?.startedAt || data?.createdAt;
+          const elapsedMs = startTime ? Math.max(Date.now() - new Date(startTime).getTime(), 0) : 0;
+          const toolType = rawTool;
+          const estimatedMs =
+            toolType === "sqlmap" ? 185000 :
+            toolType === "nikto" ? 180000 :
+            toolType === "ssl" || toolType === "sslscan" ? 180000 :
+            toolType === "all" || toolType === "auto" ? 540000 :
+            360000;
+          const estimatedPercent = Math.min(95, 8 + Math.floor((elapsedMs / estimatedMs) * 87));
+          setPercent((p) => Math.max(p, estimatedPercent));
+        }
         if (st === "completed") setPercent(100);
 
         if (st === "completed") {
@@ -103,7 +121,18 @@ const ScanProgress = () => {
           timer = window.setTimeout(poll, POLL_MS);
         }
       } catch (e: any) {
-        setError(e?.response?.data?.error || "Failed to fetch scan status.");
+        const isTransientNetworkError =
+          e?.code === "ERR_NETWORK" ||
+          e?.code === "ERR_NETWORK_CHANGED" ||
+          String(e?.message || "").includes("Network Error");
+        setPollErrors((prev) => {
+          const next = prev + 1;
+          if (!isTransientNetworkError || next >= 3) {
+            setError(e?.response?.data?.error || "Failed to fetch scan status.");
+          }
+          return next;
+        });
+        timer = window.setTimeout(poll, POLL_MS + 2000);
       }
     };
 
@@ -121,6 +150,37 @@ const ScanProgress = () => {
       setError("Scan cancelled by user.");
     } catch (e: any) {
       setError(e?.response?.data?.error || "Failed to cancel scan.");
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!target || !tool) {
+      setError("Cannot retry because scan target/tool is missing.");
+      return;
+    }
+    try {
+      setError("");
+      const normalizedTool =
+        tool.toLowerCase() === "sslscan"
+          ? "ssl"
+          : tool.toLowerCase() === "auto"
+          ? "all"
+          : tool.toLowerCase();
+      const response = await startScan({
+        targetUrl: target,
+        scanType: normalizedTool,
+      });
+      const newScanId =
+        response.data?.scanId ||
+        response.data?.scan?._id ||
+        response.data?.scans?.[0]?._id;
+      if (!newScanId) {
+        setError("Retry started but scan id was not returned.");
+        return;
+      }
+      navigate(`/scan-progress/${newScanId}`, { replace: true });
+    } catch (e: any) {
+      setError(e?.response?.data?.error || "Retry failed.");
     }
   };
 
@@ -151,7 +211,7 @@ const ScanProgress = () => {
               </div>
             </div>
 
-            {tool === "auto" ? (
+            {tool === "auto" || tool === "all" ? (
               <AutoScanProgress status={status} percent={percent} />
             ) : (
               <div className="progress-data-wrap">
@@ -223,6 +283,12 @@ const ScanProgress = () => {
                   <span className="message">{error}</span>
                 </div>
               )}
+              {pollErrors > 0 && status === "running" && (
+                <div className="log-entry system">
+                  <span className="timestamp">[{new Date().toLocaleTimeString()}]</span>
+                  <span className="message">Network recovered attempts: {pollErrors}</span>
+                </div>
+              )}
             </div>
 
             <div className="progress-actions">
@@ -238,6 +304,12 @@ const ScanProgress = () => {
                 <button className="result-btn" onClick={() => navigate(`/scan-result/${scanId}`)}>
                   <CheckCircle2 size={18} />
                   <span>View Results</span>
+                </button>
+              )}
+              {status === "failed" && (
+                <button className="result-btn" onClick={handleRetry}>
+                  <RefreshCw size={18} />
+                  <span>Retry Scan</span>
                 </button>
               )}
             </div>

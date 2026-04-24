@@ -5,8 +5,6 @@ const rawBaseUrl =
   "http://localhost:4000";
 const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
 
-console.log('API Base URL:', BASE_URL);
-
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -32,32 +30,35 @@ api.interceptors.request.use(
     }
     
     if (import.meta.env.DEV) {
-      console.log(` ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+      console.debug(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     }
     
     return config;
   },
-  (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor 
 api.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      console.log(`Response ${response.status} from ${response.config.url}`);
+      console.debug(`[API] ${response.status} ${response.config.url}`);
     }
     return response;
   },
   (error) => {
     const originalRequest = error.config;
-    if (!originalRequest.url.includes('/profile')) {
-      console.error('API Error:', {
+    const message = String(error?.message || "");
+    const isTransientNetworkError =
+      error?.code === "ERR_NETWORK" ||
+      error?.code === "ERR_NETWORK_CHANGED" ||
+      message.includes("Network Error");
+
+    if (import.meta.env.DEV && !isTransientNetworkError && !originalRequest?.url?.includes('/profile')) {
+      console.debug("[API] error", {
         status: error.response?.status,
-        url: originalRequest.url,
-        message: error.message
+        url: originalRequest?.url,
+        message: error.message,
       });
     }
     
@@ -65,18 +66,13 @@ if (error.response?.status === 401) {
   localStorage.removeItem('authToken');
   sessionStorage.clear();
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  
-  console.log('User not authenticated (401)');
-  
+
   return Promise.reject({
     isAuthError: true,
     status: 401,
     message: 'Authentication required'
   });
 }
-    if (error.response?.status === 404) {
-      console.error('404 - Route not found on backend:', originalRequest.url);
-    }
     
     return Promise.reject(error);
   }

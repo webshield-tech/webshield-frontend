@@ -17,7 +17,7 @@ export const AutoScanProgress = ({ status, percent }: AutoScanProgressProps) => 
   ];
 
   const getPhaseStatus = (phase: any) => {
-    if (status === "failed" || status === "canceled") return "error";
+    if (status === "failed" || status === "canceled" || status === "cancelled") return "error";
     if (percent >= phase.endThreshold || status === "completed") return "completed";
     if (percent >= phase.threshold && percent < phase.endThreshold && status === "running") return "running";
     return "pending";
