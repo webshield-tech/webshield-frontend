@@ -73,6 +73,24 @@ const ScanProgress = () => {
         setTarget(data?.targetUrl || data?.url);
         setStartedAt(data?.startedAt || data?.createdAt);
 
+        if (st === "failed") {
+          const backendError =
+            data?.results?.error ||
+            data?.results?.message ||
+            "Scan failed on backend.";
+          setError(backendError);
+
+          const partialOutput = data?.results?.partialOutput || data?.results?.rawOutput;
+          if (partialOutput && typeof partialOutput === "string") {
+            const lines = partialOutput
+              .split("\n")
+              .map((line: string) => line.trim())
+              .filter(Boolean)
+              .slice(-6);
+            if (lines.length) setLogs(lines.reverse());
+          }
+        }
+
         if (st === "running") setPercent((p) => Math.min(96, p + Math.floor(Math.random() * 5)));
         if (st === "completed") setPercent(100);
 

@@ -12,6 +12,7 @@ import {
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import api from "../../api/axios";
 
 const Osint = () => {
   const [targetName, setTargetName] = useState("");
@@ -29,23 +30,15 @@ const Osint = () => {
     setReport("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/osint`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
-        },
-        body: JSON.stringify({ targetName, targetIdentifier })
-      });
-      
-      const resData = await response.json();
+      const response = await api.post("/api/osint", { targetName, targetIdentifier });
+      const resData = response.data;
       if (resData.success) {
         setReport(resData.report);
       } else {
         setError(resData.error || "Failed to gather intelligence.");
       }
-    } catch (err) {
-      setError("Connection Failure: Intelligence source is unreachable.");
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Connection Failure: Intelligence source is unreachable.");
     } finally {
       setLoading(false);
     }

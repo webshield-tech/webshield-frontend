@@ -27,6 +27,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "../../styles/scan-result.css";
 import saveTextAsPdf from "../../utils/saveAsPdf";
+import api from "../../api/axios";
 
 type ToastType = "success" | "error" | "";
 
@@ -133,23 +134,19 @@ const ScanResult = () => {
     showToast("error", "Initiating exploit simulation…");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exploit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
-        },
-        body: JSON.stringify({ scanId, targetUrl: data?.targetUrl || data?.url, vulnTitle })
+      const response = await api.post("/api/exploit", {
+        scanId,
+        targetUrl: data?.targetUrl || data?.url,
+        vulnTitle,
       });
-
-      const resData = await response.json();
+      const resData = response.data;
       if (resData.success) {
         showToast("success", "Exploit simulation completed. Check logs for details.");
       } else {
         showToast("error", "Exploit blocked: " + (resData.error || "Payload rejected by WAF."));
       }
-    } catch {
-      showToast("error", "Connection error during exploit simulation.");
+    } catch (e: any) {
+      showToast("error", e?.response?.data?.error || "Connection error during exploit simulation.");
     } finally {
       setExploiting(false);
     }
