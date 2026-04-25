@@ -70,7 +70,7 @@ export const Navbar = () => {
       <div className="navbar-container">
         <Link to="/dashboard" className="navbar-logo">
           <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '32px', height: '32px', filter: 'drop-shadow(0 0 5px var(--color-cyber-green))' }} />
-          <span className="logo-text">Vuln Spectra</span>
+          <span className="navbar-logo-text">Vuln Spectra</span>
         </Link>
 
         {/* Desktop Search Bar */}

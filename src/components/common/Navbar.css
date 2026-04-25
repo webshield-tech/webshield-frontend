@@ -35,13 +35,14 @@
   flex-shrink: 0;
 }
 
-.logo-text {
+.navbar-logo-text {
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 2px;
   color: var(--text-primary);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* ── SEARCH BAR ── */
