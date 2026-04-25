@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Lock, Zap, FileText, Github, Linkedin, Menu, X, ArrowRight, ExternalLink } from "lucide-react";
+import { Shield, Lock, Zap, FileText, Github, Linkedin, Menu, X, ArrowRight, ExternalLink, Globe, MessageSquare, Mail } from "lucide-react";
 import HeroSection from "../../components/landing/HeroSection";
 import ToolCards from "../../components/landing/ToolCards";
 import "../../styles/landing.css";
@@ -147,6 +147,41 @@ const Landing = () => {
               <span className="button-glitch">Start Free Trial</span>
               <ArrowRight size={20} />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FSociety PK Branding Section */}
+      <section className="fsociety-section" style={{ padding: "80px 40px", background: "rgba(3, 5, 8, 0.85)", borderTop: "1px solid var(--cyber-border)" }}>
+        <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
+          <div className="section-header" style={{ marginBottom: "40px", textAlign: "center" }}>
+            <h2 className="section-title">
+              <span className="title-tag">// The Team Behind</span>
+              About FSociety PK
+            </h2>
+            <p style={{ color: "var(--cyber-text-dim)", marginTop: "16px", fontSize: "1.1rem" }}>Cybersecurity CTF Team & Platform Developers</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
+            <a href="https://fsocietypk.tech" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+              <Globe size={28} color="var(--cyber-primary)" />
+              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>Website</span>
+            </a>
+            <a href="https://discord.com/invite/YYpFYBzH" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+              <MessageSquare size={28} color="#5865F2" />
+              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>Discord</span>
+            </a>
+            <a href="https://github.com/orgs/fsociety-pk" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+              <Github size={28} color="#fff" />
+              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>GitHub</span>
+            </a>
+            <a href="https://www.linkedin.com/company/fsociety-pk/" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+              <Linkedin size={28} color="#0077b5" />
+              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>LinkedIn</span>
+            </a>
+            <a href="mailto:pkfsociety@gmail.com" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+              <Mail size={28} color="var(--cyber-accent)" />
+              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>Email Us</span>
+            </a>
           </div>
         </div>
       </section>
