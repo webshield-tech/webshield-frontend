@@ -37,9 +37,9 @@
 
 .logo-text {
   font-family: 'Inter', sans-serif;
-  font-size: 1.15rem;
+  font-size: 0.9rem;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   color: var(--text-primary);
   text-transform: uppercase;
 }
