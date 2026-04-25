@@ -59,8 +59,12 @@ function Login() {
         setPasswordError("Incorrect password. Please try again.");
       } else if (msg.toLowerCase().includes("suspended") || msg.toLowerCase().includes("blocked")) {
         setFormError(msg);
+      } else if (msg.toLowerCase().includes("too many")) {
+        setFormError("Too many attempts. Please try again in 15 minutes.");
+        console.error("[AUTH] Rate limit exceeded:", error.response?.data);
       } else {
-        setFormError(msg || "Login failed. Please try again.");
+        setFormError(msg || "An unexpected error occurred. Please try again.");
+        console.error("[AUTH] Detailed error:", error.response?.data);
       }
     } finally {
       setLoading(false);
