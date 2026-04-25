@@ -68,101 +68,103 @@ function Login() {
   return (
     <div className="auth-page">
       <motion.div
-        className="auth-card"
+        className="auth-split-container"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        {/* Logo */}
-        <div className="auth-logo-wrap">
-          <motion.div
-            className="auth-logo-icon"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-          >
-            <Shield size={28} />
-          </motion.div>
-          <h1>Welcome back</h1>
-          <p className="auth-subtitle">Sign in to your Vuln Spectra account</p>
+        {/* LEFT PANEL - BRANDING */}
+        <div className="auth-brand-panel">
+          <img src="/logo.png" alt="Vuln Spectra Shield" className="brand-logo-img" />
+          <h2>Empowering your security posture</h2>
+          <p>
+            The exclusive platform for security professionals to engage the most trusted vulnerability scanning and reporting solutions.
+          </p>
         </div>
 
-        {/* Alerts */}
-        {formError && (
-          <motion.div className="auth-alert error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <AlertCircle size={16} />
-            <span>{formError}</span>
-          </motion.div>
-        )}
-        {formSuccess && (
-          <motion.div className="auth-alert success" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <CheckCircle2 size={16} />
-            <span>{formSuccess}</span>
-          </motion.div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Email */}
-          <div className="auth-field">
-            <label htmlFor="login-email">Email address</label>
-            <div className={`input-wrap ${emailError ? "has-error" : ""}`}>
-              <Mail className="i-icon" size={17} />
-              <input
-                id="login-email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => { setEmail(e.target.value); setEmailError(""); }}
-                disabled={loading}
-                autoComplete="email"
-              />
-            </div>
-            {emailError && <span className="field-error">{emailError}</span>}
+        {/* RIGHT PANEL - FORM */}
+        <div className="auth-form-panel">
+          <div className="auth-header-mini">
+            <img src="/logo.png" alt="Logo" className="mini-logo" />
           </div>
+          <h1>Welcome back!</h1>
+          <p className="auth-subtitle">Log in to your Vuln Spectra account.</p>
 
-          {/* Password */}
-          <div className="auth-field">
-            <div className="auth-field-row">
-              <label htmlFor="login-password">Password</label>
-              <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
+          {/* Alerts */}
+          {formError && (
+            <motion.div className="auth-alert error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <AlertCircle size={16} />
+              <span>{formError}</span>
+            </motion.div>
+          )}
+          {formSuccess && (
+            <motion.div className="auth-alert success" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <CheckCircle2 size={16} />
+              <span>{formSuccess}</span>
+            </motion.div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} noValidate style={{ display: 'contents' }}>
+            {/* Email */}
+            <div className="auth-field">
+              <label htmlFor="login-email">Email</label>
+              <div className={`input-wrap ${emailError ? "has-error" : ""}`}>
+                <input
+                  id="login-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => { setEmail(e.target.value); setEmailError(""); }}
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </div>
+              {emailError && <span className="field-error">{emailError}</span>}
             </div>
-            <div className={`input-wrap ${passwordError ? "has-error" : ""}`}>
-              <Lock className="i-icon" size={17} />
-              <input
-                id="login-password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={e => { setPassword(e.target.value); setPasswordError(""); }}
-                disabled={loading}
-                autoComplete="current-password"
-              />
+
+            {/* Password */}
+            <div className="auth-field">
+              <div className="auth-field-row">
+                <label htmlFor="login-password">Password</label>
+                <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
+              </div>
+              <div className={`input-wrap ${passwordError ? "has-error" : ""}`}>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={e => { setPassword(e.target.value); setPasswordError(""); }}
+                  disabled={loading}
+                  autoComplete="current-password"
+                />
+              </div>
+              {passwordError && <span className="field-error">{passwordError}</span>}
             </div>
-            {passwordError && <span className="field-error">{passwordError}</span>}
+
+            {/* Submit */}
+            <motion.button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+              whileTap={{ scale: 0.98 }}
+            >
+              {loading ? (
+                <><Loader2 size={18} className="animate-spin" /><span>Logging in…</span></>
+              ) : (
+                <span>Log in</span>
+              )}
+            </motion.button>
+          </form>
+
+          {/* Footer */}
+          <div className="auth-footer">
+            <p>
+              Don't have an account?
+              <Link to="/signup" className="auth-link">Sign up</Link>
+            </p>
           </div>
-
-          {/* Submit */}
-          <motion.button
-            type="submit"
-            className="auth-submit-btn"
-            disabled={loading}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading ? (
-              <><Loader2 size={18} className="animate-spin" /><span>Signing in…</span></>
-            ) : (
-              <><span>Sign in</span><ArrowRight size={18} /></>
-            )}
-          </motion.button>
-        </form>
-
-        {/* Footer */}
-        <div className="auth-footer">
-          <p>
-            Don't have an account?
-            <Link to="/signup" className="auth-link">Create one</Link>
-          </p>
         </div>
       </motion.div>
     </div>

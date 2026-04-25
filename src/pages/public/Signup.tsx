@@ -99,164 +99,148 @@ function Signup() {
   return (
     <div className="auth-page">
       <motion.div
-        className="auth-card wide"
+        className="auth-split-container"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        {/* Logo */}
-        <div className="auth-logo-wrap">
-          <motion.div
-            className="auth-logo-icon"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-          >
-            <Shield size={28} />
-          </motion.div>
-          <h1>Create your account</h1>
-          <p className="auth-subtitle">Join Vuln Spectra and start scanning securely</p>
+        {/* LEFT PANEL - BRANDING */}
+        <div className="auth-brand-panel">
+          <img src="/logo.png" alt="Vuln Spectra Shield" className="brand-logo-img" />
+          <h2>Empowering your security posture</h2>
+          <p>
+            The exclusive platform for security professionals to engage the most trusted vulnerability scanning and reporting solutions.
+          </p>
         </div>
 
-        {/* Alerts */}
-        {formError && (
-          <motion.div className="auth-alert error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <AlertCircle size={16} /><span>{formError}</span>
-          </motion.div>
-        )}
-        {formSuccess && (
-          <motion.div className="auth-alert success" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <CheckCircle2 size={16} /><span>{formSuccess}</span>
-          </motion.div>
-        )}
-
-        {/* --- Left column --- */}
-        <form onSubmit={handleSubmit} noValidate style={{ display: 'contents' }}>
-
-          {/* Username */}
-          <div className="auth-field">
-            <label htmlFor="su-username">Username</label>
-            <div className={`input-wrap ${fieldErrors.username ? "has-error" : ""}`}>
-              <User className="i-icon" size={17} />
-              <input
-                id="su-username"
-                type="text"
-                placeholder="your_username"
-                value={username}
-                onChange={e => { setUsername(e.target.value); clearFieldError("username"); }}
-                disabled={loading}
-                autoComplete="username"
-              />
-            </div>
-            {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
+        {/* RIGHT PANEL - FORM */}
+        <div className="auth-form-panel">
+          <div className="auth-header-mini">
+            <img src="/logo.png" alt="Logo" className="mini-logo" />
           </div>
+          <h1>Create your account</h1>
+          <p className="auth-subtitle">Join Vuln Spectra and start scanning securely.</p>
 
-          {/* Email */}
-          <div className="auth-field">
-            <label htmlFor="su-email">Email address</label>
-            <div className={`input-wrap ${fieldErrors.email ? "has-error" : ""}`}>
-              <Mail className="i-icon" size={17} />
-              <input
-                id="su-email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => { setEmail(e.target.value); clearFieldError("email"); }}
-                disabled={loading}
-                autoComplete="email"
-              />
-            </div>
-            {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
-          </div>
+          {/* Alerts */}
+          {formError && (
+            <motion.div className="auth-alert error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <AlertCircle size={16} /><span>{formError}</span>
+            </motion.div>
+          )}
+          {formSuccess && (
+            <motion.div className="auth-alert success" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <CheckCircle2 size={16} /><span>{formSuccess}</span>
+            </motion.div>
+          )}
 
-          {/* Password */}
-          <div className="auth-field">
-            <label htmlFor="su-password">Password</label>
-            <div className={`input-wrap ${fieldErrors.password ? "has-error" : ""}`}>
-              <Lock className="i-icon" size={17} />
-              <input
-                id="su-password"
-                type="password"
-                placeholder="Create a strong password"
-                value={password}
-                onChange={e => { setPassword(e.target.value); clearFieldError("password"); setPwTouched(true); }}
-                disabled={loading}
-                autoComplete="new-password"
-              />
-            </div>
-            {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
-
-            {/* Live strength meter */}
-            {pwTouched && password.length > 0 && (
-              <div className="pw-strength">
-                <div className="pw-bars">
-                  {[1,2,3,4,5].map(i => {
-                    let barClass = "";
-                    if (i <= score) {
-                      barClass = score <= 2 ? "active-weak" : score === 3 ? "active-fair" : score === 4 ? "active-good" : "active-strong";
-                    }
-                    return <div key={i} className={`pw-bar ${barClass}`} />;
-                  })}
-                </div>
-                <span className={`pw-label ${strength.cls}`}>{strength.label}</span>
-                <div className="pw-checklist">
-                  {[
-                    { key: "length",    label: "8+ characters" },
-                    { key: "uppercase", label: "Uppercase" },
-                    { key: "lowercase", label: "Lowercase" },
-                    { key: "number",    label: "Number" },
-                    { key: "special",   label: "Special char" },
-                  ].map(({ key, label }) => (
-                    <div key={key} className={`pw-check-item ${checks[key as keyof typeof checks] ? "met" : ""}`}>
-                      <div className="pw-check-dot" />
-                      {label}
-                    </div>
-                  ))}
-                </div>
+          <form onSubmit={handleSubmit} noValidate style={{ display: 'contents' }}>
+            {/* Username */}
+            <div className="auth-field">
+              <label htmlFor="su-username">Username</label>
+              <div className={`input-wrap ${fieldErrors.username ? "has-error" : ""}`}>
+                <input
+                  id="su-username"
+                  type="text"
+                  placeholder="your_username"
+                  value={username}
+                  onChange={e => { setUsername(e.target.value); clearFieldError("username"); }}
+                  disabled={loading}
+                  autoComplete="username"
+                />
               </div>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div className="auth-field">
-            <label htmlFor="su-confirm">Confirm password</label>
-            <div className={`input-wrap ${fieldErrors.confirm ? "has-error" : ""}`}>
-              <Lock className="i-icon" size={17} />
-              <input
-                id="su-confirm"
-                type="password"
-                placeholder="Re-enter your password"
-                value={confirmPassword}
-                onChange={e => { setConfirmPassword(e.target.value); clearFieldError("confirm"); }}
-                disabled={loading}
-                autoComplete="new-password"
-              />
+              {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
             </div>
-            {fieldErrors.confirm && <span className="field-error">{fieldErrors.confirm}</span>}
-          </div>
 
-          {/* Submit */}
-          <motion.button
-            type="submit"
-            className="auth-submit-btn"
-            disabled={loading}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading ? (
-              <><Loader2 size={18} className="animate-spin" /><span>Creating account…</span></>
-            ) : (
-              <><span>Create account</span><ArrowRight size={18} /></>
-            )}
-          </motion.button>
+            {/* Email */}
+            <div className="auth-field">
+              <label htmlFor="su-email">Email</label>
+              <div className={`input-wrap ${fieldErrors.email ? "has-error" : ""}`}>
+                <input
+                  id="su-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => { setEmail(e.target.value); clearFieldError("email"); }}
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </div>
+              {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+            </div>
 
-          {/* Footer */}
-          <div className="auth-footer">
-            <p>
-              Already have an account?
-              <Link to="/login" className="auth-link">Sign in</Link>
-            </p>
-          </div>
-        </form>
+            {/* Password */}
+            <div className="auth-field">
+              <label htmlFor="su-password">Password</label>
+              <div className={`input-wrap ${fieldErrors.password ? "has-error" : ""}`}>
+                <input
+                  id="su-password"
+                  type="password"
+                  placeholder="Create a strong password"
+                  value={password}
+                  onChange={e => { setPassword(e.target.value); clearFieldError("password"); setPwTouched(true); }}
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+              </div>
+              {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+
+              {/* Live strength meter */}
+              {pwTouched && password.length > 0 && (
+                <div className="pw-strength">
+                  <div className="pw-bars">
+                    {[1,2,3,4,5].map(i => {
+                      let barClass = "";
+                      if (i <= score) {
+                        barClass = score <= 2 ? "active-weak" : score === 3 ? "active-fair" : score === 4 ? "active-good" : "active-strong";
+                      }
+                      return <div key={i} className={`pw-bar ${barClass}`} />;
+                    })}
+                  </div>
+                  <span className={`pw-label ${strength.cls}`}>{strength.label}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="auth-field">
+              <label htmlFor="su-confirm">Confirm password</label>
+              <div className={`input-wrap ${fieldErrors.confirm ? "has-error" : ""}`}>
+                <input
+                  id="su-confirm"
+                  type="password"
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={e => { setConfirmPassword(e.target.value); clearFieldError("confirm"); }}
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+              </div>
+              {fieldErrors.confirm && <span className="field-error">{fieldErrors.confirm}</span>}
+            </div>
+
+            {/* Submit */}
+            <motion.button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+              whileTap={{ scale: 0.98 }}
+            >
+              {loading ? (
+                <><Loader2 size={18} className="animate-spin" /><span>Creating account…</span></>
+              ) : (
+                <span>Create account</span>
+              )}
+            </motion.button>
+
+            {/* Footer */}
+            <div className="auth-footer">
+              <p>
+                Already have an account?
+                <Link to="/login" className="auth-link">Log in</Link>
+              </p>
+            </div>
+          </form>
+        </div>
       </motion.div>
     </div>
   );

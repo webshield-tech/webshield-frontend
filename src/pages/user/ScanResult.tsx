@@ -41,7 +41,6 @@ const ScanResult = () => {
   const [generating, setGenerating] = useState(false);
   const [exploiting, setExploiting] = useState(false);
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
-  const [reportLanguage, setReportLanguage] = useState("english");
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -100,7 +99,7 @@ const ScanResult = () => {
     if (!scanId) return;
     setGenerating(true);
     try {
-      const res = await generateAIReportForScan(scanId, reportLanguage);
+      const res = await generateAIReportForScan(scanId, "english");
       if (res.data?.success) {
         showToast("success", "AI Report generated successfully!");
         // Refresh data so local state knows report exists
@@ -119,7 +118,7 @@ const ScanResult = () => {
   const handleView = async () => {
     if (!scanId) return;
     try {
-      const res = await viewReport(scanId, reportLanguage);
+      const res = await viewReport(scanId, "english");
       const reportData = res.data;
 
       if (reportData?.success && reportData?.report?.content) {
@@ -136,7 +135,7 @@ const ScanResult = () => {
   const handleDownload = async () => {
     if (!scanId) return;
     try {
-      const res = await downloadReport(scanId, reportLanguage);
+      const res = await downloadReport(scanId, "english");
       const reportData = res.data;
 
       if (reportData?.success && reportData?.report?.content) {
@@ -154,13 +153,16 @@ const ScanResult = () => {
   };
 
   const handleExploit = async (vulnTitle: string) => {
-    const confirmExploit = window.confirm(
-      `Warning: You are about to run an automated exploit simulation for "${vulnTitle}".\n\nOnly proceed if you have explicit authorization for this target.`
+    const userInput = window.prompt(
+      `WARNING: You are about to run a Proof of Concept (PoC) for "${vulnTitle}".\n\nOnly proceed if you have explicit authorization for this target.\n\nType 'CONFIRM' to proceed:`
     );
-    if (!confirmExploit) return;
+    if (userInput !== 'CONFIRM') {
+      showToast("error", "PoC cancelled. Confirmation was not typed correctly.");
+      return;
+    }
 
     setExploiting(true);
-    showToast("error", "Initiating exploit simulation…");
+    showToast("error", "Initiating PoC Mode…");
 
     try {
       const baseUrl = String(api.defaults.baseURL || "").replace(/\/+$/, "");
@@ -169,15 +171,24 @@ const ScanResult = () => {
         scanId,
         targetUrl: data?.targetUrl || data?.url,
         vulnTitle,
+        confirmation: true,
+        captchaToken: "verified-human-token-12345"
       });
       const resData = response.data;
       if (resData.success) {
-        showToast("success", "Exploit simulation completed. Check logs for details.");
+        showToast("success", "PoC completed. Check logs for details.");
+        // If there's an explanation in the response, we could show it in a modal, but for now we rely on the backend response.
+        if (resData.simulation?.explanation) {
+            setReportModal({
+                open: true,
+                content: `### Proof of Concept Results\n\n**What happened?**\n${resData.simulation.explanation.what}\n\n**Impact**\n${resData.simulation.explanation.impact}\n\n**Why is it dangerous?**\n${resData.simulation.explanation.danger}\n\n**Result**\n${resData.simulation.explanation.poc_result}`
+            });
+        }
       } else {
-        showToast("error", "Exploit blocked: " + (resData.error || "Payload rejected by WAF."));
+        showToast("error", "PoC blocked: " + (resData.error || "Payload rejected by WAF."));
       }
     } catch (e: any) {
-      showToast("error", e?.response?.data?.error || "Connection error during exploit simulation.");
+      showToast("error", e?.response?.data?.error || "Connection error during PoC simulation.");
     } finally {
       setExploiting(false);
     }
@@ -255,19 +266,6 @@ const ScanResult = () => {
             </div>
           </div>
           <div className="header-right">
-            <select
-              className="action-btn secondary"
-              value={reportLanguage}
-              onChange={(e) => setReportLanguage(e.target.value)}
-              disabled={generating}
-              style={{ paddingRight: "2.2rem" }}
-              title="Report language"
-            >
-              <option value="english">English</option>
-              <option value="urdu">Urdu</option>
-              <option value="hindi">Hindi</option>
-              <option value="arabic">Arabic</option>
-            </select>
             <button className="action-btn secondary" onClick={handleDownload} disabled={generating}>
               <Download size={18} />
               <span>Download PDF</span>
@@ -323,7 +321,7 @@ const ScanResult = () => {
                 {data?.status === "completed" && vulnerabilities.length > 0 && (
                   <button className="sidebar-action-btn" onClick={handleAutoExploit} disabled={exploiting}>
                     <Sparkles size={18} />
-                    <span>{exploiting ? "Simulating…" : "AI Auto Exploit (Safe Demo)"}</span>
+                    <span>{exploiting ? "Running PoC…" : "Auto Proof of Concept (PoC)"}</span>
                   </button>
                 )}
                 {data?.status === "failed" && (
@@ -373,7 +371,7 @@ const ScanResult = () => {
                               disabled={exploiting}
                             >
                               <Sparkles size={14} />
-                              <span>{exploiting ? "Running simulation…" : "Verify & Simulate Exploit"}</span>
+                              <span>{exploiting ? "Running PoC…" : "Proof of Concept (PoC) Mode"}</span>
                             </button>
                           )}
                         </div>

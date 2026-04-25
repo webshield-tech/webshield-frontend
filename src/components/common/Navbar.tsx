@@ -1,19 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
 import { 
-  Shield, 
   LayoutDashboard, 
   Play, 
   Clock, 
   Search, 
   Info, 
   User as UserIcon, 
-  LogOut, 
   Settings,
   Menu,
-  X
+  X,
+  BookOpen,
+  Bell,
+  LogOut
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./Navbar.css";
 
 export const Navbar = () => {
@@ -21,6 +22,32 @@ export const Navbar = () => {
   const { logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Auto-hide dot when opening dropdown
+  useEffect(() => {
+    if (notificationsOpen) {
+      // Small delay or wait for user to click mark as read? 
+      // User said "dot disappear auto", usually when opened.
+    }
+  }, [notificationsOpen]);
+
+  const markAllAsRead = () => {
+    setHasUnread(false);
+  };
 
   const isAdmin = !!user && user.role === "admin";
 
@@ -42,13 +69,13 @@ export const Navbar = () => {
     <nav className="top-navbar">
       <div className="navbar-container">
         <Link to="/dashboard" className="navbar-logo">
-          <Shield className="text-primary" size={28} />
+          <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '32px', height: '32px', filter: 'drop-shadow(0 0 5px var(--color-cyber-green))' }} />
           <span className="logo-text">Vuln Spectra</span>
         </Link>
 
         {/* Desktop Search Bar */}
         <form className="navbar-search" onSubmit={handleSearch}>
-          <Search size={18} className="search-icon" />
+          <Search size={18} className="search-icon" color="var(--accent-green)" />
           <input 
             type="text" 
             placeholder="Search scans..." 
@@ -75,6 +102,10 @@ export const Navbar = () => {
             <Info size={18} />
             <span>About Tools</span>
           </Link>
+          <Link to="/learn" className="nav-link">
+            <BookOpen size={18} />
+            <span>Learn</span>
+          </Link>
           {isAdmin && (
             <Link to="/admin" className="nav-link admin-link">
               <Settings size={18} />
@@ -83,27 +114,73 @@ export const Navbar = () => {
           )}
         </div>
 
-        {/* User Profile / Logout */}
-        <div className="navbar-user">
+        {/* Right Section: Notifications, Profile, Logout */}
+        <div className="navbar-actions-group">
+          
+          <div className="navbar-notifications" ref={notificationRef}>
+            <button 
+              className="navbar-icon-btn" 
+              onClick={() => {
+                setNotificationsOpen(!notificationsOpen);
+                if (!notificationsOpen) setHasUnread(false); // Clear dot when opening
+              }}
+              title="Notifications"
+            >
+              <span className="navbar-icon-wrapper">
+                <Bell size={20} color="#ffffff" />
+              </span>
+              {hasUnread && <span className="notification-dot"></span>}
+            </button>
+            {notificationsOpen && (
+              <div className="notifications-dropdown">
+                <div className="dropdown-header">
+                  <h4>Notifications</h4>
+                  <button className="mark-read-btn" onClick={markAllAsRead}>Mark as read</button>
+                </div>
+                <div className="dropdown-content">
+                  <div className="notification-item">
+                    <span className="dot unread"></span>
+                    <div className="text">
+                      <p>Scan <strong>#44A2</strong> completed successfully.</p>
+                      <small>2 mins ago</small>
+                    </div>
+                  </div>
+                  <div className="notification-item">
+                    <span className="dot"></span>
+                    <div className="text">
+                      <p>Welcome to Vuln Spectra platform.</p>
+                      <small>1 day ago</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="navbar-divider"></div>
+
+          {/* User Profile */}
           <div 
-            className="user-profile-nav-btn" 
+            className="user-profile-nav-btn premium-profile" 
             onClick={() => navigate("/profile")}
             title="View Security Profile"
           >
-            <div className="avatar-shield">
-              <UserIcon size={20} />
-              <div className="shield-glow"></div>
+            <div className="avatar-circle">
+              <UserIcon size={18} />
             </div>
             <div className="user-info-text">
-              <span className="operator-label">Operator</span>
               <span className="display-name">{user?.username || "Guest"}</span>
+              <span className="role-label">{isAdmin ? "Admin" : "Operator"}</span>
             </div>
           </div>
           
           <div className="navbar-divider"></div>
 
+          {/* Logout */}
           <button className="navbar-logout-btn" onClick={handleLogout} title="Terminate Session">
-            <LogOut size={18} />
+            <span className="navbar-icon-wrapper">
+              <LogOut size={18} color="#ffffff" />
+            </span>
           </button>
         </div>
 

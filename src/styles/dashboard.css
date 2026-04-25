@@ -19,18 +19,19 @@
 .welcome-text h1 {
   font-size: 2.5rem;
   margin-bottom: 8px;
-  background: linear-gradient(to right, #fff, var(--cyber-primary));
+  background: linear-gradient(to right, var(--color-text), var(--color-cyber-green));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .welcome-text .highlight {
-  color: var(--cyber-primary);
-  -webkit-text-fill-color: var(--cyber-primary);
+  color: var(--color-cyber-green);
+  -webkit-text-fill-color: var(--color-cyber-green);
 }
 
 .welcome-text p {
-  color: var(--cyber-text-dim);
+  color: var(--color-text);
+  opacity: 0.6;
   font-size: 1.1rem;
 }
 
@@ -39,21 +40,24 @@
   align-items: center;
   gap: 12px;
   padding: 14px 28px;
-  background: var(--cyber-primary);
-  border: none;
-  border-radius: 12px;
-  color: #000;
+  background: rgba(0, 255, 65, 0.1);
+  border: 1px solid var(--color-cyber-green);
+  border-radius: 4px;
+  color: var(--color-cyber-green);
   font-weight: 700;
   font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
 }
 
 .initialize-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
-  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+  background: var(--color-cyber-green);
+  color: #000;
 }
 
 /* Metrics Grid */
@@ -65,42 +69,48 @@
 }
 
 .metric-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: var(--color-panel-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .metric-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-input-bg);
+  border-color: var(--color-cyber-green);
   transform: translateY(-5px);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
 }
 
 .metric-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid rgba(0, 255, 65, 0.2);
 }
 
-.metric-card.total .metric-icon { color: var(--cyber-primary); }
-.metric-card.pending .metric-icon { color: var(--cyber-gold); }
-.metric-card.security .metric-icon { color: var(--cyber-accent); }
-.metric-card.success-rate .metric-icon { color: var(--cyber-success); }
+.metric-card.total .metric-icon { color: var(--color-cyber-green); }
+.metric-card.pending .metric-icon { color: var(--color-cyber-blue); border-color: rgba(0, 229, 255, 0.2); }
+.metric-card.security .metric-icon { color: #ff3333; border-color: rgba(255, 51, 51, 0.2); }
+.metric-card.success-rate .metric-icon { color: var(--color-cyber-green); }
 
 .metric-info label {
   font-size: 0.85rem;
-  color: var(--cyber-text-dim);
+  color: var(--color-text);
+  opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -108,7 +118,7 @@
 .metric-info h3 {
   font-size: 2rem;
   margin-top: 4px;
-  font-family: 'Orbitron', sans-serif;
+  color: var(--color-text);
 }
 
 .metric-trend {
@@ -118,11 +128,11 @@
   font-size: 0.8rem;
   font-weight: 700;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
-.trend-success { background: rgba(0, 255, 157, 0.1); color: var(--cyber-success); }
-.trend-danger { background: rgba(255, 0, 85, 0.1); color: var(--cyber-accent); }
+.trend-success { background: rgba(0, 255, 65, 0.1); color: var(--color-cyber-green); border: 1px solid var(--color-cyber-green); }
+.trend-danger { background: rgba(255, 51, 51, 0.1); color: #ff3333; border: 1px solid #ff3333; }
 
 /* Main Grid */
 .main-grid {
@@ -132,11 +142,13 @@
 }
 
 .glass-panel {
-  background: rgba(10, 15, 25, 0.6);
+  background: var(--color-panel-bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 24px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .section-header {
@@ -148,16 +160,24 @@
 
 .section-header h3 {
   font-size: 1.25rem;
-  color: #fff;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.1);
 }
 
 .view-all {
-  color: var(--cyber-primary);
+  color: var(--color-cyber-blue);
   text-decoration: none;
   font-size: 0.9rem;
   display: flex;
   align-items: center;
   gap: 4px;
+  text-transform: uppercase;
+}
+
+.view-all:hover {
+  text-shadow: 0 0 10px var(--color-cyber-blue);
 }
 
 /* Tools Grid */
@@ -168,9 +188,9 @@
 }
 
 .tool-card-v2 {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -182,13 +202,10 @@
 
 .tool-card-v2:hover {
   transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 255, 65, 0.05);
+  border-color: var(--color-cyber-green);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
 }
-
-.tool-card-v2.cyan:hover { border-color: var(--cyber-primary); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
-.tool-card-v2.magenta:hover { border-color: var(--cyber-accent); box-shadow: 0 0 20px rgba(255, 0, 85, 0.1); }
-.tool-card-v2.gold:hover { border-color: var(--cyber-gold); box-shadow: 0 0 20px rgba(255, 213, 79, 0.1); }
-.tool-card-v2.green:hover { border-color: var(--cyber-success); box-shadow: 0 0 20px rgba(0, 255, 157, 0.1); }
 
 .tool-animation {
   width: 80px;
@@ -199,11 +216,14 @@
 .tool-info h4 {
   font-size: 1.1rem;
   margin-bottom: 4px;
+  text-transform: uppercase;
+  color: var(--color-text);
 }
 
 .tool-info p {
   font-size: 0.85rem;
-  color: var(--cyber-text-dim);
+  color: var(--color-text);
+  opacity: 0.6;
 }
 
 /* Activity List */
@@ -218,23 +238,24 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .activity-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--cyber-primary);
+  background: rgba(0, 255, 65, 0.05);
+  border-color: var(--color-cyber-green);
   transform: translateX(5px);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
 }
 
 .target-host {
   display: block;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text);
   margin-bottom: 4px;
   font-size: 0.95rem;
   max-width: 220px;
@@ -248,12 +269,14 @@
   align-items: center;
   gap: 8px;
   font-size: 0.8rem;
-  color: var(--cyber-text-dim);
+  color: var(--color-text);
+  opacity: 0.5;
 }
 
 .tool-tag {
-  color: var(--cyber-primary);
+  color: var(--color-cyber-blue);
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .status-pill {
@@ -261,17 +284,18 @@
   font-weight: 700;
   text-transform: uppercase;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: 4px;
+  border: 1px solid;
 }
 
-.status-pill.completed { background: rgba(0, 255, 157, 0.1); color: var(--cyber-success); }
-.status-pill.running { background: rgba(0, 242, 255, 0.1); color: var(--cyber-primary); animation: pulse 2s infinite; }
-.status-pill.failed { background: rgba(255, 77, 77, 0.1); color: var(--cyber-error); }
+.status-pill.completed { background: rgba(0, 255, 65, 0.1); color: var(--color-cyber-green); border-color: var(--color-cyber-green); }
+.status-pill.running { background: rgba(0, 229, 255, 0.1); color: var(--color-cyber-blue); border-color: var(--color-cyber-blue); animation: pulse 2s infinite; }
+.status-pill.failed { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+  0% { opacity: 1; box-shadow: 0 0 5px var(--color-cyber-blue); }
+  50% { opacity: 0.6; box-shadow: none; }
+  100% { opacity: 1; box-shadow: 0 0 5px var(--color-cyber-blue); }
 }
 
 @media (max-width: 1200px) {
