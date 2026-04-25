@@ -28,7 +28,9 @@ function Login() {
 
     try {
       setLoading(true);
-      const response = await LoginUser({ email, password });
+      const cleanEmail = email.trim().toLowerCase();
+      console.log(`[AUTH] Attempting login for: "${cleanEmail}"`);
+      const response = await LoginUser({ email: cleanEmail, password });
 
       if (response.data.success) {
         setFormSuccess("Login successful! Redirecting…");
