@@ -138,6 +138,7 @@ function Signup() {
             <div className="auth-field">
               <label htmlFor="su-username">Username</label>
               <div className={`input-wrap ${fieldErrors.username ? "has-error" : ""}`}>
+                <User className="i-icon" size={18} />
                 <input
                   id="su-username"
                   type="text"
@@ -155,6 +156,7 @@ function Signup() {
             <div className="auth-field">
               <label htmlFor="su-email">Email</label>
               <div className={`input-wrap ${fieldErrors.email ? "has-error" : ""}`}>
+                <Mail className="i-icon" size={18} />
                 <input
                   id="su-email"
                   type="email"
@@ -172,6 +174,7 @@ function Signup() {
             <div className="auth-field">
               <label htmlFor="su-password">Password</label>
               <div className={`input-wrap ${fieldErrors.password ? "has-error" : ""}`}>
+                <Lock className="i-icon" size={18} />
                 <input
                   id="su-password"
                   type="password"
@@ -205,6 +208,7 @@ function Signup() {
             <div className="auth-field">
               <label htmlFor="su-confirm">Confirm password</label>
               <div className={`input-wrap ${fieldErrors.confirm ? "has-error" : ""}`}>
+                <Lock className="i-icon" size={18} />
                 <input
                   id="su-confirm"
                   type="password"

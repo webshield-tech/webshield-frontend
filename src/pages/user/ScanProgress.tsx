@@ -14,7 +14,8 @@ import {
   Cpu,
   Database,
   Wifi,
-  RefreshCw
+  RefreshCw,
+  Lightbulb
 } from "lucide-react";
 import { cancelScan, getScanResultsById, startScan } from "../../api/scan-api";
 import { AutoScanProgress } from "../../components/AutoScanProgress";
@@ -33,6 +34,17 @@ const ScanProgress = () => {
   const [startedAt, setStartedAt] = useState<string | undefined>();
   const [logs, setLogs] = useState<string[]>([]);
   const [pollErrors, setPollErrors] = useState(0);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+  const tips = [
+    "CVE stands for Common Vulnerabilities and Exposures, a list of publicly disclosed cybersecurity vulnerabilities.",
+    "Did you know? Over 60% of web breaches involve unpatched software. Keeping systems updated is crucial.",
+    "SQL Injection (SQLi) is one of the oldest and most dangerous web vulnerabilities, allowing attackers to access databases.",
+    "Nmap (Network Mapper) is a free and open-source utility for network discovery and security auditing.",
+    "A WAF (Web Application Firewall) helps protect web applications by filtering and monitoring HTTP traffic.",
+    "Cross-Site Scripting (XSS) allows attackers to inject client-side scripts into web pages viewed by other users.",
+    "If you select Deep Scan, the process takes longer but performs a much more thorough security analysis."
+  ];
 
   const statusLabel = useMemo(() => {
     if (status === "running")   return "Scan in Progress";
@@ -57,9 +69,17 @@ const ScanProgress = () => {
       const interval = setInterval(() => {
         setLogs(prev => [messages[Math.floor(Math.random() * messages.length)], ...prev].slice(0, 6));
       }, 4000);
-      return () => clearInterval(interval);
+      
+      const tipInterval = setInterval(() => {
+        setCurrentTipIndex(prev => (prev + 1) % tips.length);
+      }, 8000);
+
+      return () => {
+        clearInterval(interval);
+        clearInterval(tipInterval);
+      };
     }
-  }, [status]);
+  }, [status, tips.length]);
 
   useEffect(() => {
     if (!scanId) return;
@@ -250,6 +270,18 @@ const ScanProgress = () => {
                 </div>
               </div>
             </div>
+
+            {status === "running" && (
+              <div style={{ marginTop: "20px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", borderLeft: "4px solid var(--cyber-primary)", borderRadius: "4px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", color: "var(--cyber-primary)", fontFamily: "Orbitron, sans-serif", fontSize: "0.85rem", fontWeight: 800 }}>
+                  <Lightbulb size={16} />
+                  <span>Security Tip</span>
+                </div>
+                <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.9rem", lineHeight: 1.5, margin: 0, minHeight: "40px" }}>
+                  {tips[currentTipIndex]}
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Right Panel: Live Logs */}

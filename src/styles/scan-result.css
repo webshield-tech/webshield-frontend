@@ -33,7 +33,7 @@
 
 .header-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: 4px;
   margin: 0;
@@ -257,6 +257,8 @@
   font-size: 1.1rem;
   font-weight: 800;
   margin-bottom: 8px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .severity-tag {
@@ -272,6 +274,8 @@
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 20px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .recommendation {

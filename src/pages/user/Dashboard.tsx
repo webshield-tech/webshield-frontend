@@ -10,7 +10,12 @@ import {
   Play, 
   ArrowUpRight,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Globe,
+  MessageSquare,
+  Github,
+  Linkedin,
+  Mail
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getScanHistory } from "../../api/scan-api";
@@ -226,9 +231,38 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-          </div>
         </section>
       </div>
+
+      {/* FSociety PK Branding Section */}
+      <section className="fsociety-section glass-panel" style={{ marginTop: "40px", padding: "32px" }}>
+        <div className="section-header" style={{ marginBottom: "24px" }}>
+          <h3 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "1.4rem", color: "var(--cyber-primary)", letterSpacing: "2px" }}>ABOUT FSOCIETY PK</h3>
+          <p style={{ color: "var(--cyber-text-dim)", marginTop: "8px", fontSize: "0.95rem" }}>Cybersecurity CTF Team & Platform Developers</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
+          <a href="https://fsocietypk.tech" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "4px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+            <Globe size={24} color="var(--cyber-primary)" />
+            <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>Website</span>
+          </a>
+          <a href="https://discord.com/invite/YYpFYBzH" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "4px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+            <MessageSquare size={24} color="#5865F2" />
+            <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>Discord</span>
+          </a>
+          <a href="https://github.com/orgs/fsociety-pk" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "4px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+            <Github size={24} color="#fff" />
+            <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>GitHub</span>
+          </a>
+          <a href="https://www.linkedin.com/company/fsociety-pk/" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "4px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+            <Linkedin size={24} color="#0077b5" />
+            <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>LinkedIn</span>
+          </a>
+          <a href="mailto:pkfsociety@gmail.com" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "4px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
+            <Mail size={24} color="var(--cyber-accent)" />
+            <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>Email Us</span>
+          </a>
+        </div>
+      </section>
     </div>
   );
 };

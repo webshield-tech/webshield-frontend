@@ -41,6 +41,7 @@ const ScanResult = () => {
   const [generating, setGenerating] = useState(false);
   const [exploiting, setExploiting] = useState(false);
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
+  const [exploitTarget, setExploitTarget] = useState<string>("");
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -152,15 +153,14 @@ const ScanResult = () => {
     }
   };
 
-  const handleExploit = async (vulnTitle: string) => {
-    const userInput = window.prompt(
-      `WARNING: You are about to run a Proof of Concept (PoC) for "${vulnTitle}".\n\nOnly proceed if you have explicit authorization for this target.\n\nType 'CONFIRM' to proceed:`
-    );
-    if (userInput !== 'CONFIRM') {
-      showToast("error", "PoC cancelled. Confirmation was not typed correctly.");
-      return;
-    }
+  const handleExploitRequest = (vulnTitle: string) => {
+    setExploitTarget(vulnTitle);
+  };
 
+  const executeExploit = async () => {
+    if (!exploitTarget) return;
+    const vulnTitle = exploitTarget;
+    setExploitTarget("");
     setExploiting(true);
     showToast("error", "Initiating PoC Mode…");
 
@@ -176,8 +176,7 @@ const ScanResult = () => {
       });
       const resData = response.data;
       if (resData.success) {
-        showToast("success", "PoC completed. Check logs for details.");
-        // If there's an explanation in the response, we could show it in a modal, but for now we rely on the backend response.
+        showToast("success", "PoC completed. Check results.");
         if (resData.simulation?.explanation) {
             setReportModal({
                 open: true,
@@ -203,7 +202,7 @@ const ScanResult = () => {
       vulnerabilities.find((v: any) =>
         ["critical", "high"].includes(String(v?.severity || "").toLowerCase())
       ) || vulnerabilities[0];
-    await handleExploit(prioritized.title || prioritized.name || "Top Finding");
+    await handleExploitRequest(prioritized.title || prioritized.name || "Top Finding");
   };
 
   const handleRetryFailedScan = async () => {
@@ -288,10 +287,10 @@ const ScanResult = () => {
               <div className="summary-panel glass-panel">
                 <div className="panel-section">
                   <label>Target URL</label>
-                  <div className="target-link">
+                  <a href={data.targetUrl || data.url} target="_blank" rel="noopener noreferrer" className="target-link" style={{ textDecoration: 'none' }}>
                     <span className="truncate">{data.targetUrl || data.url}</span>
                     <ExternalLink size={14} />
-                  </div>
+                  </a>
                 </div>
                 <div className="panel-divider"></div>
                 <div className="panel-section">
@@ -367,7 +366,7 @@ const ScanResult = () => {
                             <button
                               className="action-btn error"
                               style={{ marginTop: "12px", fontSize: "0.8rem", padding: "6px 14px" }}
-                              onClick={() => handleExploit(v.title || v.name)}
+                              onClick={() => handleExploitRequest(v.title || v.name)}
                               disabled={exploiting}
                             >
                               <Sparkles size={14} />
@@ -381,13 +380,34 @@ const ScanResult = () => {
                     <div className="raw-results-panel glass-panel">
                       <div className="panel-header-mini">
                         <Terminal size={16} />
-                        <span>Raw Engine Output</span>
+                        <span>Scan Analysis Results</span>
                       </div>
-                      <pre className="raw-terminal">
-                        {typeof data.results === "object"
-                          ? JSON.stringify(data.results, null, 2)
-                          : data.results || "No output data available."}
-                      </pre>
+                      <div style={{ padding: "24px", textAlign: "center" }}>
+                        {data?.status === "completed" && vulnerabilities.length === 0 ? (
+                          <>
+                            <CheckCircle size={48} style={{ color: "var(--cyber-primary)", margin: "0 auto 16px auto", display: "block" }} />
+                            <h3 style={{ color: "var(--cyber-text)", marginBottom: "8px" }}>No Vulnerabilities Found!</h3>
+                            <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: "500px", margin: "0 auto" }}>
+                              Great news! The scanning engine did not detect any high-severity issues on this target during this specific scan. However, security is an ongoing process. We recommend running deep scans regularly and combining automated tools with manual testing.
+                            </p>
+                          </>
+                        ) : data?.status === "failed" ? (
+                           <>
+                             <AlertTriangle size={48} style={{ color: "var(--cyber-accent)", margin: "0 auto 16px auto", display: "block" }} />
+                             <h3 style={{ color: "var(--cyber-text)", marginBottom: "8px" }}>Scan Failed / Host Unreachable</h3>
+                             <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: "500px", margin: "0 auto" }}>
+                               The scanning engine could not reach the target or encountered an error. Please ensure the target is online, your URL is correct, and that firewalls are not blocking the scan.
+                             </p>
+                             <pre className="raw-terminal" style={{ marginTop: "20px", textAlign: "left" }}>
+                               {typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : data.results || "No error details provided."}
+                             </pre>
+                           </>
+                        ) : (
+                          <pre className="raw-terminal" style={{ textAlign: "left" }}>
+                            {typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : data.results || "No output data available."}
+                          </pre>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -422,6 +442,39 @@ const ScanResult = () => {
               </div>
               <div className="modal-footer">
                 <button className="primary-action-btn" onClick={handleDownload}>Export PDF</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {exploitTarget && (
+          <div className="modal-overlay-premium" onClick={() => setExploitTarget("")}>
+            <div className="modal-content-premium" style={{ maxWidth: "500px" }} onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title" style={{ color: "var(--cyber-accent)" }}>
+                  <AlertTriangle size={20} />
+                  <span>Confirm Exploit Simulation</span>
+                </div>
+                <button className="close-modal-btn" onClick={() => setExploitTarget("")}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body-premium">
+                <p style={{ marginBottom: "16px" }}>
+                  You are about to launch a safe Proof of Concept (PoC) for <strong>{exploitTarget}</strong>.
+                </p>
+                <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.5, marginBottom: "20px" }}>
+                  By proceeding, you confirm that you have explicit authorization to perform active security testing on this target. This action will be logged.
+                </p>
+                <div style={{ background: "rgba(255, 0, 85, 0.1)", borderLeft: "3px solid var(--cyber-accent)", padding: "12px", fontSize: "0.85rem", color: "var(--cyber-text)" }}>
+                  ⚠️ Only use this feature on systems you own or have permission to test (e.g., localhost).
+                </div>
+              </div>
+              <div className="modal-footer" style={{ display: "flex", gap: "12px" }}>
+                <button className="action-btn secondary" onClick={() => setExploitTarget("")}>Cancel</button>
+                <button className="action-btn primary" style={{ background: "var(--cyber-accent)", boxShadow: "0 0 15px rgba(255,0,85,0.4)" }} onClick={executeExploit}>
+                  I Confirm, Launch PoC
+                </button>
               </div>
             </div>
           </div>

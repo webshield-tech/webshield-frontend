@@ -116,6 +116,7 @@ function Login() {
             <div className="auth-field">
               <label htmlFor="login-email">Email</label>
               <div className={`input-wrap ${emailError ? "has-error" : ""}`}>
+                <Mail className="i-icon" size={18} />
                 <input
                   id="login-email"
                   type="email"
@@ -136,6 +137,7 @@ function Login() {
                 <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
               </div>
               <div className={`input-wrap ${passwordError ? "has-error" : ""}`}>
+                <Lock className="i-icon" size={18} />
                 <input
                   id="login-password"
                   type="password"

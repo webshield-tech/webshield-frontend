@@ -7,14 +7,12 @@ function saveTextAsPdf(filename: string, content: string) {
   // List of all headings
   const sectionHeadings = [
     "VULN SPECTRA SECURITY SCAN REPORT",
-    "Scan Information",
-    "AI Security Analysis",
-    "Raw Scan Results",
+    "Scan Overview",
+    "Security Analysis & Recommendations",
     "END OF REPORT"
   ];
   const forceStartOnNewPage = new Set([
-    "AI Security Analysis",
-    "Raw Scan Results",
+    "Security Analysis & Recommendations",
     "END OF REPORT"
   ]);
 

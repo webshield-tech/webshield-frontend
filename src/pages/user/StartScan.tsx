@@ -10,7 +10,8 @@ import {
   AlertCircle, 
   ArrowRight, 
   Loader2,
-  ChevronLeft
+  ChevronLeft,
+  X
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { startScan } from "../../api/scan-api";
@@ -30,8 +31,10 @@ const StartScan = () => {
 
   const [url, setUrl] = useState("");
   const [tool, setTool] = useState<ScanTool>("nmap");
+  const [scanMode, setScanMode] = useState<"quick" | "full">("quick");
   const [scanLoading, setScanLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showSqlmapModal, setShowSqlmapModal] = useState(false);
 
   useEffect(() => {
     const toolParam = searchParams.get("tool");
@@ -60,8 +63,8 @@ const StartScan = () => {
     { id: "sslscan", name: "SSLScan", desc: "TLS Configuration", anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION" },
   ] as const;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent, skipSqlmapCheck = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     setError("");
 
     if (user && user.usedScan >= user.scanLimit) {
@@ -74,11 +77,18 @@ const StartScan = () => {
       return;
     }
 
+    if (tool === "sqlmap" && !skipSqlmapCheck) {
+      setShowSqlmapModal(true);
+      return;
+    }
+
     try {
       setScanLoading(true);
+      setShowSqlmapModal(false);
       const scanData = {
         targetUrl: url.trim().replace(/\/+$/, ""),
         scanType: tool === "sslscan" ? "ssl" : tool === "auto" ? "all" : tool,
+        scanMode,
       };
       const response = await startScan(scanData);
 
@@ -180,6 +190,25 @@ const StartScan = () => {
                 </div>
               </div>
 
+              <div className="module-group" style={{ marginTop: "20px" }}>
+                <label>Scan Intensity</label>
+                <div style={{ display: "flex", gap: "16px", marginTop: "12px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: scanMode === "quick" ? "var(--cyber-primary)" : "var(--cyber-text)" }}>
+                    <input type="radio" name="scanMode" value="quick" checked={scanMode === "quick"} onChange={() => setScanMode("quick")} style={{ accentColor: "var(--cyber-primary)" }} />
+                    <span style={{ fontFamily: "Orbitron, sans-serif", fontSize: "0.9rem", fontWeight: scanMode === "quick" ? 800 : 400 }}>Quick Mode</span>
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: scanMode === "full" ? "var(--cyber-primary)" : "var(--cyber-text)" }}>
+                    <input type="radio" name="scanMode" value="full" checked={scanMode === "full"} onChange={() => setScanMode("full")} style={{ accentColor: "var(--cyber-primary)" }} />
+                    <span style={{ fontFamily: "Orbitron, sans-serif", fontSize: "0.9rem", fontWeight: scanMode === "full" ? 800 : 400 }}>Deep Scan (Takes longer)</span>
+                  </label>
+                </div>
+                {tool === "auto" && scanMode === "full" && (
+                  <p style={{ marginTop: "12px", fontSize: "0.8rem", color: "var(--cyber-accent)", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <AlertCircle size={14} /> Warning: Deep Scan on Auto-Scan mode will execute thorough tests for all tools. This process may take a significant amount of time.
+                  </p>
+                )}
+              </div>
+
               <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim()}>
                 {scanLoading ? (
                   <>
@@ -242,6 +271,41 @@ const StartScan = () => {
           </aside>
         </div>
       </div>
+
+      {showSqlmapModal && (
+        <div className="modal-overlay-premium" onClick={() => setShowSqlmapModal(false)}>
+          <div className="modal-content-premium" style={{ maxWidth: "600px" }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title" style={{ color: "var(--cyber-accent)" }}>
+                <AlertCircle size={20} />
+                <span>Confirm SQLMap Execution</span>
+              </div>
+              <button className="close-modal-btn" onClick={() => setShowSqlmapModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body-premium">
+              <p style={{ marginBottom: "16px" }}>
+                You have selected <strong>SQLMap</strong>, a very powerful tool used to detect and exploit SQL injection flaws.
+              </p>
+              <p style={{ color: "var(--cyber-text-dim)", marginBottom: "16px", fontSize: "0.95rem" }}>
+                This tool sends numerous crafted database queries that can heavily load the target server. Running it on a production database or without explicit permission can cause disruptions or data loss.
+              </p>
+              <ul style={{ color: "var(--cyber-accent)", fontSize: "0.9rem", marginLeft: "20px", marginBottom: "20px" }}>
+                <li>I have permission to test this target.</li>
+                <li>I understand this may impact the target's database performance.</li>
+              </ul>
+            </div>
+            <div className="modal-footer" style={{ display: "flex", gap: "16px" }}>
+              <button className="action-btn secondary" onClick={() => setShowSqlmapModal(false)}>Cancel</button>
+              <button className="action-btn primary" style={{ background: "var(--cyber-accent)", boxShadow: "0 0 15px rgba(255,0,85,0.4)" }} onClick={(e) => handleSubmit(e, true)}>
+                I Agree, Launch SQLMap
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

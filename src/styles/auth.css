@@ -207,6 +207,45 @@
   margin-top: 4px;
 }
 
+/* Password Strength Meter */
+.pw-strength {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pw-bars {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.pw-bar {
+  height: 4px;
+  flex: 1;
+  background: var(--color-border);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.pw-bar.active-weak { background: #ff3333; }
+.pw-bar.active-fair { background: #ffaa00; }
+.pw-bar.active-good { background: #00ccff; }
+.pw-bar.active-strong { background: #00ff41; }
+
+.pw-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Fira Code', monospace;
+}
+
+.pw-label.weak { color: #ff3333; }
+.pw-label.fair { color: #ffaa00; }
+.pw-label.good { color: #00ccff; }
+.pw-label.strong { color: #00ff41; }
+
 /* SUBMIT BUTTON */
 .auth-submit-btn {
   width: 100%;
