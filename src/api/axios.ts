@@ -63,14 +63,21 @@ api.interceptors.response.use(
     }
     
 if (error.response?.status === 401) {
-  localStorage.removeItem('authToken');
-  sessionStorage.clear();
-  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  // Don't clear storage if we are already on login or signup routes to avoid UI flickers or race conditions
+  const isAuthRoute = originalRequest?.url?.includes('/login') || originalRequest?.url?.includes('/signup');
+  
+  if (!isAuthRoute) {
+    localStorage.removeItem('authToken');
+    sessionStorage.clear();
+    // Note: httpOnly cookies cannot be cleared via document.cookie, 
+    // but we try to clear any legacy non-httpOnly ones just in case.
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  }
 
   return Promise.reject({
     isAuthError: true,
     status: 401,
-    message: 'Authentication required'
+    message: isAuthRoute ? 'Invalid credentials' : 'Authentication required'
   });
 }
     
