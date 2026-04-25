@@ -5,7 +5,7 @@ import HeroSection from "../../components/landing/HeroSection";
 import ToolCards from "../../components/landing/ToolCards";
 import "../../styles/landing.css";
 import Lottie from "lottie-react";
-import shieldAnimation from "../../assets/icons/Shield.json";
+
 
 const Landing = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -31,11 +31,7 @@ const Landing = () => {
         <div className="nav-container">
           <div className="nav-logo">
             <div className="logo-wrap">
-              <Lottie
-                animationData={shieldAnimation}
-                loop
-                className="logo-lottie"
-              />
+              <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             <span className="logo-text">Vuln<span className="text-primary">Spectra</span></span>
           </div>
@@ -192,11 +188,7 @@ const Landing = () => {
           <div className="footer-brand-section">
             <div className="footer-logo">
               <div className="logo-wrap-small">
-                <Lottie
-                  animationData={shieldAnimation}
-                  loop
-                  className="footer-lottie"
-                />
+                <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <span className="logo-text">Vuln Spectra</span>
             </div>
