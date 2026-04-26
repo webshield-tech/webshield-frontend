@@ -17,7 +17,6 @@ import {
   Loader2,
   X
 } from "lucide-react";
-import {
 import { VulnerabilityRemediation } from "../../components/VulnerabilityRemediation";
 import {
   getScanResultsById,
