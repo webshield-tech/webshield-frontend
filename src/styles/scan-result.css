@@ -411,4 +411,28 @@
   .result-grid-layout {
     grid-template-columns: 1fr;
   }
+  .result-sidebar { order: -1; }
+}
+
+@media (max-width: 768px) {
+  .result-page-premium { padding: 20px 16px; }
+  .result-header-premium {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .header-right { flex-wrap: wrap; width: 100%; }
+  .header-right .action-btn { flex: 1; justify-content: center; font-size: 0.7rem; padding: 10px 12px; }
+  .header-title { font-size: 1.2rem; }
+}
+
+@media (max-width: 480px) {
+  .result-page-premium { padding: 16px 12px; }
+  .header-right { flex-direction: column; }
+  .header-right .action-btn { width: 100%; }
+  .finding-card { flex-direction: column; padding: 20px; }
+  .summary-panel { padding: 20px; }
+  .modal-content-premium { margin: 0; border-radius: 0; max-height: 100vh; }
+  .modal-body-premium { padding: 20px 16px; }
 }\n.markdown-body { font-family: 'Rajdhani', sans-serif; color: var(--cyber-text); }\n.markdown-body h1, .markdown-body h2, .markdown-body h3 { color: var(--cyber-primary); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }\n.markdown-body ul { margin-left: 20px; margin-bottom: 15px; }\n.markdown-body li { margin-bottom: 5px; }\n.markdown-body strong { color: var(--cyber-accent); }\n.markdown-body pre, .markdown-body code { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; color: var(--cyber-success); }

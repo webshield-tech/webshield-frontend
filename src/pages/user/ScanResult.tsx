@@ -24,13 +24,103 @@ import {
   downloadReport,
   startScan,
 } from "../../api/scan-api";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import "../../styles/scan-result.css";
 import saveTextAsPdf from "../../utils/saveAsPdf";
 import api from "../../api/axios";
 
 type ToastType = "success" | "error" | "";
+
+// ─── Structured Report Viewer ─────────────────────────────────────────────────
+function parseReportSections(content: string) {
+  const sections: { title: string; body: string }[] = [];
+  const lines = content.split("\n");
+  let current: { title: string; body: string } | null = null;
+
+  const headingRe = /^##?\s+(.+)$/;
+
+  for (const line of lines) {
+    const m = line.match(headingRe);
+    if (m) {
+      if (current) sections.push(current);
+      current = { title: m[1].trim(), body: "" };
+    } else if (current) {
+      current.body += line + "\n";
+    } else {
+      // preamble before first heading — attach as intro
+      if (!sections.length) {
+        if (!current) current = { title: "Overview", body: "" };
+        current.body += line + "\n";
+      }
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
+function sectionIcon(title: string) {
+  const t = title.toLowerCase();
+  if (t.includes("finding") || t.includes("vulnerabilit")) return "🔍";
+  if (t.includes("analysis") || t.includes("detail")) return "📊";
+  if (t.includes("recommend") || t.includes("remediat")) return "✅";
+  if (t.includes("overview") || t.includes("summary")) return "📋";
+  return "📌";
+}
+
+function sectionColor(title: string) {
+  const t = title.toLowerCase();
+  if (t.includes("finding") || t.includes("vulnerabilit")) return "#ff4f4f";
+  if (t.includes("analysis")) return "#00d4ff";
+  if (t.includes("recommend") || t.includes("remediat")) return "#00ff9d";
+  return "var(--cyber-primary)";
+}
+
+function ReportViewer({ content }: { content: string }) {
+  const sections = parseReportSections(content);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {sections.map((sec, i) => (
+        <div
+          key={i}
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: `1px solid rgba(255,255,255,0.07)`,
+            borderLeft: `3px solid ${sectionColor(sec.title)}`,
+            borderRadius: "6px",
+            padding: "20px 24px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+            <span style={{ fontSize: "1.2rem" }}>{sectionIcon(sec.title)}</span>
+            <h3
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: "0.85rem",
+                fontWeight: 800,
+                color: sectionColor(sec.title),
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                margin: 0,
+              }}
+            >
+              {sec.title}
+            </h3>
+          </div>
+          <div
+            style={{
+              fontFamily: "'Rajdhani', sans-serif",
+              fontSize: "0.95rem",
+              color: "rgba(255,255,255,0.75)",
+              lineHeight: 1.75,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {sec.body.trim()}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const ScanResult = () => {
   const { scanId } = useParams<{ scanId: string }>();
@@ -122,6 +212,10 @@ const ScanResult = () => {
 
   const handleView = async () => {
     if (!scanId) return;
+    if (!hasReport) {
+      showToast("error", "Please click 'Generate AI Report' first to see the analysis.");
+      return;
+    }
     try {
       const res = await viewReport(scanId, "english");
       const reportData = res.data;
@@ -139,40 +233,55 @@ const ScanResult = () => {
 
   const handleDownload = async () => {
     if (!scanId) return;
+    if (!hasReport) {
+      showToast("error", "Please click 'Generate AI Report' first to analyze the findings.");
+      return;
+    }
+    setGenerating(true);
     try {
       const res = await downloadReport(scanId, "english");
       const reportData = res.data;
-
       if (reportData?.success && reportData?.report?.content) {
         const target = data?.targetUrl || data?.url || "unknown";
         const filename = `Vuln-Spectra-Report-${target.replace(/https?:\/\//, "").replace(/[^a-z0-9]/gi, "-")}-${scanId.slice(-6)}`;
         saveTextAsPdf(filename, reportData.report.content);
         showToast("success", "PDF downloaded successfully.");
+        // Refresh so hasReport badge updates
+        const refreshRes = await getScanResultsById(scanId);
+        setData(refreshRes.data?.scan || refreshRes.data);
       } else {
-        showToast("error", reportData?.message || "Report not ready. Please generate it first.");
+        showToast("error", "Could not retrieve report content.");
       }
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.response?.data?.error || "Download failed. Please generate the report first.";
+      const msg = e?.response?.data?.message || e?.response?.data?.error || "Download failed. Please try again.";
       showToast("error", msg);
+    } finally {
+      setGenerating(false);
     }
   };
 
   const handleDownloadTxt = () => {
     if (!data?.results) {
-      showToast("error", "No data to download.");
+      showToast("error", "No scan data to download.");
       return;
     }
-    const content = typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : String(data.results);
-    const blob = new Blob([content], { type: 'text/plain' });
+    const content = typeof data.results === "object"
+      ? JSON.stringify(data.results, null, 2)
+      : String(data.results);
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+    const a = document.createElement("a");
     const target = data?.targetUrl || data?.url || "unknown";
+    a.href = url;
     a.download = `Vuln-Spectra-Raw-${target.replace(/https?:\/\//, "").replace(/[^a-z0-9]/gi, "-")}-${scanId?.slice(-6) || "scan"}.txt`;
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Revoke after a short delay to ensure download starts
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1000);
     showToast("success", "Raw data downloaded successfully.");
   };
 
@@ -292,7 +401,7 @@ const ScanResult = () => {
               <FileText size={18} />
               <span>Raw TXT</span>
             </button>
-            <button className="action-btn secondary" onClick={handleDownload} disabled={generating}>
+            <button className="action-btn secondary" onClick={handleDownload} disabled={generating || !hasReport} title={!hasReport ? "Generate AI Report first" : "Download PDF"}>
               <Download size={18} />
               <span>Download PDF</span>
             </button>
@@ -341,7 +450,7 @@ const ScanResult = () => {
               </div>
 
               <div className="actions-panel glass-panel">
-                <button className="sidebar-action-btn" onClick={handleView} disabled={generating}>
+                <button className="sidebar-action-btn" onClick={handleView} disabled={generating || !hasReport} title={!hasReport ? "Generate AI Report first" : "View AI Report"}>
                   <Eye size={18} />
                   <span>View AI Report</span>
                 </button>
@@ -467,10 +576,8 @@ const ScanResult = () => {
                   <X size={20} />
                 </button>
               </div>
-              <div className="modal-body-premium markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {reportModal.content}
-                </ReactMarkdown>
+              <div className="modal-body-premium">
+                <ReportViewer content={reportModal.content} />
               </div>
               <div className="modal-footer">
                 <button className="primary-action-btn" onClick={handleDownload}>Export PDF</button>

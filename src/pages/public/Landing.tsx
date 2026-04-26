@@ -42,10 +42,10 @@ const Landing = () => {
 
           <div className={`nav-links ${isMenuOpen ? "active" : ""}`}>
             <a href="#features" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-              <span className="nav-link-num">01.</span> Features
+              Features
             </a>
             <a href="#tools" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-              <span className="nav-link-num">02.</span> Tools
+              Tools
             </a>
             <Link to="/login" className="nav-button-outline">
               Sign In

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { LoginUser } from "../../api/auth-api";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
+import { validateEmail } from "../../utils/validators";
 
 function Login() {
   const navigate = useNavigate();
@@ -23,7 +24,12 @@ function Login() {
     e.preventDefault();
     setEmailError(""); setPasswordError(""); setFormError(""); setFormSuccess("");
 
-    if (!email) { setEmailError("Email is required."); return; }
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      setEmailError(emailValidation.message);
+      return;
+    }
+
     if (!password) { setPasswordError("Password is required."); return; }
 
     try {
@@ -176,6 +182,9 @@ function Login() {
             <p>
               Don't have an account?
               <Link to="/signup" className="auth-link">Sign up</Link>
+            </p>
+            <p style={{ marginTop: '12px' }}>
+              <Link to="/" className="auth-home-link">← Back to Home</Link>
             </p>
           </div>
         </div>

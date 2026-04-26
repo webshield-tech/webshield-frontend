@@ -1,6 +1,21 @@
 export const validateUsername = (
   username: string
 ): { isValid: boolean; message: string } => {
+  const sqliPatterns = [
+    /'OR\s+'\d+'\s*=\s*'\d+'/i,
+    /--/i,
+    /;\s*DROP/i,
+    /UNION\s+SELECT/i,
+    /admin'\s*--/i
+  ];
+
+  if (sqliPatterns.some(pattern => pattern.test(username))) {
+    return {
+      isValid: false,
+      message: "Nice try, but our developer is smarter than that! 😉 SQLi won't work here.",
+    };
+  }
+
   if (username.length < 3) {
     return {
       isValid: false,
@@ -27,6 +42,20 @@ export const validateEmail = (
 ): { isValid: boolean; message: string } => {
   if (!email) {
     return { isValid: false, message: "Email is required" };
+  }
+
+  const sqliPatterns = [
+    /'OR\s+'\d+'\s*=\s*'\d+'/i,
+    /--/i,
+    /;\s*DROP/i,
+    /UNION\s+SELECT/i
+  ];
+
+  if (sqliPatterns.some(pattern => pattern.test(email))) {
+    return {
+      isValid: false,
+      message: "An injection attempt? On a security platform? Bold move! But it's blocked. 🛡️",
+    };
   }
 
   const emailLower = email.toLowerCase().trim();

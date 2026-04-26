@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { signupUser } from "../../api/auth-api.ts";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
+import { validateUsername, validateEmail, validatePassword } from "../../utils/validators";
 
 /* ---- Password analysis ---- */
 function analysePassword(pw: string) {
@@ -54,13 +55,17 @@ function Signup() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!username.trim())            errs.username = "Username is required.";
-    else if (username.length < 3)    errs.username = "Username must be at least 3 characters.";
-    if (!email.trim())               errs.email    = "Email is required.";
-    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = "Please enter a valid email.";
-    if (!password)                   errs.password = "Password is required.";
-    else if (score < 3)              errs.password = "Password is too weak. Please make it stronger.";
-    if (password !== confirmPassword) errs.confirm = "Passwords do not match.";
+    
+    const userVal = validateUsername(username);
+    if (!userVal.isValid) errs.username = userVal.message;
+
+    const emailVal = validateEmail(email);
+    if (!emailVal.isValid) errs.email = emailVal.message;
+
+    const passVal = validatePassword(password);
+    if (!passVal.isValid) errs.password = passVal.message;
+    else if (password !== confirmPassword) errs.confirm = "Passwords do not match.";
+    
     return errs;
   };
 
@@ -241,6 +246,9 @@ function Signup() {
               <p>
                 Already have an account?
                 <Link to="/login" className="auth-link">Log in</Link>
+              </p>
+              <p style={{ marginTop: '12px' }}>
+                <Link to="/" className="auth-home-link">← Back to Home</Link>
               </p>
             </div>
           </form>

@@ -462,11 +462,17 @@
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {
   .navbar-container {
-    /* switch to flex — logo | actions | toggle */
     display: flex;
   }
   .navbar-links  { display: none; }
   .navbar-search { display: none; }
   .navbar-actions-group { margin-left: auto; }
   .mobile-toggle { display: flex; }
+}
+
+@media (max-width: 600px) {
+  .top-navbar { height: 56px; }
+  .navbar-container { padding: 0 16px; }
+  .navbar-logo-text { font-size: 0.85rem; letter-spacing: 1px; }
+  .nav-action-btn span { display: none; } /* icon only on mobile */
 }
