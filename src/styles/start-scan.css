@@ -264,6 +264,86 @@
   transform: scale(1);
 }
 
+/* Intensity Selector */
+.intensity-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.intensity-selector.mobile-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.intensity-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--cyber-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intensity-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.intensity-card.selected {
+  background: rgba(0, 255, 157, 0.04);
+  border-color: var(--cyber-primary);
+  box-shadow: 0 6px 24px rgba(0, 255, 157, 0.12);
+}
+
+.intensity-badge {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  width: fit-content;
+}
+
+.quick-badge {
+  background: rgba(0, 242, 255, 0.12);
+  color: #00f2ff;
+  border: 1px solid rgba(0, 242, 255, 0.3);
+}
+
+.intensity-card.selected .quick-badge {
+  background: rgba(0, 242, 255, 0.25);
+}
+
+.deep-badge {
+  background: rgba(255, 77, 77, 0.12);
+  color: #ff4d4d;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.intensity-card.selected .deep-badge {
+  background: rgba(255, 77, 77, 0.25);
+}
+
+.intensity-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.intensity-card p {
+  font-size: 0.82rem;
+  color: var(--cyber-text-dim);
+  line-height: 1.55;
+  margin: 0;
+}
+
 /* Launch Button */
 .launch-btn {
   margin-top: 12px;

@@ -2,7 +2,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { 
-  Shield, 
   Terminal, 
   Download, 
   Eye, 
@@ -159,26 +158,25 @@ const ScanResult = () => {
   const vulnerabilities = useMemo(() => {
     if (!data?.results) return [];
     const res = data.results;
+
     if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
       return res.vulnerabilities;
     }
+
+    // ── Nikto findings ──────────────────────────────────────────────────────────
     if (Array.isArray(res.findings) && res.findings.length > 0) {
       const critical = new Set((res.criticalFindings || []).map((x: string) => String(x)));
       const high = new Set((res.highFindings || []).map((x: string) => String(x)));
       const medium = new Set((res.mediumFindings || []).map((x: string) => String(x)));
       return res.findings.map((finding: string) => ({
         title: finding,
-        severity: critical.has(finding)
-          ? "Critical"
-          : high.has(finding)
-          ? "High"
-          : medium.has(finding)
-          ? "Medium"
-          : "Low",
+        severity: critical.has(finding) ? "Critical" : high.has(finding) ? "High" : medium.has(finding) ? "Medium" : "Low",
         description: finding,
         recommendation: "Review this finding and harden configuration before production.",
       }));
     }
+
+    // ── Nmap open ports ─────────────────────────────────────────────────────────
     if (Array.isArray(res.openPorts) && res.openPorts.length > 0) {
       return res.openPorts.map((port: string) => ({
         title: `Open Port: ${port}`,
@@ -187,9 +185,55 @@ const ScanResult = () => {
         recommendation: "Close unnecessary ports or restrict access using firewall rules.",
       }));
     }
+
+    // ── SSLScan issues ───────────────────────────────────────────────────────────
+    const sslIssues: any[] = [];
+    if (Array.isArray(res.deprecatedProtocols) && res.deprecatedProtocols.length > 0) {
+      res.deprecatedProtocols.forEach((proto: string) => {
+        sslIssues.push({
+          title: `Deprecated Protocol Enabled: ${proto.trim()}`,
+          severity: "Critical",
+          description: `The server accepts connections using the deprecated/insecure protocol: ${proto.trim()}`,
+          recommendation: "Disable SSLv2, SSLv3, TLS 1.0, and TLS 1.1. Only allow TLS 1.2 and TLS 1.3.",
+        });
+      });
+    }
+    if (Array.isArray(res.weakCiphers) && res.weakCiphers.length > 0) {
+      res.weakCiphers.forEach((cipher: string) => {
+        sslIssues.push({
+          title: `Weak Cipher Suite: ${cipher.trim()}`,
+          severity: "High",
+          description: `The server offers a weak cipher suite: ${cipher.trim()}`,
+          recommendation: "Remove RC4, NULL, EXPORT, DES, 3DES and ANON ciphers from the server configuration.",
+        });
+      });
+    }
+    if (Array.isArray(res.certificateIssues) && res.certificateIssues.length > 0) {
+      res.certificateIssues.forEach((issue: string) => {
+        sslIssues.push({
+          title: `Certificate Issue: ${issue.trim()}`,
+          severity: "High",
+          description: issue.trim(),
+          recommendation: "Renew the SSL certificate and ensure it matches the domain name. Use a trusted Certificate Authority.",
+        });
+      });
+    }
+    if (Array.isArray(res.heartbleedVulnerable) && res.heartbleedVulnerable.length > 0) {
+      sslIssues.push({
+        title: "Heartbleed Vulnerability (CVE-2014-0160)",
+        severity: "Critical",
+        description: "The server is vulnerable to the Heartbleed bug which allows attackers to read memory.",
+        recommendation: "Update OpenSSL to a patched version (1.0.1g or later) immediately.",
+      });
+    }
+    if (sslIssues.length > 0) return sslIssues;
+
+    // ── SQLMap results ──────────────────────────────────────────────────────────
+    if (res.vulnerable && Array.isArray(res.vulnerabilities)) return res.vulnerabilities;
     if (Array.isArray(res.vulns)) return res.vulns;
     return [];
   }, [data]);
+
 
   const handleGenerate = async () => {
     if (!scanId) return;
@@ -324,18 +368,6 @@ const ScanResult = () => {
     } finally {
       setExploiting(false);
     }
-  };
-
-  const handleAutoExploit = async () => {
-    if (!vulnerabilities.length) {
-      showToast("error", "No finding available for simulation.");
-      return;
-    }
-    const prioritized =
-      vulnerabilities.find((v: any) =>
-        ["critical", "high"].includes(String(v?.severity || "").toLowerCase())
-      ) || vulnerabilities[0];
-    await handleExploitRequest(prioritized.title || prioritized.name || "Top Finding");
   };
 
   const handleRetryFailedScan = async () => {

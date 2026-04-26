@@ -26,6 +26,30 @@ import sslscanAnimation from "../../assets/icons/ssl.json";
 import autoAnimation from "../../assets/icons/Success.json";
 import { useToast, ToastContainer } from "../../components/Toast";
 
+// Per-tool scan mode descriptions
+const SCAN_MODE_DESCRIPTIONS: Record<string, { quick: { title: string; detail: string }; full: { title: string; detail: string } }> = {
+  nmap: {
+    quick: { title: "Quick Scan", detail: "Fast port scan on top 100 common ports. Detects open services. Best for a rapid overview. (~1-2 min)" },
+    full:  { title: "Deep Scan",  detail: "Full port range (-p-), OS fingerprinting, service version detection, NSE scripts, and CVE probing. (~5-15 min)" },
+  },
+  nikto: {
+    quick: { title: "Quick Scan", detail: "Targets the most critical web misconfigurations, outdated server headers, and common dangerous files. (~1-2 min)" },
+    full:  { title: "Deep Scan",  detail: "Comprehensive test of 6700+ vulnerabilities, directory traversal, XSS vectors, CGI abuse, and injection points. (~3-5 min)" },
+  },
+  sqlmap: {
+    quick: { title: "Quick Scan", detail: "Tests injectable parameters with Level 1 / Risk 1. Detects obvious SQL injection types. (~2-3 min)" },
+    full:  { title: "Deep Scan",  detail: "Level 5 / Risk 3 with form crawling, advanced payloads, DB enumeration, and time-based blind injection tests. (~5-10 min)" },
+  },
+  sslscan: {
+    quick: { title: "Quick Scan", detail: "Checks for deprecated protocols (SSLv2/SSLv3/TLS 1.0/1.1), weak ciphers, and certificate validity. (~30 sec)" },
+    full:  { title: "Deep Scan",  detail: "Same checks as Quick (sslscan has a single mode) — shows all cipher suites, cert chain, OCSP, and HSTS. (~30 sec)" },
+  },
+  auto: {
+    quick: { title: "Quick Scan", detail: "Runs Nmap (ports), Nikto (web headers), SSLScan (TLS), and SQLMap (Level 1) sequentially. (~5-8 min)" },
+    full:  { title: "Deep Scan",  detail: "Runs all four tools in Deep mode: full port range, comprehensive web audit, and advanced SQL injection probing. (~15-25 min)" },
+  },
+};
+
 const StartScan = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -68,11 +92,11 @@ const StartScan = () => {
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    { id: "auto", name: "Auto-Scan", desc: "Full Security Audit", anim: autoAnimation, color: "#fff", tag: "ALL-IN-ONE", tooltip: "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap for a comprehensive vulnerability report." },
-    { id: "nmap", name: "Nmap", desc: "Network Reconnaissance", anim: nmapAnimation, color: "#00f2ff", tag: "RECON", tooltip: "Advanced port reconnaissance and OS fingerprinting engine. Scans all common TCP ports and identifies running services." },
-    { id: "nikto", name: "Nikto", desc: "Web Server Scanner", anim: niktoAnimation, color: "#ff0055", tag: "WEB VULN", tooltip: "Comprehensive web server scanner. Identifies 6700+ dangerous files/programs, outdated versions, and server configuration issues." },
-    { id: "sqlmap", name: "SQLMap", desc: "SQL Injection Probe", anim: sqlmapAnimation, color: "#ffd54f", tag: "DB AUDIT", tooltip: "Automatic SQL injection detection and database takeover tool. Probes for various injection types including boolean, error, and time-based." },
-    { id: "sslscan", name: "SSLScan", desc: "TLS Configuration", anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION", tooltip: "SSL/TLS security auditor. Evaluates cipher suites, certificate validity, and identifies weak encryption protocols." },
+    { id: "auto",    name: "Auto-Scan", desc: "Full Security Audit",    anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap for a comprehensive vulnerability report." },
+    { id: "nmap",    name: "Nmap",       desc: "Network Reconnaissance", anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Advanced port reconnaissance and OS fingerprinting engine. Scans all common TCP ports and identifies running services." },
+    { id: "nikto",   name: "Nikto",      desc: "Web Server Scanner",     anim: niktoAnimation,   color: "#ff0055", tag: "WEB VULN",   tooltip: "Comprehensive web server scanner. Identifies 6700+ dangerous files/programs, outdated versions, and server configuration issues." },
+    { id: "sqlmap",  name: "SQLMap",     desc: "SQL Injection Probe",    anim: sqlmapAnimation,  color: "#ffd54f", tag: "DB AUDIT",   tooltip: "Automatic SQL injection detection and database takeover tool. Probes for various injection types including boolean, error, and time-based." },
+    { id: "sslscan", name: "SSLScan",    desc: "TLS Configuration",      anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION", tooltip: "SSL/TLS security auditor. Evaluates cipher suites, certificate validity, and identifies weak encryption protocols." },
   ] as const;
 
   const handleToolSelect = (toolId: string) => {
@@ -237,8 +261,9 @@ const StartScan = () => {
                     className={`intensity-card ${scanMode === "quick" ? "selected" : ""}`}
                     onClick={() => setScanMode("quick")}
                   >
-                    <h4>Quick Scan</h4>
-                    <p>Fast recon, minimal intrusive probes. Best for general check.</p>
+                    <div className="intensity-badge quick-badge">QUICK</div>
+                    <h4>{SCAN_MODE_DESCRIPTIONS[tool]?.quick.title ?? "Quick Scan"}</h4>
+                    <p>{SCAN_MODE_DESCRIPTIONS[tool]?.quick.detail ?? "Fast recon, minimal intrusive probes. Best for general check."}</p>
                     <div className="selection-indicator">
                       <Zap size={14} fill="currentColor" />
                     </div>
@@ -247,8 +272,9 @@ const StartScan = () => {
                     className={`intensity-card ${scanMode === "full" ? "selected" : ""}`}
                     onClick={() => setScanMode("full")}
                   >
-                    <h4>Deep Scan</h4>
-                    <p>Comprehensive scan, tests all vectors and ports. Takes longer.</p>
+                    <div className="intensity-badge deep-badge">DEEP</div>
+                    <h4>{SCAN_MODE_DESCRIPTIONS[tool]?.full.title ?? "Deep Scan"}</h4>
+                    <p>{SCAN_MODE_DESCRIPTIONS[tool]?.full.detail ?? "Comprehensive scan, tests all vectors and ports. Takes longer."}</p>
                     <div className="selection-indicator">
                       <Zap size={14} fill="currentColor" />
                     </div>
@@ -309,26 +335,55 @@ const StartScan = () => {
         <div className="modal-overlay-premium" onClick={() => setShowSqlmapModal(false)}>
           <div className="modal-content-premium" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title" style={{ color: "var(--cyber-accent)" }}>
+              <div className="modal-title" style={{ color: "#ffd54f" }}>
                 <AlertCircle size={20} />
-                <span>Confirm SQLMap</span>
+                <span>SQLMap — Select Scan Mode</span>
               </div>
               <button className="close-modal-btn" onClick={() => setShowSqlmapModal(false)}>
                 <X size={20} />
               </button>
             </div>
             <div className="modal-body-premium">
-              <p style={{ marginBottom: "16px" }}>
-                SQLMap is a powerful tool for detecting SQL injection flaws.
+              <p style={{ marginBottom: "20px", lineHeight: 1.6 }}>
+                SQLMap will probe <strong style={{ color: "#ffd54f" }}>{url}</strong> for SQL injection vulnerabilities.
+                Use it <strong>only on targets you own or have explicit permission to test</strong>.
               </p>
-              <p style={{ color: "var(--cyber-text-dim)", marginBottom: "16px", fontSize: "0.95rem" }}>
-                This can heavily load the target server and may impact database performance without proper authorization.
-              </p>
+
+              {/* Scan mode selector inside the modal */}
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", fontFamily: "'Orbitron', sans-serif", fontSize: "0.8rem", color: "var(--cyber-text-dim)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>Choose Scan Intensity</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div
+                    className={`intensity-card ${scanMode === "quick" ? "selected" : ""}`}
+                    onClick={() => setScanMode("quick")}
+                    style={{ padding: "16px" }}
+                  >
+                    <div className="intensity-badge quick-badge">QUICK</div>
+                    <h4 style={{ fontSize: "0.95rem", margin: "8px 0 4px" }}>Quick Scan</h4>
+                    <p style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>{SCAN_MODE_DESCRIPTIONS.sqlmap.quick.detail}</p>
+                    <div className="selection-indicator"><Zap size={14} fill="currentColor" /></div>
+                  </div>
+                  <div
+                    className={`intensity-card ${scanMode === "full" ? "selected" : ""}`}
+                    onClick={() => setScanMode("full")}
+                    style={{ padding: "16px" }}
+                  >
+                    <div className="intensity-badge deep-badge">DEEP</div>
+                    <h4 style={{ fontSize: "0.95rem", margin: "8px 0 4px" }}>Deep Scan</h4>
+                    <p style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>{SCAN_MODE_DESCRIPTIONS.sqlmap.full.detail}</p>
+                    <div className="selection-indicator"><Zap size={14} fill="currentColor" /></div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: "rgba(255, 213, 79, 0.08)", borderLeft: "3px solid #ffd54f", padding: "12px 16px", fontSize: "0.85rem", color: "var(--cyber-text-dim)", lineHeight: 1.5 }}>
+                Warning: This can heavily load the target server. Unauthorized scanning is illegal.
+              </div>
             </div>
             <div className="modal-footer" style={{ display: "flex", gap: "16px" }}>
               <button className="action-btn secondary" onClick={() => setShowSqlmapModal(false)}>Cancel</button>
-              <button className="action-btn primary" style={{ background: "var(--cyber-accent)" }} onClick={(e) => handleSubmit(e, true)}>
-                Confirm
+              <button className="action-btn primary" style={{ background: "#ffd54f", color: "#000" }} onClick={(e) => handleSubmit(e, true)}>
+                Confirm &amp; Launch SQLMap
               </button>
             </div>
           </div>

@@ -93,15 +93,13 @@ const ScanProgress = () => {
         if (batchId) {
           const batchRes = await getBatchResults(batchId);
           const scans = Array.isArray(batchRes.data?.scans) ? batchRes.data.scans : [];
-          if (!scans.length) {
-            throw new Error("Batch scan not found.");
-          }
+          if (!scans.length) throw new Error("Batch scan not found.");
 
           const terminalStates = ["completed", "failed", "cancelled", "canceled"];
-          const total = scans.length;
+          const total    = scans.length;
           const completed = scans.filter((s: any) => s?.status === "completed").length;
-          const failed = scans.filter((s: any) => s?.status === "failed").length;
-          const canceled = scans.filter((s: any) => ["cancelled", "canceled"].includes(String(s?.status || ""))).length;
+          const failed    = scans.filter((s: any) => s?.status === "failed").length;
+          const canceled  = scans.filter((s: any) => ["cancelled", "canceled"].includes(String(s?.status || ""))).length;
           const runningScan = scans.find((s: any) => s?.status === "running");
           const pendingScan = scans.find((s: any) => s?.status === "pending");
 
@@ -112,23 +110,22 @@ const ScanProgress = () => {
           setPercent(Math.max(5, Math.min(100, Math.round(((completed + failed + canceled) / total) * 100))));
 
           if (runningScan) {
-            setLogs((prev) => {
-              const line = `Running ${String(runningScan.scanType || "unknown").toUpperCase()}...`;
-              return [line, ...prev].slice(0, 6);
-            });
+            // Show real partial output if available, otherwise tool name
+            const partial = runningScan.results?.partialOutput;
+            if (partial && typeof partial === "string") {
+              const lines = partial.split("\n").map((l: string) => l.trim()).filter(Boolean).slice(-4);
+              if (lines.length) { setLogs(lines.reverse()); }
+            } else {
+              setLogs(prev => [`[${String(runningScan.scanType || "unknown").toUpperCase()}] Scan running…`, ...prev].slice(0, 6));
+            }
           }
-
           if (pendingScan && !runningScan) {
-            setLogs((prev) => {
-              const line = `Queued ${String(pendingScan.scanType || "unknown").toUpperCase()}...`;
-              return [line, ...prev].slice(0, 6);
-            });
+            setLogs(prev => [`[${String(pendingScan.scanType || "unknown").toUpperCase()}] Queued — waiting for previous tool to finish…`, ...prev].slice(0, 6));
           }
 
           const allDone = scans.every((s: any) => terminalStates.includes(String(s?.status || "")));
           if (allDone) {
-            const anyFailed = failed > 0;
-            setStatus(anyFailed ? "failed" : "completed");
+            setStatus(failed > 0 ? "failed" : "completed");
             setPercent(100);
             const primaryScanId = scans[0]?._id || scanId;
             setTimeout(() => {
@@ -142,10 +139,11 @@ const ScanProgress = () => {
           return;
         }
 
-        const res = await getScanResultsById(scanId);
+        // ── Single-tool scan ────────────────────────────────────────────────────
+        const res  = await getScanResultsById(scanId);
         const data = res.data?.scan || res.data;
-        const st = data?.status || "pending";
-        const rawTool = String(data?.scanType || data?.tool || "").toLowerCase();
+        const st   = data?.status || "pending";
+        const rawTool           = String(data?.scanType || data?.tool || "").toLowerCase();
         const normalizedToolForUi = rawTool === "all" ? "auto" : rawTool;
 
         if (!batchId && data?.results?.batchId) {
@@ -159,22 +157,25 @@ const ScanProgress = () => {
         setTool(normalizedToolForUi);
         setTarget(data?.targetUrl || data?.url);
         setStartedAt(data?.startedAt || data?.createdAt);
-        setError((prev) => (prev === "Failed to fetch scan status." ? "" : prev));
+        setError(prev => (prev === "Failed to fetch scan status." ? "" : prev));
+
+        // Show real partial output when available (scan-runner writes every 2s)
+        const partialOutput = data?.results?.partialOutput;
+        if (partialOutput && typeof partialOutput === "string" && st === "running") {
+          const lines = partialOutput
+            .split("\n")
+            .map((line: string) => line.trim())
+            .filter(Boolean)
+            .slice(-5);
+          if (lines.length) setLogs(lines.reverse());
+        }
 
         if (st === "failed") {
-          const backendError =
-            data?.results?.error ||
-            data?.results?.message ||
-            "Scan failed on backend.";
+          const backendError = data?.results?.error || data?.results?.message || "Scan failed on backend.";
           setError(backendError);
-
-          const partialOutput = data?.results?.partialOutput || data?.results?.rawOutput;
-          if (partialOutput && typeof partialOutput === "string") {
-            const lines = partialOutput
-              .split("\n")
-              .map((line: string) => line.trim())
-              .filter(Boolean)
-              .slice(-6);
+          const failOutput = data?.results?.partialOutput || data?.results?.rawOutput;
+          if (failOutput && typeof failOutput === "string") {
+            const lines = failOutput.split("\n").map((l: string) => l.trim()).filter(Boolean).slice(-6);
             if (lines.length) setLogs(lines.reverse());
           }
         }
@@ -182,19 +183,18 @@ const ScanProgress = () => {
         if (st === "running") {
           const startTime = data?.startedAt || data?.createdAt;
           const elapsedMs = startTime ? Math.max(Date.now() - new Date(startTime).getTime(), 0) : 0;
-          const toolType = rawTool;
           const estimatedMs =
-            toolType === "sqlmap" ? 185000 :
-            toolType === "nikto" ? 180000 :
-            toolType === "ssl" || toolType === "sslscan" ? 180000 :
-            toolType === "all" || toolType === "auto" ? 540000 :
+            rawTool === "sqlmap"                        ? 240000 :
+            rawTool === "nikto"                         ? 180000 :
+            rawTool === "ssl" || rawTool === "sslscan"  ? 120000 :
+            rawTool === "all" || rawTool === "auto"     ? 540000 :
             360000;
           const estimatedPercent = Math.min(95, 8 + Math.floor((elapsedMs / estimatedMs) * 87));
-          setPercent((p) => Math.max(p, estimatedPercent));
+          setPercent(p => Math.max(p, estimatedPercent));
         }
-        if (st === "completed") setPercent(100);
 
         if (st === "completed") {
+          setPercent(100);
           setTimeout(() => navigate(`/scan-result/${scanId}`, { replace: true }), 1500);
           return;
         }
@@ -203,13 +203,13 @@ const ScanProgress = () => {
           timer = window.setTimeout(poll, POLL_MS);
         }
       } catch (e: any) {
-        const isTransientNetworkError =
+        const isTransient =
           e?.code === "ERR_NETWORK" ||
           e?.code === "ERR_NETWORK_CHANGED" ||
           String(e?.message || "").includes("Network Error");
-        setPollErrors((prev) => {
+        setPollErrors(prev => {
           const next = prev + 1;
-          if (!isTransientNetworkError || next >= 3) {
+          if (!isTransient || next >= 3) {
             setError(e?.response?.data?.error || "Failed to fetch scan status.");
           }
           return next;
@@ -219,9 +219,7 @@ const ScanProgress = () => {
     };
 
     poll();
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
+    return () => { if (timer) clearTimeout(timer); };
   }, [scanId, navigate]);
 
   const handleCancel = async () => {
