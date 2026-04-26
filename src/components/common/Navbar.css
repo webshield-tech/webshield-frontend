@@ -21,9 +21,9 @@
   padding: 0 24px;
   display: grid;
   /* layout: [logo] [search] [nav links fills middle] [actions fixed right] */
-  grid-template-columns: auto 220px 1fr auto auto;
+  grid-template-columns: max-content 240px 1fr auto auto;
   align-items: center;
-  gap: 12px;
+  gap: 24px;
 }
 
 /* ── LOGO ── */

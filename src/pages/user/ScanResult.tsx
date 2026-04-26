@@ -43,6 +43,8 @@ const ScanResult = () => {
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
   const [exploitTarget, setExploitTarget] = useState<string>("");
 
+  const hasReport = !!data?.reportContent;
+
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
     setTimeout(() => setToast({ type: "", message: "" }), 3500);
@@ -151,6 +153,25 @@ const ScanResult = () => {
       const msg = e?.response?.data?.message || e?.response?.data?.error || "Download failed. Please generate the report first.";
       showToast("error", msg);
     }
+  };
+
+  const handleDownloadTxt = () => {
+    if (!data?.results) {
+      showToast("error", "No data to download.");
+      return;
+    }
+    const content = typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : String(data.results);
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const target = data?.targetUrl || data?.url || "unknown";
+    a.download = `Vuln-Spectra-Raw-${target.replace(/https?:\/\//, "").replace(/[^a-z0-9]/gi, "-")}-${scanId?.slice(-6) || "scan"}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("success", "Raw data downloaded successfully.");
   };
 
   const handleExploitRequest = (vulnTitle: string) => {
@@ -265,7 +286,11 @@ const ScanResult = () => {
             </div>
           </div>
           <div className="header-right">
-            <button className="action-btn secondary" onClick={handleDownload} disabled={generating}>
+            <button className="action-btn secondary" onClick={handleDownloadTxt}>
+              <FileText size={18} />
+              <span>Raw TXT</span>
+            </button>
+            <button className="action-btn secondary" onClick={handleDownload} disabled={generating || !hasReport} title={!hasReport ? "Generate AI Report first" : ""}>
               <Download size={18} />
               <span>Download PDF</span>
             </button>
@@ -309,7 +334,7 @@ const ScanResult = () => {
               </div>
 
               <div className="actions-panel glass-panel">
-                <button className="sidebar-action-btn" onClick={handleView}>
+                <button className="sidebar-action-btn" onClick={handleView} disabled={!hasReport} title={!hasReport ? "Generate AI Report first" : ""}>
                   <Eye size={18} />
                   <span>View AI Report</span>
                 </button>

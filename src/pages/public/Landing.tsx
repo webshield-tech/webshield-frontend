@@ -31,7 +31,7 @@ const Landing = () => {
         <div className="nav-container">
           <div className="nav-logo">
             <div className="logo-wrap">
-              <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
             </div>
             <span className="logo-text">Vuln<span className="text-primary">Spectra</span></span>
           </div>
@@ -188,7 +188,7 @@ const Landing = () => {
           <div className="footer-brand-section">
             <div className="footer-logo">
               <div className="logo-wrap-small">
-                <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src="/logo.png" alt="Vuln Spectra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
               </div>
               <span className="logo-text">Vuln Spectra</span>
             </div>

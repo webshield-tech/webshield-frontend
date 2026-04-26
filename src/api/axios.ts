@@ -74,11 +74,8 @@ if (error.response?.status === 401) {
     document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   }
 
-  return Promise.reject({
-    isAuthError: true,
-    status: 401,
-    message: isAuthRoute ? 'Invalid credentials' : 'Authentication required'
-  });
+  error.isAuthError = true;
+  return Promise.reject(error);
 }
     
     return Promise.reject(error);

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { ShieldAlert, CheckCircle2, XCircle, AlertTriangle, FileText, Lock, Loader2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/disclaimer.css";
@@ -31,8 +31,7 @@ const Disclaimer = () => {
   }
 
   if (!user) {
-    navigate("/login", { replace: true });
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   const handleAgree = async () => {
