@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   Shield, 
   Activity, 
@@ -17,7 +17,7 @@ import {
   RefreshCw,
   Lightbulb
 } from "lucide-react";
-import { cancelScan, getScanResultsById, startScan } from "../../api/scan-api";
+import { cancelScan, getBatchResults, getScanResultsById, startScan } from "../../api/scan-api";
 import { AutoScanProgress } from "../../components/AutoScanProgress";
 import "../../styles/scan-progress.css";
 
@@ -25,11 +25,14 @@ const POLL_MS = 3000;
 
 const ScanProgress = () => {
   const { scanId } = useParams<{ scanId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const initialBatchId = searchParams.get("batchId") || "";
   const [status, setStatus] = useState("pending");
   const [percent, setPercent] = useState(12);
   const [error, setError] = useState("");
   const [tool, setTool] = useState<string | undefined>();
+  const [batchId, setBatchId] = useState<string>(initialBatchId);
   const [target, setTarget] = useState<string | undefined>();
   const [startedAt, setStartedAt] = useState<string | undefined>();
   const [logs, setLogs] = useState<string[]>([]);
@@ -87,11 +90,70 @@ const ScanProgress = () => {
 
     const poll = async () => {
       try {
+        if (batchId) {
+          const batchRes = await getBatchResults(batchId);
+          const scans = Array.isArray(batchRes.data?.scans) ? batchRes.data.scans : [];
+          if (!scans.length) {
+            throw new Error("Batch scan not found.");
+          }
+
+          const terminalStates = ["completed", "failed", "cancelled", "canceled"];
+          const total = scans.length;
+          const completed = scans.filter((s: any) => s?.status === "completed").length;
+          const failed = scans.filter((s: any) => s?.status === "failed").length;
+          const canceled = scans.filter((s: any) => ["cancelled", "canceled"].includes(String(s?.status || ""))).length;
+          const runningScan = scans.find((s: any) => s?.status === "running");
+          const pendingScan = scans.find((s: any) => s?.status === "pending");
+
+          setPollErrors(0);
+          setTool("auto");
+          setTarget(scans[0]?.targetUrl || scans[0]?.url);
+          setStartedAt(scans[0]?.startedAt || scans[0]?.createdAt);
+          setPercent(Math.max(5, Math.min(100, Math.round(((completed + failed + canceled) / total) * 100))));
+
+          if (runningScan) {
+            setLogs((prev) => {
+              const line = `Running ${String(runningScan.scanType || "unknown").toUpperCase()}...`;
+              return [line, ...prev].slice(0, 6);
+            });
+          }
+
+          if (pendingScan && !runningScan) {
+            setLogs((prev) => {
+              const line = `Queued ${String(pendingScan.scanType || "unknown").toUpperCase()}...`;
+              return [line, ...prev].slice(0, 6);
+            });
+          }
+
+          const allDone = scans.every((s: any) => terminalStates.includes(String(s?.status || "")));
+          if (allDone) {
+            const anyFailed = failed > 0;
+            setStatus(anyFailed ? "failed" : "completed");
+            setPercent(100);
+            const primaryScanId = scans[0]?._id || scanId;
+            setTimeout(() => {
+              navigate(`/scan-result/${primaryScanId}?batchId=${encodeURIComponent(batchId)}`, { replace: true });
+            }, 1200);
+            return;
+          }
+
+          setStatus("running");
+          timer = window.setTimeout(poll, POLL_MS);
+          return;
+        }
+
         const res = await getScanResultsById(scanId);
         const data = res.data?.scan || res.data;
         const st = data?.status || "pending";
         const rawTool = String(data?.scanType || data?.tool || "").toLowerCase();
         const normalizedToolForUi = rawTool === "all" ? "auto" : rawTool;
+
+        if (!batchId && data?.results?.batchId) {
+          setBatchId(String(data.results.batchId));
+          timer = window.setTimeout(poll, 200);
+          return;
+        }
+
         setPollErrors(0);
         setStatus(st);
         setTool(normalizedToolForUi);
@@ -194,11 +256,16 @@ const ScanProgress = () => {
         response.data?.scanId ||
         response.data?.scan?._id ||
         response.data?.scans?.[0]?._id;
+      const newBatchId = response.data?.batchId;
       if (!newScanId) {
         setError("Retry started but scan id was not returned.");
         return;
       }
-      navigate(`/scan-progress/${newScanId}`, { replace: true });
+      if (newBatchId) {
+        navigate(`/scan-progress/${newScanId}?batchId=${encodeURIComponent(newBatchId)}`, { replace: true });
+      } else {
+        navigate(`/scan-progress/${newScanId}`, { replace: true });
+      }
     } catch (e: any) {
       setError(e?.response?.data?.error || "Retry failed.");
     }

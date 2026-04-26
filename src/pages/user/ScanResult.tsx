@@ -18,6 +18,8 @@ import {
   X
 } from "lucide-react";
 import {
+import { VulnerabilityRemediation } from "../../components/VulnerabilityRemediation";
+import {
   getScanResultsById,
   generateAIReportForScan,
   viewReport,
@@ -459,9 +461,9 @@ const ScanResult = () => {
                   <span>New Scan</span>
                 </button>
                 {data?.status === "completed" && vulnerabilities.length > 0 && (
-                  <button className="sidebar-action-btn" onClick={handleAutoExploit} disabled={exploiting}>
+                  <button className="sidebar-action-btn" disabled style={{ opacity: 0.6, cursor: "not-allowed" }} title="Auto PoC feature coming soon and under process">
                     <Sparkles size={18} />
-                    <span>{exploiting ? "Running PoC…" : "Auto Proof of Concept (PoC)"}</span>
+                    <span>⏰ Auto PoC (Coming soon and under process)</span>
                   </button>
                 )}
                 {data?.status === "failed" && (
@@ -503,6 +505,10 @@ const ScanResult = () => {
                               <span>Recommendation: {v.recommendation}</span>
                             </div>
                           )}
+                            <VulnerabilityRemediation 
+                              vulnerabilityTitle={v.title || v.name || "Unknown"}
+                              severity={v.severity}
+                            />
                           {(v.severity === "High" || v.severity === "Critical") && (
                             <button
                               className="action-btn error"

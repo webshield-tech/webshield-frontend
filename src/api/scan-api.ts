@@ -19,6 +19,11 @@ export const getScanResultsById = (scanId: string) => {
   return api.get(`/scan/${scanId}`);
 };
 
+// Get all scans in a batch (auto-scan mode)
+export const getBatchResults = (batchId: string) => {
+  return api.get(`/scan/batch/${batchId}`);
+};
+
 // Cancel a scan
 export const cancelScan = (scanId: string) => {
   return api.post(`/scan/${scanId}/cancel`);
