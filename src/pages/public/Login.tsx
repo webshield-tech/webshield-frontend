@@ -52,7 +52,12 @@ function Login() {
         }, 600);
       }
     } catch (error: any) {
-      const msg = error?.response?.data?.error || "";
+      // error.response exists for real axios errors (login/signup route passthrough)
+      const msg: string =
+        error?.response?.data?.error ||
+        error?.message ||
+        "";
+
       if (msg.toLowerCase().includes("not found") || msg.toLowerCase().includes("does not exist")) {
         setEmailError("No account found with this email.");
       } else if (msg.toLowerCase().includes("password") || msg.toLowerCase().includes("incorrect")) {
@@ -61,10 +66,10 @@ function Login() {
         setFormError(msg);
       } else if (msg.toLowerCase().includes("too many")) {
         setFormError("Too many attempts. Please try again in 15 minutes.");
-        console.error("[AUTH] Rate limit exceeded:", error.response?.data);
+      } else if (msg) {
+        setFormError(msg);
       } else {
-        setFormError(msg || "An unexpected error occurred. Please try again.");
-        console.error("[AUTH] Detailed error:", error.response?.data);
+        setFormError("An unexpected error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
