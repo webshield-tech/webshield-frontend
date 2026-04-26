@@ -60,12 +60,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkAuth = async () => {
     try {
       const res = await getProfile();
-      if (res.data.success) {
+      if (res.data?.success) {
         setUser(res.data.user);
       } else {
         setUser(null);
       }
     } catch {
+      // Silently handle — user is simply not authenticated
       setUser(null);
     }
   };
@@ -73,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const acceptTerms = async (): Promise<boolean> => {
     try {
       const res = await api.post("/user/accept-terms");
-      if (res.data.success) {
+      if (res.data?.success) {
         await checkAuth();
         return true;
       }

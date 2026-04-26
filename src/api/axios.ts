@@ -1,4 +1,5 @@
 import axios from "axios";
+
 const rawBaseUrl =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
@@ -14,70 +15,52 @@ const api = axios.create({
   timeout: 30000,
 });
 
-// Request interceptor
+// Request interceptor — attach auth token silently
 api.interceptors.request.use(
   (config) => {
-    if (config.method?.toLowerCase() === 'get') {
-      config.params = {
-        ...config.params,
-        _t: Date.now()
-      };
+    // Cache-bust GET requests
+    if (config.method?.toLowerCase() === "get") {
+      config.params = { ...config.params, _t: Date.now() };
     }
-    
-    const token = localStorage.getItem('authToken');
+
+    const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    if (import.meta.env.DEV) {
-      console.debug(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
-    }
-    
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor 
+// Response interceptor — handle 401 cleanly without console noise
 api.interceptors.response.use(
-  (response) => {
-    if (import.meta.env.DEV) {
-      console.debug(`[API] ${response.status} ${response.config.url}`);
-    }
-    return response;
-  },
+  (response) => response,
   (error) => {
     const originalRequest = error.config;
-    const message = String(error?.message || "");
-    const isTransientNetworkError =
-      error?.code === "ERR_NETWORK" ||
-      error?.code === "ERR_NETWORK_CHANGED" ||
-      message.includes("Network Error");
+    const status = error.response?.status;
 
-    if (import.meta.env.DEV && !isTransientNetworkError && !originalRequest?.url?.includes('/profile')) {
-      console.debug("[API] error", {
-        status: error.response?.status,
-        url: originalRequest?.url,
-        message: error.message,
-      });
+    if (status === 401) {
+      // Auth routes: pass the full error through so the page can read
+      // error.response.data.error and display "User does not exist" etc.
+      const isAuthRoute =
+        originalRequest?.url?.includes("/login") ||
+        originalRequest?.url?.includes("/signup");
+
+      if (isAuthRoute) {
+        return Promise.reject(error);
+      }
+
+      // All other routes: silently clear credentials
+      localStorage.removeItem("authToken");
+      sessionStorage.clear();
+      document.cookie =
+        "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      // Return a plain rejected promise — no console noise, AuthContext will catch this
+      return Promise.reject({ isAuthError: true, status: 401 });
     }
-    
-if (error.response?.status === 401) {
-  // Don't clear storage if we are already on login or signup routes to avoid UI flickers or race conditions
-  const isAuthRoute = originalRequest?.url?.includes('/login') || originalRequest?.url?.includes('/signup');
-  
-  if (!isAuthRoute) {
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
-    // Note: httpOnly cookies cannot be cleared via document.cookie, 
-    // but we try to clear any legacy non-httpOnly ones just in case.
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  }
 
-  error.isAuthError = true;
-  return Promise.reject(error);
-}
-    
     return Promise.reject(error);
   }
 );
