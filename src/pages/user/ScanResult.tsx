@@ -160,6 +160,15 @@ const ScanResult = () => {
     const res = data.results;
 
     if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
+      // If the vulnerabilities array contains strings (like SQLMap output), map them to objects
+      if (typeof res.vulnerabilities[0] === "string") {
+        return res.vulnerabilities.map((vuln: string) => ({
+          title: "SQL Injection Vulnerability",
+          severity: "Critical",
+          description: vuln,
+          recommendation: "Ensure all user inputs are properly sanitized and use parameterized queries or prepared statements.",
+        }));
+      }
       return res.vulnerabilities;
     }
 

@@ -1,154 +1,264 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { 
-  Shield, 
-  Globe, 
-  Zap, 
-  Terminal, 
-  Info, 
-  AlertCircle, 
-  ArrowRight, 
+import {
+  Shield,
+  Globe,
+  Zap,
+  Info,
+  AlertCircle,
+  ArrowRight,
   Loader2,
   ChevronLeft,
   X,
-  Smartphone
+  Smartphone,
+  Rocket,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { startScan } from "../../api/scan-api";
 import type { ScanTool } from "../../utils/types";
 import "../../styles/start-scan.css";
 import Lottie from "lottie-react";
-import nmapAnimation from "../../assets/icons/nmap.json";
-import niktoAnimation from "../../assets/icons/nikto.json";
-import sqlmapAnimation from "../../assets/icons/sql.json";
+import nmapAnimation    from "../../assets/icons/nmap.json";
+import niktoAnimation   from "../../assets/icons/nikto.json";
+import sqlmapAnimation  from "../../assets/icons/sql.json";
 import sslscanAnimation from "../../assets/icons/ssl.json";
-import autoAnimation from "../../assets/icons/Success.json";
+import autoAnimation    from "../../assets/icons/Success.json";
 import { useToast, ToastContainer } from "../../components/Toast";
 
-// Per-tool scan mode descriptions
-const SCAN_MODE_DESCRIPTIONS: Record<string, { quick: { title: string; detail: string }; full: { title: string; detail: string } }> = {
+/* ── Per-tool scan mode descriptions ─────────────────────────────────────── */
+const SCAN_MODE_DESCRIPTIONS: Record<
+  string,
+  {
+    color: string;
+    quick: { title: string; detail: string; bullets: string[] };
+    full:  { title: string; detail: string; bullets: string[] };
+  }
+> = {
   nmap: {
-    quick: { title: "Quick Scan", detail: "Fast port scan on top 100 common ports. Detects open services. Best for a rapid overview. (~1-2 min)" },
-    full:  { title: "Deep Scan",  detail: "Full port range (-p-), OS fingerprinting, service version detection, NSE scripts, and CVE probing. (~5-15 min)" },
+    color: "#00f2ff",
+    quick: {
+      title: "Quick Scan",
+      detail: "Fast sweep of the 100 most common TCP ports.",
+      bullets: [
+        "Top 100 ports only (-F flag)",
+        "Service & version detection (-sV)",
+        "Estimated time: ~1–2 minutes",
+      ],
+    },
+    full: {
+      title: "Deep Scan",
+      detail: "Exhaustive scan covering every port with OS fingerprinting and CVE probing.",
+      bullets: [
+        "All 65,535 TCP ports (-p-)",
+        "OS fingerprinting + NSE scripts (-sC)",
+        "CVE & vulnerability script checks",
+        "Estimated time: ~5–15 minutes",
+      ],
+    },
   },
   nikto: {
-    quick: { title: "Quick Scan", detail: "Targets the most critical web misconfigurations, outdated server headers, and common dangerous files. (~1-2 min)" },
-    full:  { title: "Deep Scan",  detail: "Comprehensive test of 6700+ vulnerabilities, directory traversal, XSS vectors, CGI abuse, and injection points. (~3-5 min)" },
+    color: "#ff0055",
+    quick: {
+      title: "Quick Scan",
+      detail: "Targets the most dangerous web misconfigurations.",
+      bullets: [
+        "Outdated server headers & versions",
+        "Common dangerous files & directories",
+        "Estimated time: ~1–2 minutes",
+      ],
+    },
+    full: {
+      title: "Deep Scan",
+      detail: "Comprehensive web vulnerability audit against 6,700+ known issues.",
+      bullets: [
+        "All 6,700+ Nikto vulnerability checks",
+        "Directory traversal, XSS, CGI abuse",
+        "Injection point discovery",
+        "Estimated time: ~3–5 minutes",
+      ],
+    },
   },
   sqlmap: {
-    quick: { title: "Quick Scan", detail: "Tests injectable parameters with Level 1 / Risk 1. Detects obvious SQL injection types. (~2-3 min)" },
-    full:  { title: "Deep Scan",  detail: "Level 5 / Risk 3 with form crawling, advanced payloads, DB enumeration, and time-based blind injection tests. (~5-10 min)" },
+    color: "#ffd54f",
+    quick: {
+      title: "Quick Scan",
+      detail: "Rapid SQL injection probe on URL parameters and forms.",
+      bullets: [
+        "Level 1 / Risk 1 payloads",
+        "Boolean-based, error-based & union injection",
+        "HTML form auto-detection",
+        "Estimated time: ~2–4 minutes",
+      ],
+    },
+    full: {
+      title: "Deep Scan",
+      detail: "Advanced multi-technique SQLi probe with database enumeration.",
+      bullets: [
+        "Level 5 / Risk 3 — maximum coverage",
+        "Time-based blind & stacked queries",
+        "Site crawl up to 3 levels + form testing",
+        "Database dump (--dump-all)",
+        "Estimated time: ~5–10 minutes",
+      ],
+    },
   },
   sslscan: {
-    quick: { title: "Quick Scan", detail: "Checks for deprecated protocols (SSLv2/SSLv3/TLS 1.0/1.1), weak ciphers, and certificate validity. (~30 sec)" },
-    full:  { title: "Deep Scan",  detail: "Same checks as Quick (sslscan has a single mode) — shows all cipher suites, cert chain, OCSP, and HSTS. (~30 sec)" },
+    color: "#00ff9d",
+    quick: {
+      title: "Quick Scan",
+      detail: "Audits SSL/TLS protocols, cipher suites and certificate validity.",
+      bullets: [
+        "Deprecated protocols: SSLv2/v3, TLS 1.0/1.1",
+        "Weak ciphers: RC4, NULL, EXPORT, DES",
+        "Certificate expiry & mismatch check",
+        "Estimated time: ~30 seconds",
+      ],
+    },
+    full: {
+      title: "Deep Scan",
+      detail: "Same thorough audit — sslscan always runs a complete check.",
+      bullets: [
+        "All cipher suites + key exchange details",
+        "Full certificate chain inspection",
+        "Heartbleed vulnerability check",
+        "Estimated time: ~30 seconds",
+      ],
+    },
   },
   auto: {
-    quick: { title: "Quick Scan", detail: "Runs Nmap (ports), Nikto (web headers), SSLScan (TLS), and SQLMap (Level 1) sequentially. (~5-8 min)" },
-    full:  { title: "Deep Scan",  detail: "Runs all four tools in Deep mode: full port range, comprehensive web audit, and advanced SQL injection probing. (~15-25 min)" },
+    color: "#ffffff",
+    quick: {
+      title: "Quick Scan",
+      detail: "Sequentially runs all four tools in quick mode.",
+      bullets: [
+        "Nmap — top 100 ports",
+        "Nikto — critical web checks",
+        "SSLScan — TLS audit",
+        "SQLMap — Level 1 injection probe",
+        "Estimated time: ~5–8 minutes",
+      ],
+    },
+    full: {
+      title: "Deep Scan",
+      detail: "All four tools in deep mode for a full-spectrum assessment.",
+      bullets: [
+        "Nmap — all 65,535 ports + OS + CVEs",
+        "Nikto — 6,700+ vulnerability checks",
+        "SSLScan — full cipher & cert chain",
+        "SQLMap — Level 5 + crawl + dump",
+        "Estimated time: ~15–25 minutes",
+      ],
+    },
   },
 };
 
+/* ── Tool accent colors ───────────────────────────────────────────────────── */
+const TOOL_COLOR: Record<string, string> = {
+  auto:    "#ffffff",
+  nmap:    "#00f2ff",
+  nikto:   "#ff0055",
+  sqlmap:  "#ffd54f",
+  sslscan: "#00ff9d",
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
 const StartScan = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading, authChecked, refreshUser } = useAuth();
   const { toasts, addToast, removeToast } = useToast();
 
-  const [url, setUrl] = useState("");
-  const [tool, setTool] = useState<ScanTool>("nmap");
-  const [scanMode, setScanMode] = useState<"quick" | "full">("quick");
+  const [url,         setUrl]         = useState("");
+  const [tool,        setTool]        = useState<ScanTool>("nmap");
+  const [scanMode,    setScanMode]    = useState<"quick" | "full">("quick");
   const [scanLoading, setScanLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showSqlmapModal, setShowSqlmapModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [error,       setError]       = useState("");
+  const [showModeModal, setShowModeModal] = useState(false);   // ← NEW
+  const [isMobile, setIsMobile]       = useState(window.innerWidth < 768);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
     const toolParam = searchParams.get("tool");
     if (toolParam) {
       const toolMap: Record<string, ScanTool> = {
-        auto: "auto",
-        all: "auto",
-        nmap: "nmap",
-        nikto: "nikto",
-        sqlmap: "sqlmap",
-        ssl: "sslscan",
-        sslscan: "sslscan",
+        auto: "auto", all: "auto",
+        nmap: "nmap", nikto: "nikto", sqlmap: "sqlmap",
+        ssl: "sslscan", sslscan: "sslscan",
       };
-      const mappedTool = toolMap[toolParam];
-      if (mappedTool) setTool(mappedTool);
+      const mapped = toolMap[toolParam];
+      if (mapped) setTool(mapped);
     }
   }, [searchParams]);
 
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    { id: "auto",    name: "Auto-Scan", desc: "Full Security Audit",    anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap for a comprehensive vulnerability report." },
-    { id: "nmap",    name: "Nmap",       desc: "Network Reconnaissance", anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Advanced port reconnaissance and OS fingerprinting engine. Scans all common TCP ports and identifies running services." },
-    { id: "nikto",   name: "Nikto",      desc: "Web Server Scanner",     anim: niktoAnimation,   color: "#ff0055", tag: "WEB VULN",   tooltip: "Comprehensive web server scanner. Identifies 6700+ dangerous files/programs, outdated versions, and server configuration issues." },
-    { id: "sqlmap",  name: "SQLMap",     desc: "SQL Injection Probe",    anim: sqlmapAnimation,  color: "#ffd54f", tag: "DB AUDIT",   tooltip: "Automatic SQL injection detection and database takeover tool. Probes for various injection types including boolean, error, and time-based." },
-    { id: "sslscan", name: "SSLScan",    desc: "TLS Configuration",      anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION", tooltip: "SSL/TLS security auditor. Evaluates cipher suites, certificate validity, and identifies weak encryption protocols." },
+    { id: "auto",    name: "Auto-Scan", desc: "Full Security Audit",    anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap." },
+    { id: "nmap",    name: "Nmap",      desc: "Network Reconnaissance", anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Advanced port reconnaissance and OS fingerprinting engine." },
+    { id: "nikto",   name: "Nikto",     desc: "Web Server Scanner",     anim: niktoAnimation,   color: "#ff0055", tag: "WEB VULN",   tooltip: "Comprehensive web server scanner. Identifies 6700+ dangerous files/programs." },
+    { id: "sqlmap",  name: "SQLMap",    desc: "SQL Injection Probe",    anim: sqlmapAnimation,  color: "#ffd54f", tag: "DB AUDIT",   tooltip: "Automatic SQL injection detection. Boolean, error, union, time-based & stacked." },
+    { id: "sslscan", name: "SSLScan",   desc: "TLS Configuration",      anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION", tooltip: "SSL/TLS security auditor. Cipher suites, certificate validity, Heartbleed." },
   ] as const;
 
   const handleToolSelect = (toolId: string) => {
     if (scanLoading) return;
     setTool(toolId as ScanTool);
-    const selectedTool = tools.find(t => t.id === toolId);
-    if (selectedTool) {
-      addToast("info", `${selectedTool.name} Selected`, selectedTool.tooltip, 5000);
-    }
+    const t = tools.find(t => t.id === toolId);
+    if (t) addToast("info", `${t.name} Selected`, t.tooltip, 4000);
   };
 
-  const handleSubmit = async (e: React.FormEvent, skipSqlmapCheck = false) => {
-    if (e && e.preventDefault) e.preventDefault();
+  /* Clicking "Initialize Scan" validates then opens the mode modal */
+  const handleInitialize = (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
 
     if (user && user.usedScan >= user.scanLimit) {
       const msg = `Daily limit reached (${user.scanLimit}). Buy Premium to run more scans.`;
       setError(msg);
-      addToast("error", "Scan Limit Reached", `You have used all ${user.scanLimit} scans for today.`, 4000);
+      addToast("error", "Scan Limit Reached", msg, 4000);
       return;
     }
-
     if (!url.trim() || !url.startsWith("http")) {
       setError("Invalid Target: Please provide a valid URL (starting with http:// or https://).");
       addToast("error", "Invalid URL", "Please provide a valid target URL.", 4000);
       return;
     }
 
-    if (tool === "sqlmap" && !skipSqlmapCheck) {
-      setShowSqlmapModal(true);
-      return;
-    }
+    // Reset to quick before showing modal
+    setScanMode("quick");
+    setShowModeModal(true);
+  };
+
+  /* Called after user selects a mode inside the modal */
+  const launchScan = async (chosenMode: "quick" | "full") => {
+    setScanMode(chosenMode);
+    setShowModeModal(false);
 
     try {
       setScanLoading(true);
-      setShowSqlmapModal(false);
       const scanData = {
         targetUrl: url.trim().replace(/\/+$/, ""),
-        scanType: tool === "sslscan" ? "ssl" : tool === "auto" ? "all" : tool,
-        scanMode,
+        scanType:  tool === "sslscan" ? "ssl" : tool === "auto" ? "all" : tool,
+        scanMode:  chosenMode,
       };
-      
-      addToast("info", "Starting Scan", `Launching ${tool.toUpperCase()} scan...`, 3000);
-      
+
+      addToast("info", "Launching Scan", `Starting ${tool.toUpperCase()} in ${chosenMode === "quick" ? "Quick" : "Deep"} mode…`, 3000);
+
       const response = await startScan(scanData);
 
       if (response?.data?.success) {
         await refreshUser();
-        const scanId = response.data.scanId || response.data.scan?._id || response.data.scans?.[0]?._id;
+        const scanId  = response.data.scanId || response.data.scan?._id || response.data.scans?.[0]?._id;
         const batchId = response.data.batchId;
         if (scanId) {
-          addToast("success", "Scan Started", `Scan initialized successfully.`, 3000);
+          addToast("success", "Scan Started", "Redirecting to scan progress…", 3000);
           if (batchId) {
             navigate(`/scan-progress/${scanId}?batchId=${encodeURIComponent(batchId)}`);
           } else {
@@ -173,14 +283,17 @@ const StartScan = () => {
     }
   };
 
-  const scanLimit = user?.scanLimit || 0;
-  const usedScans = user ? Math.min(user.usedScan, scanLimit) : 0;
+  const scanLimit    = user?.scanLimit || 0;
+  const usedScans    = user ? Math.min(user.usedScan, scanLimit) : 0;
   const usagePercent = scanLimit > 0 ? (usedScans / scanLimit) * 100 : 0;
+  const accentColor  = TOOL_COLOR[tool] || "var(--cyber-primary)";
+  const modeInfo     = SCAN_MODE_DESCRIPTIONS[tool];
 
+  /* ── JSX ────────────────────────────────────────────────────────────────── */
   return (
     <div className={`scan-page-premium ${isMobile ? "mobile" : ""}`}>
       <div className="noise-overlay"></div>
-      
+
       <div className="scan-content-wrap">
         <header className="scan-header-v2">
           <Link to="/dashboard" className="back-btn-v2">
@@ -189,12 +302,12 @@ const StartScan = () => {
           </Link>
           <div className="header-text">
             <h1>Security Scan Module</h1>
-            <p>Select tool & target {isMobile && <Smartphone size={14} className="inline" />}</p>
+            <p>Select tool &amp; target {isMobile && <Smartphone size={14} className="inline" />}</p>
           </div>
         </header>
 
         <div className={`scan-main-grid-v2 ${isMobile ? "mobile-layout" : ""}`}>
-          {/* Main Form Section */}
+          {/* ── Form panel ── */}
           <div className="form-panel glass-panel">
             {error && (
               <div className="alert-box error">
@@ -203,13 +316,12 @@ const StartScan = () => {
               </div>
             )}
 
-            <form className="scan-form-v2" onSubmit={handleSubmit}>
+            <form className="scan-form-v2" onSubmit={handleInitialize}>
+              {/* URL input */}
               <div className="input-group">
                 <div className="label-row">
                   <label>Target URL</label>
-                  <div className="usage-indicator">
-                    {usedScans} / {scanLimit}
-                  </div>
+                  <div className="usage-indicator">{usedScans} / {scanLimit}</div>
                 </div>
                 <div className="url-input-wrap">
                   <Globe className="input-icon" size={20} />
@@ -227,6 +339,7 @@ const StartScan = () => {
                 </div>
               </div>
 
+              {/* Tool selector */}
               <div className="module-group">
                 <label>Security Tool</label>
                 <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
@@ -254,44 +367,17 @@ const StartScan = () => {
                 </div>
               </div>
 
-              <div className="module-group">
-                <label>Scan Intensity</label>
-                <div className={`intensity-selector ${isMobile ? "mobile-grid" : ""}`}>
-                  <div 
-                    className={`intensity-card ${scanMode === "quick" ? "selected" : ""}`}
-                    onClick={() => setScanMode("quick")}
-                  >
-                    <div className="intensity-badge quick-badge">QUICK</div>
-                    <h4>{SCAN_MODE_DESCRIPTIONS[tool]?.quick.title ?? "Quick Scan"}</h4>
-                    <p>{SCAN_MODE_DESCRIPTIONS[tool]?.quick.detail ?? "Fast recon, minimal intrusive probes. Best for general check."}</p>
-                    <div className="selection-indicator">
-                      <Zap size={14} fill="currentColor" />
-                    </div>
-                  </div>
-                  <div 
-                    className={`intensity-card ${scanMode === "full" ? "selected" : ""}`}
-                    onClick={() => setScanMode("full")}
-                  >
-                    <div className="intensity-badge deep-badge">DEEP</div>
-                    <h4>{SCAN_MODE_DESCRIPTIONS[tool]?.full.title ?? "Deep Scan"}</h4>
-                    <p>{SCAN_MODE_DESCRIPTIONS[tool]?.full.detail ?? "Comprehensive scan, tests all vectors and ports. Takes longer."}</p>
-                    <div className="selection-indicator">
-                      <Zap size={14} fill="currentColor" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+              {/* Initialize Scan button */}
               <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim()}>
                 {scanLoading ? (
                   <>
                     <Loader2 className="animate-spin" size={22} />
-                    <span>Launching...</span>
+                    <span>Launching…</span>
                   </>
                 ) : (
                   <>
                     <Shield size={22} />
-                    <span>{isMobile ? "Scan" : "Execute Scan"}</span>
+                    <span>{isMobile ? "Scan" : "Initialize Scan"}</span>
                     <ArrowRight size={22} />
                   </>
                 )}
@@ -299,7 +385,7 @@ const StartScan = () => {
             </form>
           </div>
 
-          {/* Info Panel - Hidden on mobile */}
+          {/* ── Sidebar (desktop only) ── */}
           {!isMobile && (
             <aside className="info-panel-v2">
               <div className="info-card glass-panel">
@@ -308,20 +394,16 @@ const StartScan = () => {
                   <span>Module Info</span>
                 </div>
                 <div className="module-details">
-                  <h2 style={{ color: tools.find(t => t.id === tool)?.color }}>
-                    {tools.find(t => t.id === tool)?.name}
-                  </h2>
-                  <p className="desc-text">
-                    {tool === "auto" && "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap."}
-                    {tool === "nmap" && "Advanced port reconnaissance and OS fingerprinting engine."}
-                    {tool === "nikto" && "Comprehensive web server scanner for 6700+ dangerous files/programs."}
-                    {tool === "sqlmap" && "Automatic SQL injection detection and exploitation tool."}
-                    {tool === "sslscan" && "SSL/TLS security auditor evaluating cipher suites."}
-                  </p>
+                  <h2 style={{ color: accentColor }}>{tools.find(t => t.id === tool)?.name}</h2>
+                  <p className="desc-text">{tools.find(t => t.id === tool)?.tooltip}</p>
                   <div className="stat-grid">
                     <div className="stat-item">
-                      <label>Duration</label>
-                      <strong>{tool === "auto" ? "10-15m" : tool === "nmap" ? "2-3m" : tool === "nikto" ? "3-5m" : tool === "sqlmap" ? "4-6m" : "1-2m"}</strong>
+                      <label>Quick</label>
+                      <strong>{modeInfo?.quick.title}</strong>
+                    </div>
+                    <div className="stat-item">
+                      <label>Deep</label>
+                      <strong>{modeInfo?.full.title}</strong>
                     </div>
                   </div>
                 </div>
@@ -331,59 +413,102 @@ const StartScan = () => {
         </div>
       </div>
 
-      {showSqlmapModal && (
-        <div className="modal-overlay-premium" onClick={() => setShowSqlmapModal(false)}>
-          <div className="modal-content-premium" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title" style={{ color: "#ffd54f" }}>
-                <AlertCircle size={20} />
-                <span>SQLMap — Select Scan Mode</span>
-              </div>
-              <button className="close-modal-btn" onClick={() => setShowSqlmapModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body-premium">
-              <p style={{ marginBottom: "20px", lineHeight: 1.6 }}>
-                SQLMap will probe <strong style={{ color: "#ffd54f" }}>{url}</strong> for SQL injection vulnerabilities.
-                Use it <strong>only on targets you own or have explicit permission to test</strong>.
-              </p>
-
-              {/* Scan mode selector inside the modal */}
-              <div style={{ marginBottom: "20px" }}>
-                <label style={{ display: "block", fontFamily: "'Orbitron', sans-serif", fontSize: "0.8rem", color: "var(--cyber-text-dim)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>Choose Scan Intensity</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                  <div
-                    className={`intensity-card ${scanMode === "quick" ? "selected" : ""}`}
-                    onClick={() => setScanMode("quick")}
-                    style={{ padding: "16px" }}
-                  >
-                    <div className="intensity-badge quick-badge">QUICK</div>
-                    <h4 style={{ fontSize: "0.95rem", margin: "8px 0 4px" }}>Quick Scan</h4>
-                    <p style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>{SCAN_MODE_DESCRIPTIONS.sqlmap.quick.detail}</p>
-                    <div className="selection-indicator"><Zap size={14} fill="currentColor" /></div>
-                  </div>
-                  <div
-                    className={`intensity-card ${scanMode === "full" ? "selected" : ""}`}
-                    onClick={() => setScanMode("full")}
-                    style={{ padding: "16px" }}
-                  >
-                    <div className="intensity-badge deep-badge">DEEP</div>
-                    <h4 style={{ fontSize: "0.95rem", margin: "8px 0 4px" }}>Deep Scan</h4>
-                    <p style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>{SCAN_MODE_DESCRIPTIONS.sqlmap.full.detail}</p>
-                    <div className="selection-indicator"><Zap size={14} fill="currentColor" /></div>
-                  </div>
+      {/* ══════════════════════════════════════════════════════════════════════
+          SCAN MODE SELECTION MODAL — shows for ALL tools after clicking Initialize
+      ══════════════════════════════════════════════════════════════════════ */}
+      {showModeModal && modeInfo && (
+        <div className="modal-overlay-premium scan-mode-overlay" onClick={() => setShowModeModal(false)}>
+          <div className="scan-mode-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Modal header */}
+            <div className="scan-mode-modal-header">
+              <div className="scan-mode-modal-title">
+                <div className="scan-mode-tool-dot" style={{ background: accentColor, boxShadow: `0 0 12px ${accentColor}` }} />
+                <div>
+                  <p className="scan-mode-label">SCAN MODE — {tools.find(t => t.id === tool)?.name?.toUpperCase()}</p>
+                  <h2 className="scan-mode-heading">Choose your scan intensity</h2>
                 </div>
               </div>
+              <button className="close-modal-btn" onClick={() => setShowModeModal(false)}>
+                <X size={22} />
+              </button>
+            </div>
 
-              <div style={{ background: "rgba(255, 213, 79, 0.08)", borderLeft: "3px solid #ffd54f", padding: "12px 16px", fontSize: "0.85rem", color: "var(--cyber-text-dim)", lineHeight: 1.5 }}>
-                Warning: This can heavily load the target server. Unauthorized scanning is illegal.
+            {/* Target info strip */}
+            <div className="scan-mode-target-strip">
+              <Globe size={14} />
+              <span className="scan-mode-target-url">{url}</span>
+            </div>
+
+            {/* Mode cards */}
+            <div className="scan-mode-cards">
+              {/* ─── Quick Scan card ─── */}
+              <div
+                className={`scan-mode-card quick-card ${scanMode === "quick" ? "active" : ""}`}
+                onClick={() => setScanMode("quick")}
+              >
+                <div className="smc-badge quick-badge">QUICK</div>
+                <div className="smc-icon-wrap">
+                  <Rocket size={28} />
+                </div>
+                <h3 className="smc-title">{modeInfo.quick.title}</h3>
+                <p className="smc-detail">{modeInfo.quick.detail}</p>
+                <ul className="smc-bullets">
+                  {modeInfo.quick.bullets.map((b, i) => (
+                    <li key={i}>
+                      <span className="bullet-dot quick-dot" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+                {scanMode === "quick" && (
+                  <div className="smc-selected-indicator">
+                    <Zap size={16} fill="currentColor" />
+                    <span>Selected</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ─── Deep Scan card ─── */}
+              <div
+                className={`scan-mode-card deep-card ${scanMode === "full" ? "active" : ""}`}
+                onClick={() => setScanMode("full")}
+              >
+                <div className="smc-badge deep-badge">DEEP</div>
+                <div className="smc-icon-wrap">
+                  <Clock size={28} />
+                </div>
+                <h3 className="smc-title">{modeInfo.full.title}</h3>
+                <p className="smc-detail">{modeInfo.full.detail}</p>
+                <ul className="smc-bullets">
+                  {modeInfo.full.bullets.map((b, i) => (
+                    <li key={i}>
+                      <span className="bullet-dot deep-dot" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+                {scanMode === "full" && (
+                  <div className="smc-selected-indicator deep-indicator">
+                    <Zap size={16} fill="currentColor" />
+                    <span>Selected</span>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="modal-footer" style={{ display: "flex", gap: "16px" }}>
-              <button className="action-btn secondary" onClick={() => setShowSqlmapModal(false)}>Cancel</button>
-              <button className="action-btn primary" style={{ background: "#ffd54f", color: "#000" }} onClick={(e) => handleSubmit(e, true)}>
-                Confirm &amp; Launch SQLMap
+
+            {/* Footer */}
+            <div className="scan-mode-footer">
+              <button className="action-btn secondary" onClick={() => setShowModeModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="launch-scan-confirm-btn"
+                style={{ background: accentColor, color: accentColor === "#ffffff" || accentColor === "#ffd54f" ? "#000" : "#000" }}
+                onClick={() => launchScan(scanMode)}
+              >
+                <Rocket size={18} />
+                <span>Launch {scanMode === "quick" ? "Quick" : "Deep"} Scan</span>
+                <ArrowRight size={18} />
               </button>
             </div>
           </div>

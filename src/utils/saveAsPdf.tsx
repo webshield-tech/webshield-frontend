@@ -139,11 +139,7 @@ function saveTextAsPdf(filename: string, content: string) {
     doc.setPage(i);
     if (i === 1) continue; // Skip cover page
     
-    // Watermark
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(60);
-    doc.setTextColor(245, 248, 250); // Very light grey/blue
-    (doc as any).text("CONFIDENTIAL", pageWidth / 2, pageHeight / 2 + 10, { align: "center", angle: 45 });
+    // Watermark removed per user request
 
     // Top Header Banner
     doc.setFillColor(darkBg[0], darkBg[1], darkBg[2]);
