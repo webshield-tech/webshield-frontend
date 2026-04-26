@@ -43,7 +43,9 @@ const ScanResult = () => {
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
   const [exploitTarget, setExploitTarget] = useState<string>("");
 
-  const hasReport = !!data?.reportContent;
+  // reportGeneratedAt is always returned by the API and is more reliable than
+  // checking reportContent (which is a large string that may be trimmed)
+  const hasReport = !!(data?.reportGeneratedAt || data?.reportContent);
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -290,13 +292,18 @@ const ScanResult = () => {
               <FileText size={18} />
               <span>Raw TXT</span>
             </button>
-            <button className="action-btn secondary" onClick={handleDownload} disabled={generating || !hasReport} title={!hasReport ? "Generate AI Report first" : ""}>
+            <button className="action-btn secondary" onClick={handleDownload} disabled={generating}>
               <Download size={18} />
               <span>Download PDF</span>
             </button>
-            <button className="action-btn primary" onClick={handleGenerate} disabled={generating}>
+            <button
+              className={`action-btn primary${!hasReport ? " report-pulse" : ""}`}
+              onClick={handleGenerate}
+              disabled={generating}
+              title={hasReport ? "Regenerate AI Report" : "Generate AI Report"}
+            >
               {generating ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-              <span>{generating ? "Generating…" : "Generate AI Report"}</span>
+              <span>{generating ? "Generating…" : hasReport ? "Regenerate Report" : "Generate AI Report"}</span>
             </button>
           </div>
         </header>
@@ -334,7 +341,7 @@ const ScanResult = () => {
               </div>
 
               <div className="actions-panel glass-panel">
-                <button className="sidebar-action-btn" onClick={handleView} disabled={!hasReport} title={!hasReport ? "Generate AI Report first" : ""}>
+                <button className="sidebar-action-btn" onClick={handleView} disabled={generating}>
                   <Eye size={18} />
                   <span>View AI Report</span>
                 </button>

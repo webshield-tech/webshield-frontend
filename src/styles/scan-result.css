@@ -103,6 +103,28 @@
   color: var(--cyber-bg);
 }
 
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Pulse on Generate button when no report exists yet */
+@keyframes reportPulse {
+  0%, 100% { box-shadow: 0 0 20px var(--cyber-primary-glow); }
+  50% { box-shadow: 0 0 35px var(--cyber-primary-glow), 0 0 60px var(--cyber-primary-glow); }
+}
+
+.action-btn.primary.report-pulse {
+  animation: reportPulse 2s ease-in-out infinite;
+}
+
+.sidebar-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
 /* Grid Layout */
 .result-grid-layout {
   display: grid;
