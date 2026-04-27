@@ -73,7 +73,7 @@ export const validateEmail = (
   const blockedLocalParts = [
     '12345', '123456', '1234567', '12345678', '123456789',
     'test', 'demo', 'example', 'fake', 'dummy',
-    'temp', 'admin', 'user', 'guest', 'no-reply', 'noreply',
+    'temp', 'user', 'guest', 'no-reply', 'noreply',
     'name', 'firstname', 'lastname', 'first', 'last', 'username',
     'user123', 'user1', 'user2', 'user3', 'abcd', 'abcde', 'qwerty',
     'asdf', 'zxcv', 'password', '111111', '222222', '333333',
