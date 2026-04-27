@@ -9,6 +9,11 @@ export const startScan = (data: {
 }) => {
   return api.post("/scan/start", data);
 };
+
+// Ping target
+export const pingTarget = (url: string) => {
+  return api.post("/scan/ping", { url });
+};
 // Get scan history
 export const getScanHistory = () => {
   return api.get("/scan/history");

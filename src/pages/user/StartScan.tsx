@@ -174,8 +174,10 @@ const StartScan = () => {
   const [tool,        setTool]        = useState<ScanTool>("nmap");
   const [scanMode,    setScanMode]    = useState<"quick" | "full">("quick");
   const [scanLoading, setScanLoading] = useState(false);
+  const [pingLoading, setPingLoading] = useState(false);
+  const [hostVerified, setHostVerified] = useState(false);
   const [error,       setError]       = useState("");
-  const [showModeModal, setShowModeModal] = useState(false);   // ← NEW
+  const [showModeModal, setShowModeModal] = useState(false);
   const [isMobile, setIsMobile]       = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -207,16 +209,44 @@ const StartScan = () => {
     { id: "sslscan", name: "SSLScan",   desc: "TLS Configuration",      anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION", tooltip: "SSL/TLS security auditor. Cipher suites, certificate validity, Heartbleed." },
   ] as const;
 
+  const handlePingCheck = async () => {
+    if (!url.trim() || !url.startsWith("http")) {
+      setError("Please enter a valid target URL starting with http:// or https://");
+      addToast("error", "Invalid URL", "Invalid target format.", 3000);
+      return;
+    }
+
+    try {
+      setPingLoading(true);
+      setError("");
+      const response = await (await import("../../api/scan-api")).pingTarget(url.trim());
+      if (response.data.success) {
+        setHostVerified(true);
+        addToast("success", "Host Reachable", "Target is online. You can now select a tool and begin the scan.", 5000);
+      } else {
+        setError(response.data.error || "Host is offline.");
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Target Unreachable: Please check the URL.");
+      addToast("error", "Host Offline", "Target host is not responding.", 4000);
+    } finally {
+      setPingLoading(false);
+    }
+  };
+
   const handleToolSelect = (toolId: string) => {
-    if (scanLoading) return;
+    if (scanLoading || !hostVerified) return;
     setTool(toolId as ScanTool);
     const t = tools.find(t => t.id === toolId);
     if (t) addToast("info", `${t.name} Selected`, t.tooltip, 4000);
   };
 
-  /* Clicking "Initialize Scan" validates then opens the mode modal */
   const handleInitialize = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hostVerified) {
+      handlePingCheck();
+      return;
+    }
     setError("");
 
     if (user && user.usedScan >= user.scanLimit) {
@@ -225,18 +255,11 @@ const StartScan = () => {
       addToast("error", "Scan Limit Reached", msg, 4000);
       return;
     }
-    if (!url.trim() || !url.startsWith("http")) {
-      setError("Invalid Target: Please provide a valid URL (starting with http:// or https://).");
-      addToast("error", "Invalid URL", "Please provide a valid target URL.", 4000);
-      return;
-    }
 
-    // Reset to quick before showing modal
     setScanMode("quick");
     setShowModeModal(true);
   };
 
-  /* Called after user selects a mode inside the modal */
   const launchScan = async (chosenMode: "quick" | "full") => {
     setScanMode(chosenMode);
     setShowModeModal(false);
@@ -249,7 +272,7 @@ const StartScan = () => {
         scanMode:  chosenMode,
       };
 
-      addToast("info", "Pinging Target", "Checking if the host is alive…", 2000);
+      addToast("info", "Scan Initiated", `Launching ${tool.toUpperCase()} assessment…`, 3000);
       
       const response = await startScan(scanData);
 
@@ -258,26 +281,22 @@ const StartScan = () => {
         const scanId  = response.data.scanId || response.data.scan?._id || response.data.scans?.[0]?._id;
         const batchId = response.data.batchId;
         if (scanId) {
-          addToast("success", "Scan Started", "Redirecting to scan progress…", 3000);
+          addToast("success", "Audit Started", "Redirecting to mission control…", 3000);
           if (batchId) {
             navigate(`/scan-progress/${scanId}?batchId=${encodeURIComponent(batchId)}`);
           } else {
             navigate(`/scan-progress/${scanId}`);
           }
-        } else {
-          const err = "System Error: Scan initiation successful but ID not received.";
-          setError(err);
-          addToast("error", "System Error", err, 4000);
         }
       } else {
-        const err = response?.data?.error || "Initialization Failed: The scan could not be started.";
+        const err = response?.data?.error || "Initialization Failed.";
         setError(err);
         addToast("error", "Scan Failed", err, 4000);
       }
     } catch (err: any) {
-      const errMsg = err?.response?.data?.error || "Target Unreachable: Host seems offline or blocking connection.";
+      const errMsg = err?.response?.data?.error || "Connection Error: Failed to start scan.";
       setError(errMsg);
-      addToast("error", "Connection Error", errMsg, 5000);
+      addToast("error", "Error", errMsg, 5000);
     } finally {
       setScanLoading(false);
     }
@@ -289,7 +308,6 @@ const StartScan = () => {
   const accentColor  = TOOL_COLOR[tool] || "var(--cyber-primary)";
   const modeInfo     = SCAN_MODE_DESCRIPTIONS[tool];
 
-  /* ── JSX ────────────────────────────────────────────────────────────────── */
   return (
     <div className={`scan-page-premium ${isMobile ? "mobile" : ""}`}>
       <div className="noise-overlay"></div>
@@ -301,13 +319,12 @@ const StartScan = () => {
             <span>Dashboard</span>
           </Link>
           <div className="header-text">
-            <h1>Security Scan Module</h1>
-            <p>Select tool &amp; target {isMobile && <Smartphone size={14} className="inline" />}</p>
+            <h1>Security Audit Hub</h1>
+            <p>Verify target and deploy scanners {isMobile && <Smartphone size={14} className="inline" />}</p>
           </div>
         </header>
 
         <div className={`scan-main-grid-v2 ${isMobile ? "mobile-layout" : ""}`}>
-          {/* ── Form panel ── */}
           <div className="form-panel glass-panel">
             {error && (
               <div className="alert-box error">
@@ -317,95 +334,122 @@ const StartScan = () => {
             )}
 
             <form className="scan-form-v2" onSubmit={handleInitialize}>
-              {/* URL input */}
-              <div className="input-group">
-                <div className="label-row">
-                  <label>Target URL</label>
-                  <div className="usage-indicator">{usedScans} / {scanLimit}</div>
-                </div>
-                <div className="url-input-wrap">
-                  <Globe className="input-icon" size={20} />
-                  <input
-                    type="text"
-                    placeholder="https://example.com"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    disabled={scanLoading}
-                    required
-                  />
-                </div>
-                <div className="usage-bar">
-                  <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
+              {/* --- STEP 1: TARGET VERIFICATION --- */}
+              <div className={`step-container ${hostVerified ? "step-completed" : "step-active"}`}>
+                <div className="step-badge">1</div>
+                <div className="input-group">
+                  <div className="label-row">
+                    <label>Target Infrastructure URL</label>
+                    <div className="usage-indicator">{usedScans} / {scanLimit}</div>
+                  </div>
+                  <div className="url-input-wrap">
+                    <Globe className="input-icon" size={20} />
+                    <input
+                      type="text"
+                      placeholder="https://example.com"
+                      value={url}
+                      onChange={(e) => { setUrl(e.target.value); setHostVerified(false); }}
+                      disabled={scanLoading || pingLoading}
+                      required
+                    />
+                    {!hostVerified ? (
+                      <button 
+                        type="button" 
+                        className="ping-verify-btn" 
+                        onClick={handlePingCheck}
+                        disabled={pingLoading || !url.trim()}
+                      >
+                        {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Verify Host</span>}
+                      </button>
+                    ) : (
+                      <div className="verified-tag">
+                        <Rocket size={14} />
+                        <span>REACHABLE</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="usage-bar">
+                    <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
+                  </div>
                 </div>
               </div>
 
-              {/* Tool selector */}
-              <div className="module-group">
-                <label>Security Tool</label>
-                <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
-                  {tools.map((t) => (
-                    <div
-                      key={t.id}
-                      className={`module-card ${tool === t.id ? "selected" : ""}`}
-                      onClick={() => handleToolSelect(t.id)}
-                      title={t.tooltip}
-                      style={{ "--accent-color": t.color } as any}
-                    >
-                      <div className="module-tag">{t.tag}</div>
-                      <div className="module-icon">
-                        <Lottie animationData={t.anim} loop className="lottie-mini" />
+              {/* --- STEP 2: SCANNERS & PARAMETERS --- */}
+              <div className={`step-container ${!hostVerified ? "step-locked" : "step-active"}`} style={{ marginTop: '30px' }}>
+                <div className="step-badge">2</div>
+                {!hostVerified && <div className="lock-overlay"><Shield size={24} /><span>Verify Target to Unlock Scanners</span></div>}
+                
+                <div className="module-group">
+                  <label>Select Deployment Module</label>
+                  <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
+                    {tools.map((t) => (
+                      <div
+                        key={t.id}
+                        className={`module-card ${tool === t.id ? "selected" : ""} ${!hostVerified ? "disabled" : ""}`}
+                        onClick={() => handleToolSelect(t.id)}
+                        title={t.tooltip}
+                        style={{ "--accent-color": t.color } as any}
+                      >
+                        <div className="module-tag">{t.tag}</div>
+                        <div className="module-icon">
+                          <Lottie animationData={t.anim} loop className="lottie-mini" />
+                        </div>
+                        <div className="module-info">
+                          <h3>{t.name}</h3>
+                          <p>{t.desc}</p>
+                        </div>
+                        <div className="selection-indicator">
+                          <Zap size={14} fill="currentColor" />
+                        </div>
                       </div>
-                      <div className="module-info">
-                        <h3>{t.name}</h3>
-                        <p>{t.desc}</p>
-                      </div>
-                      <div className="selection-indicator">
-                        <Zap size={14} fill="currentColor" />
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Initialize Scan button */}
-              <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim()}>
-                {scanLoading ? (
-                  <>
-                    <Loader2 className="animate-spin" size={22} />
-                    <span>Launching…</span>
-                  </>
-                ) : (
-                  <>
-                    <Shield size={22} />
-                    <span>{isMobile ? "Scan" : "Initialize Scan"}</span>
-                    <ArrowRight size={22} />
-                  </>
-                )}
-              </button>
+                <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim() || !hostVerified} style={{ marginTop: '20px' }}>
+                  {scanLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" size={22} />
+                      <span>Deploying…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Shield size={22} />
+                      <span>{isMobile ? "Audit" : "Initialize Security Scan"}</span>
+                      <ArrowRight size={22} />
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
 
-          {/* ── Sidebar (desktop only) ── */}
           {!isMobile && (
             <aside className="info-panel-v2">
               <div className="info-card glass-panel">
                 <div className="card-header">
                   <Info size={18} className="text-primary" />
-                  <span>Module Info</span>
+                  <span>Scanner Configuration</span>
                 </div>
                 <div className="module-details">
-                  <h2 style={{ color: accentColor }}>{tools.find(t => t.id === tool)?.name}</h2>
-                  <p className="desc-text">{tools.find(t => t.id === tool)?.tooltip}</p>
-                  <div className="stat-grid">
-                    <div className="stat-item">
-                      <label>Quick</label>
-                      <strong>{modeInfo?.quick.title}</strong>
+                  <h2 style={{ color: hostVerified ? accentColor : 'rgba(255,255,255,0.2)' }}>
+                    {hostVerified ? tools.find(t => t.id === tool)?.name : "Locked"}
+                  </h2>
+                  <p className="desc-text">
+                    {hostVerified ? tools.find(t => t.id === tool)?.tooltip : "Please verify the target infrastructure above before selecting an audit module."}
+                  </p>
+                  {hostVerified && (
+                    <div className="stat-grid">
+                      <div className="stat-item">
+                        <label>Quick</label>
+                        <strong>{modeInfo?.quick.title}</strong>
+                      </div>
+                      <div className="stat-item">
+                        <label>Deep</label>
+                        <strong>{modeInfo?.full.title}</strong>
+                      </div>
                     </div>
-                    <div className="stat-item">
-                      <label>Deep</label>
-                      <strong>{modeInfo?.full.title}</strong>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </aside>
