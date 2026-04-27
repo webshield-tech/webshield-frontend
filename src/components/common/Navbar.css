@@ -188,15 +188,15 @@
 .notifications-dropdown {
   position: absolute;
   top: calc(100% + 10px);
-  right: -10px;
-  width: 310px;
+  right: 0;
+  width: 320px;
   background: var(--bg-overlay);
   border: 1px solid var(--border-default);
-  border-radius: 10px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0,255,136,0.08);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0,255,136,0.1);
   overflow: hidden;
   z-index: 200;
-  animation: slideDown 0.2s ease;
+  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dropdown-header {

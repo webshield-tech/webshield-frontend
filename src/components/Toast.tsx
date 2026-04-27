@@ -76,46 +76,61 @@ const Toast = ({ toast, onClose }: ToastProps) => {
       style={{
         background: styles.bg,
         border: styles.border,
-        borderRadius: "8px",
-        padding: "16px",
-        boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+        borderRadius: "12px",
+        padding: "12px 16px",
+        boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
         display: "flex",
         gap: "12px",
-        alignItems: "flex-start",
-        minWidth: "320px",
-        maxWidth: "400px",
-        backdropFilter: "blur(10px)",
+        alignItems: "center",
+        width: "fit-content",
+        minWidth: "280px",
+        maxWidth: "380px",
+        backdropFilter: "blur(12px)",
       }}
     >
-      <div className={`flex-shrink-0 ${styles.icon}`}>{getIcon()}</div>
-      <div style={{ flex: 1 }}>
+      <div className={`flex-shrink-0 ${styles.icon}`} style={{ display: 'flex' }}>{getIcon()}</div>
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <div
           style={{
             fontWeight: 600,
             color: "#fff",
-            marginBottom: "4px",
-            fontSize: "0.95rem",
+            marginBottom: "2px",
+            fontSize: "0.9rem",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis"
           }}
         >
           {toast.title}
         </div>
-        <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.8)" }}>
+        <div style={{ 
+          fontSize: "0.8rem", 
+          color: "rgba(255,255,255,0.7)",
+          lineHeight: "1.4",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden"
+        }}>
           {toast.message}
         </div>
       </div>
       <button
         onClick={() => onClose(toast.id)}
         style={{
-          background: "none",
+          background: "rgba(255,255,255,0.05)",
           border: "none",
-          color: "rgba(255,255,255,0.6)",
+          color: "rgba(255,255,255,0.5)",
           cursor: "pointer",
-          padding: "0",
+          padding: "4px",
+          borderRadius: "6px",
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.2s"
         }}
       >
-        <X size={18} />
+        <X size={16} />
       </button>
     </motion.div>
   );
@@ -131,18 +146,19 @@ export const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
     <div
       style={{
         position: "fixed",
-        top: "20px",
-        right: "20px",
-        zIndex: 9999,
+        top: "80px",
+        right: "24px",
+        zIndex: 10000,
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        gap: "10px",
         pointerEvents: "none",
+        maxWidth: "calc(100vw - 48px)"
       }}
     >
       <AnimatePresence>
         {toasts.map((toast) => (
-          <div key={toast.id} style={{ pointerEvents: "auto" }}>
+          <div key={toast.id} style={{ pointerEvents: "auto", display: 'flex', justifyContent: 'flex-end' }}>
             <Toast toast={toast} onClose={onRemove} />
           </div>
         ))}

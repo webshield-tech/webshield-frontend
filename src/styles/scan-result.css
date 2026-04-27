@@ -328,19 +328,22 @@
 /* Toast & Modal */
 .toast-premium {
   position: fixed;
-  bottom: 40px;
-  right: 40px;
+  bottom: 32px;
+  right: 32px;
   background: var(--cyber-panel);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--cyber-border);
-  padding: 16px 24px;
-  border-radius: 4px;
+  padding: 12px 20px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 12px;
   font-family: 'Fira Code', monospace;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1000;
+  max-width: calc(100vw - 64px);
 }
 
 @keyframes toastIn {

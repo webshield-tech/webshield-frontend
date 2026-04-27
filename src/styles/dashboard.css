@@ -60,6 +60,29 @@
   color: #000;
 }
 
+.dashboard-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  margin-bottom: 32px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+.dashboard-alert.error {
+  background: rgba(255, 51, 51, 0.1);
+  border: 1px solid rgba(255, 51, 51, 0.3);
+  color: #ff3333;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* Metrics Grid */
 .metrics-grid {
   display: grid;
