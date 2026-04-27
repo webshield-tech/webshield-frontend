@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cancelScan, getBatchResults, getScanResultsById, startScan } from "../../api/scan-api";
 import { AutoScanProgress } from "../../components/AutoScanProgress";
+import { useToast } from "../../components/Toast";
 import "../../styles/scan-progress.css";
 
 const POLL_MS = 3000;
@@ -27,6 +28,7 @@ const ScanProgress = () => {
   const { scanId } = useParams<{ scanId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const initialBatchId = searchParams.get("batchId") || "";
   const [status, setStatus] = useState("pending");
   const [percent, setPercent] = useState(12);
