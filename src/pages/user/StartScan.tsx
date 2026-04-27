@@ -235,7 +235,7 @@ const StartScan = () => {
   };
 
   const handleToolSelect = (toolId: string) => {
-    if (scanLoading || !hostVerified) return;
+    if (scanLoading) return;
     setTool(toolId as ScanTool);
     const t = tools.find(t => t.id === toolId);
     if (t) addToast("info", `${t.name} Selected`, t.tooltip, 4000);
@@ -243,16 +243,18 @@ const StartScan = () => {
 
   const handleInitialize = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hostVerified) {
-      handlePingCheck();
-      return;
-    }
     setError("");
 
     if (user && user.usedScan >= user.scanLimit) {
       const msg = `Daily limit reached (${user.scanLimit}). Buy Premium to run more scans.`;
       setError(msg);
       addToast("error", "Scan Limit Reached", msg, 4000);
+      return;
+    }
+
+    if (!url.trim() || !url.startsWith("http")) {
+      setError("Please enter a valid target URL starting with http:// or https://");
+      addToast("error", "Invalid URL", "Invalid target format.", 3000);
       return;
     }
 
@@ -320,7 +322,7 @@ const StartScan = () => {
           </Link>
           <div className="header-text">
             <h1>Security Audit Hub</h1>
-            <p>Verify target and deploy scanners {isMobile && <Smartphone size={14} className="inline" />}</p>
+            <p>Deploy scanners and assess infrastructure {isMobile && <Smartphone size={14} className="inline" />}</p>
           </div>
         </header>
 
@@ -334,93 +336,86 @@ const StartScan = () => {
             )}
 
             <form className="scan-form-v2" onSubmit={handleInitialize}>
-              {/* --- STEP 1: TARGET VERIFICATION --- */}
-              <div className={`step-container ${hostVerified ? "step-completed" : "step-active"}`}>
-                <div className="step-badge">1</div>
-                <div className="input-group">
-                  <div className="label-row">
-                    <label>Target Infrastructure URL</label>
-                    <div className="usage-indicator">{usedScans} / {scanLimit}</div>
-                  </div>
-                  <div className="url-input-wrap">
-                    <Globe className="input-icon" size={20} />
-                    <input
-                      type="text"
-                      placeholder="https://example.com"
-                      value={url}
-                      onChange={(e) => { setUrl(e.target.value); setHostVerified(false); }}
-                      disabled={scanLoading || pingLoading}
-                      required
-                    />
-                    {!hostVerified ? (
-                      <button 
-                        type="button" 
-                        className="ping-verify-btn" 
-                        onClick={handlePingCheck}
-                        disabled={pingLoading || !url.trim()}
-                      >
-                        {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Verify Host</span>}
-                      </button>
-                    ) : (
-                      <div className="verified-tag">
-                        <Rocket size={14} />
-                        <span>REACHABLE</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="usage-bar">
-                    <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
-                  </div>
+              {/* --- TARGET INPUT --- */}
+              <div className="input-group">
+                <div className="label-row">
+                  <label>Target Infrastructure URL</label>
+                  <div className="usage-indicator">{usedScans} / {scanLimit}</div>
                 </div>
-              </div>
-
-              {/* --- STEP 2: SCANNERS & PARAMETERS --- */}
-              <div className={`step-container ${!hostVerified ? "step-locked" : "step-active"}`} style={{ marginTop: '30px' }}>
-                <div className="step-badge">2</div>
-                {!hostVerified && <div className="lock-overlay"><Shield size={24} /><span>Verify Target to Unlock Scanners</span></div>}
-                
-                <div className="module-group">
-                  <label>Select Deployment Module</label>
-                  <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
-                    {tools.map((t) => (
-                      <div
-                        key={t.id}
-                        className={`module-card ${tool === t.id ? "selected" : ""} ${!hostVerified ? "disabled" : ""}`}
-                        onClick={() => handleToolSelect(t.id)}
-                        title={t.tooltip}
-                        style={{ "--accent-color": t.color } as any}
-                      >
-                        <div className="module-tag">{t.tag}</div>
-                        <div className="module-icon">
-                          <Lottie animationData={t.anim} loop className="lottie-mini" />
-                        </div>
-                        <div className="module-info">
-                          <h3>{t.name}</h3>
-                          <p>{t.desc}</p>
-                        </div>
-                        <div className="selection-indicator">
-                          <Zap size={14} fill="currentColor" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim() || !hostVerified} style={{ marginTop: '20px' }}>
-                  {scanLoading ? (
-                    <>
-                      <Loader2 className="animate-spin" size={22} />
-                      <span>Deploying…</span>
-                    </>
+                <div className="url-input-wrap">
+                  <Globe className="input-icon" size={20} />
+                  <input
+                    type="text"
+                    placeholder="https://example.com"
+                    value={url}
+                    onChange={(e) => { setUrl(e.target.value); setHostVerified(false); }}
+                    disabled={scanLoading}
+                    required
+                  />
+                  {!hostVerified ? (
+                    <button 
+                      type="button" 
+                      className="ping-verify-btn" 
+                      onClick={handlePingCheck}
+                      disabled={pingLoading || !url.trim()}
+                      title="Verify if the host is alive (Optional)"
+                    >
+                      {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Check Availability</span>}
+                    </button>
                   ) : (
-                    <>
-                      <Shield size={22} />
-                      <span>{isMobile ? "Audit" : "Initialize Security Scan"}</span>
-                      <ArrowRight size={22} />
-                    </>
+                    <div className="verified-tag">
+                      <Rocket size={14} />
+                      <span>ALIVE</span>
+                    </div>
                   )}
-                </button>
+                </div>
+                <div className="usage-bar">
+                  <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
+                </div>
               </div>
+
+              {/* --- SCANNERS --- */}
+              <div className="module-group" style={{ marginTop: '10px' }}>
+                <label>Select Deployment Module</label>
+                <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
+                  {tools.map((t) => (
+                    <div
+                      key={t.id}
+                      className={`module-card ${tool === t.id ? "selected" : ""}`}
+                      onClick={() => handleToolSelect(t.id)}
+                      title={t.tooltip}
+                      style={{ "--accent-color": t.color } as any}
+                    >
+                      <div className="module-tag">{t.tag}</div>
+                      <div className="module-icon">
+                        <Lottie animationData={t.anim} loop className="lottie-mini" />
+                      </div>
+                      <div className="module-info">
+                        <h3>{t.name}</h3>
+                        <p>{t.desc}</p>
+                      </div>
+                      <div className="selection-indicator">
+                        <Zap size={14} fill="currentColor" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim()} style={{ marginTop: '10px' }}>
+                {scanLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={22} />
+                    <span>Deploying…</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield size={22} />
+                    <span>{isMobile ? "Audit" : "Initialize Security Scan"}</span>
+                    <ArrowRight size={22} />
+                  </>
+                )}
+              </button>
             </form>
           </div>
 
@@ -432,24 +427,22 @@ const StartScan = () => {
                   <span>Scanner Configuration</span>
                 </div>
                 <div className="module-details">
-                  <h2 style={{ color: hostVerified ? accentColor : 'rgba(255,255,255,0.2)' }}>
-                    {hostVerified ? tools.find(t => t.id === tool)?.name : "Locked"}
+                  <h2 style={{ color: accentColor }}>
+                    {tools.find(t => t.id === tool)?.name}
                   </h2>
                   <p className="desc-text">
-                    {hostVerified ? tools.find(t => t.id === tool)?.tooltip : "Please verify the target infrastructure above before selecting an audit module."}
+                    {tools.find(t => t.id === tool)?.tooltip}
                   </p>
-                  {hostVerified && (
-                    <div className="stat-grid">
-                      <div className="stat-item">
-                        <label>Quick</label>
-                        <strong>{modeInfo?.quick.title}</strong>
-                      </div>
-                      <div className="stat-item">
-                        <label>Deep</label>
-                        <strong>{modeInfo?.full.title}</strong>
-                      </div>
+                  <div className="stat-grid">
+                    <div className="stat-item">
+                      <label>Quick</label>
+                      <strong>{modeInfo?.quick.title}</strong>
                     </div>
-                  )}
+                    <div className="stat-item">
+                      <label>Deep</label>
+                      <strong>{modeInfo?.full.title}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
             </aside>
