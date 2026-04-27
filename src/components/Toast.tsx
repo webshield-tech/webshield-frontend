@@ -40,27 +40,31 @@ const Toast = ({ toast, onClose }: ToastProps) => {
     switch (toast.type) {
       case "success":
         return {
-          bg: "rgba(0, 255, 100, 0.1)",
-          border: "1px solid rgba(0, 255, 100, 0.3)",
-          icon: "text-green-400",
+          bg: "linear-gradient(135deg, rgba(0, 255, 157, 0.16), rgba(0, 255, 157, 0.08))",
+          border: "1px solid rgba(0, 255, 157, 0.35)",
+          accent: "#00ff9d",
+          iconBg: "rgba(0, 255, 157, 0.12)",
         };
       case "error":
         return {
-          bg: "rgba(255, 50, 50, 0.1)",
-          border: "1px solid rgba(255, 50, 50, 0.3)",
-          icon: "text-red-400",
+          bg: "linear-gradient(135deg, rgba(255, 77, 77, 0.16), rgba(255, 77, 77, 0.08))",
+          border: "1px solid rgba(255, 77, 77, 0.35)",
+          accent: "#ff5d5d",
+          iconBg: "rgba(255, 77, 77, 0.12)",
         };
       case "warning":
         return {
-          bg: "rgba(255, 200, 50, 0.1)",
-          border: "1px solid rgba(255, 200, 50, 0.3)",
-          icon: "text-yellow-400",
+          bg: "linear-gradient(135deg, rgba(255, 200, 50, 0.16), rgba(255, 200, 50, 0.08))",
+          border: "1px solid rgba(255, 200, 50, 0.35)",
+          accent: "#ffd54f",
+          iconBg: "rgba(255, 200, 50, 0.12)",
         };
       default:
         return {
-          bg: "rgba(100, 150, 255, 0.1)",
-          border: "1px solid rgba(100, 150, 255, 0.3)",
-          icon: "text-blue-400",
+          bg: "linear-gradient(135deg, rgba(0, 242, 255, 0.14), rgba(0, 242, 255, 0.06))",
+          border: "1px solid rgba(0, 242, 255, 0.3)",
+          accent: "#00f2ff",
+          iconBg: "rgba(0, 242, 255, 0.12)",
         };
     }
   };
@@ -76,6 +80,7 @@ const Toast = ({ toast, onClose }: ToastProps) => {
       style={{
         background: styles.bg,
         border: styles.border,
+        borderLeft: `4px solid ${styles.accent}`,
         borderRadius: "12px",
         padding: "12px 16px",
         boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
@@ -88,7 +93,22 @@ const Toast = ({ toast, onClose }: ToastProps) => {
         backdropFilter: "blur(12px)",
       }}
     >
-      <div className={`flex-shrink-0 ${styles.icon}`} style={{ display: 'flex' }}>{getIcon()}</div>
+      <div
+        className="flex-shrink-0"
+        style={{
+          display: "flex",
+          color: styles.accent,
+          background: styles.iconBg,
+          borderRadius: "10px",
+          width: "36px",
+          height: "36px",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: `0 0 18px ${styles.accent}22`,
+        }}
+      >
+        {getIcon()}
+      </div>
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <div
           style={{

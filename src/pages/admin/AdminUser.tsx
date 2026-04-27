@@ -8,6 +8,8 @@ import {
   adminUpdateUserLimit,
   adminToggleUserBlock
 } from "../../api/admin-api";
+import { useToast, ToastContainer } from "../../components/Toast";
+import { addNotification } from "../../utils/notifications";
 import "../../styles/admin.css";
 
 type RecentUser = {
@@ -34,6 +36,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<RecentUser | null>(null);
   const [updating, setUpdating] = useState(false);
   const location = useLocation();
+  const { toasts, addToast, removeToast } = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -67,7 +70,7 @@ export default function AdminUsers() {
       }
       setSelectedUserScans(Array.isArray(data.scans) ? data.scans : []);
     } catch (err: any) {
-      alert(err?.response?.data?.error || "Failed to retrieve history logs.");
+      addToast("error", "History Unavailable", err?.response?.data?.error || "Failed to retrieve history logs.", 5000);
     }
   };
 
@@ -77,19 +80,29 @@ export default function AdminUsers() {
     if (!input) return;
     const val = Number(input);
     if (Number.isNaN(val) || val < 0) {
-      alert("Invalid input. Please enter a positive integer.");
+      addToast("warning", "Invalid Quota", "Please enter a non-negative number.", 4000);
       return;
     }
     try {
       setUpdating(true);
       const res = await adminUpdateUserLimit(id, val);
       if (res.data?.success) {
-        alert("Scan quota updated successfully.");
+        addNotification({
+          type: "info",
+          title: "Scan limit updated",
+          message: `${user.username}'s daily scan limit is now ${val} scans per day.`,
+        });
+        addToast(
+          "success",
+          "Quota Updated",
+          `${user.username} can now run ${val} scans per day.`,
+          5000
+        );
       } else {
         throw new Error(res.data?.error || "Update failed");
       }
     } catch (err: any) {
-      alert(err?.response?.data?.error || "Failed to modify quota.");
+      addToast("error", "Update Failed", err?.response?.data?.error || "Failed to modify quota.", 5000);
     } finally {
       setUpdating(false);
     }
@@ -112,12 +125,12 @@ export default function AdminUsers() {
           }
           return u;
         }));
-        alert(`Operator ${action}ed successfully.`);
+        addToast("success", "Operator Updated", `Operator ${action}ed successfully.`, 4000);
       } else {
         throw new Error(res.data?.error || "Failed to toggle block status");
       }
     } catch (err: any) {
-      alert(err?.response?.data?.error || "Action failed.");
+      addToast("error", "Action Failed", err?.response?.data?.error || "Action failed.", 5000);
     } finally {
       setUpdating(false);
     }
@@ -127,6 +140,7 @@ export default function AdminUsers() {
 
   return (
     <div className="admin-page-v2">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className="admin-content-wrap">
         <header className="admin-header-v2">
           <div className="header-info">

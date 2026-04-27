@@ -10,12 +10,20 @@ import {
   Menu,
   X,
   BookOpen,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
   Bell,
   LogOut
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import "./Navbar.css";
+import {
+  loadNotifications,
+  markAllNotificationsRead,
+  type AppNotification,
+} from "../../utils/notifications";
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -23,8 +31,10 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => loadNotifications());
   const notificationRef = useRef<HTMLDivElement>(null);
+
+  const hasUnread = notifications.some((notification) => !notification.read);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -37,16 +47,56 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto-hide dot when opening dropdown
   useEffect(() => {
-    if (notificationsOpen) {
-      // Small delay or wait for user to click mark as read? 
-      // User said "dot disappear auto", usually when opened.
-    }
-  }, [notificationsOpen]);
+    const syncNotifications = () => setNotifications(loadNotifications());
+
+    syncNotifications();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === "webshield.notifications") {
+        syncNotifications();
+      }
+    };
+
+    const handleCustomUpdate = () => syncNotifications();
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("webshield-notifications-updated", handleCustomUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("webshield-notifications-updated", handleCustomUpdate);
+    };
+  }, []);
 
   const markAllAsRead = () => {
-    setHasUnread(false);
+    setNotifications(markAllNotificationsRead());
+  };
+
+  const getNotificationIcon = (type: AppNotification["type"]) => {
+    switch (type) {
+      case "success":
+        return <CheckCircle2 size={16} />;
+      case "warning":
+        return <AlertTriangle size={16} />;
+      case "error":
+        return <AlertCircle size={16} />;
+      default:
+        return <Info size={16} />;
+    }
+  };
+
+  const getNotificationAccent = (type: AppNotification["type"]) => {
+    switch (type) {
+      case "success":
+        return { color: "#00ff9d", background: "rgba(0, 255, 157, 0.12)" };
+      case "warning":
+        return { color: "#ffd54f", background: "rgba(255, 213, 79, 0.12)" };
+      case "error":
+        return { color: "#ff5d5d", background: "rgba(255, 93, 93, 0.12)" };
+      default:
+        return { color: "#00f2ff", background: "rgba(0, 242, 255, 0.12)" };
+    }
   };
 
   const isAdmin = !!user && user.role === "admin";
@@ -121,8 +171,11 @@ export const Navbar = () => {
             <button 
               className="navbar-icon-btn" 
               onClick={() => {
-                setNotificationsOpen(!notificationsOpen);
-                if (!notificationsOpen) setHasUnread(false); // Clear dot when opening
+                setNotificationsOpen((previous) => {
+                  const next = !previous;
+                  if (next) markAllAsRead();
+                  return next;
+                });
               }}
               title="Notifications"
             >
@@ -138,20 +191,43 @@ export const Navbar = () => {
                   <button className="mark-read-btn" onClick={markAllAsRead}>Mark as read</button>
                 </div>
                 <div className="dropdown-content">
-                  <div className="notification-item">
-                    <span className="dot unread"></span>
-                    <div className="text">
-                      <p>Scan <strong>#44A2</strong> completed successfully.</p>
-                      <small>2 mins ago</small>
+                  {notifications.length === 0 ? (
+                    <div className="notification-item">
+                      <span className="dot"></span>
+                      <div className="text">
+                        <p>No notifications yet.</p>
+                        <small>Updates will appear here.</small>
+                      </div>
                     </div>
-                  </div>
-                  <div className="notification-item">
-                    <span className="dot"></span>
-                    <div className="text">
-                      <p>Welcome to Vuln Spectra platform.</p>
-                      <small>1 day ago</small>
-                    </div>
-                  </div>
+                  ) : (
+                    notifications.map((notification) => {
+                      const accent = getNotificationAccent(notification.type);
+                      return (
+                        <div className="notification-item" key={notification.id}>
+                          <span
+                            style={{
+                              width: 30,
+                              height: 30,
+                              borderRadius: 8,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: accent.color,
+                              background: accent.background,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {getNotificationIcon(notification.type)}
+                          </span>
+                          <div className="text">
+                            <p>{notification.title}</p>
+                            <small>{notification.message}</small>
+                          </div>
+                          <span className={`dot ${notification.read ? "" : "unread"}`}></span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

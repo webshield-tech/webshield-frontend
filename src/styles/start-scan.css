@@ -166,6 +166,37 @@
   overflow: hidden;
 }
 
+.quota-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.quota-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: rgba(255, 255, 255, 0.03);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.4px;
+  color: var(--cyber-text-dim);
+}
+
+.quota-pill strong {
+  color: inherit;
+  font-weight: 700;
+}
+
+.quota-pill small {
+  color: inherit;
+  opacity: 0.8;
+}
+
 .bar-fill {
   height: 100%;
   background: var(--cyber-primary);

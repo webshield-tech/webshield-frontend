@@ -163,6 +163,14 @@ const TOOL_COLOR: Record<string, string> = {
   sslscan: "#00ff9d",
 };
 
+const TOOL_DAILY_LIMITS = [
+  { id: "nmap", label: "Nmap", limit: 10, color: "#00f2ff" },
+  { id: "nikto", label: "Nikto", limit: 10, color: "#ff0055" },
+  { id: "sqlmap", label: "SQLMap", limit: 10, color: "#ffd54f" },
+  { id: "sslscan", label: "SSLScan", limit: 10, color: "#00ff9d" },
+  { id: "auto", label: "Auto", limit: 5, color: "#ffffff" },
+] as const;
+
 /* ═══════════════════════════════════════════════════════════════════════════ */
 const StartScan = () => {
   const navigate = useNavigate();
@@ -225,7 +233,9 @@ const StartScan = () => {
         setHostVerified(true);
         addToast("success", "Host Reachable", "Target is online. You can now select a tool and begin the scan.", 5000);
       } else {
-        setError(response.data.error || "Host is offline.");
+        const offlineMessage = response.data.error || "Host is offline.";
+        setError(offlineMessage);
+        addToast("error", "Host Offline", offlineMessage, 4000);
       }
     } catch (err: any) {
       const errMsg = err?.response?.data?.error || "Target Unreachable: Please check the URL.";
@@ -375,6 +385,14 @@ const StartScan = () => {
                 </div>
                 <div className="usage-bar">
                   <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
+                </div>
+                <div className="quota-summary">
+                  {TOOL_DAILY_LIMITS.map((item) => (
+                    <span key={item.id} className="quota-pill" style={{ color: item.color }}>
+                      <strong>{item.label}</strong>
+                      <small>{item.limit}/day</small>
+                    </span>
+                  ))}
                 </div>
               </div>
 
