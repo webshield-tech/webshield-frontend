@@ -210,7 +210,8 @@ const StartScan = () => {
   ] as const;
 
   const handlePingCheck = async () => {
-    if (!url.trim() || !url.startsWith("http")) {
+    const normalizedUrl = url.trim();
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
       setError("Please enter a valid target URL starting with http:// or https://");
       addToast("error", "Invalid URL", "Invalid target format.", 3000);
       return;
@@ -219,7 +220,7 @@ const StartScan = () => {
     try {
       setPingLoading(true);
       setError("");
-      const response = await pingTarget(url.trim());
+      const response = await pingTarget(normalizedUrl);
       if (response.data.success) {
         setHostVerified(true);
         addToast("success", "Host Reachable", "Target is online. You can now select a tool and begin the scan.", 5000);
@@ -253,7 +254,8 @@ const StartScan = () => {
       return;
     }
 
-    if (!url.trim() || !url.startsWith("http")) {
+    const normalizedUrl = url.trim();
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
       setError("Please enter a valid target URL starting with http:// or https://");
       addToast("error", "Invalid URL", "Invalid target format.", 3000);
       return;

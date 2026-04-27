@@ -19,6 +19,11 @@ class ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
+      const isChunkError = 
+        this.state.error?.message?.includes("Fetching dynamically imported module") || 
+        this.state.error?.message?.includes("Loading chunk") ||
+        this.state.error?.name === "ChunkLoadError";
+
       return (
         <div
           style={{
@@ -35,27 +40,42 @@ class ErrorBoundary extends Component<
             textAlign: "center",
           }}
         >
-          <span style={{ fontSize: "3rem" }}>⚠</span>
+          <span style={{ fontSize: "3rem" }}>{isChunkError ? "🔄" : "⚠"}</span>
           <h2 style={{ fontSize: "1.4rem", letterSpacing: "2px", color: "#00ff9d" }}>
-            SYSTEM ERROR
+            {isChunkError ? "UPDATE REQUIRED" : "SYSTEM ERROR"}
           </h2>
           <p style={{ color: "rgba(255,255,255,0.5)", maxWidth: "500px", lineHeight: 1.6 }}>
-            Something went wrong. Please{" "}
-            <span
-              style={{ color: "#00ff9d", cursor: "pointer", textDecoration: "underline" }}
-              onClick={() => {
-                this.setState({ hasError: false, error: null });
-                window.location.href = "/";
-              }}
-            >
-              return to home
-            </span>
-            .
+            {isChunkError 
+              ? "A system update was detected. Please reload the page to initialize the latest security modules."
+              : "Something went wrong. The system encountered an unexpected runtime exception."}
           </p>
+          
+          <button
+            style={{
+              marginTop: "20px",
+              padding: "12px 24px",
+              background: "#00ff9d",
+              color: "#000",
+              border: "none",
+              borderRadius: "4px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              textTransform: "uppercase",
+              letterSpacing: "1px"
+            }}
+            onClick={() => {
+              sessionStorage.clear();
+              window.location.reload();
+            }}
+          >
+            {isChunkError ? "Reload System" : "Return to Home"}
+          </button>
+
           {import.meta.env.DEV && this.state.error && (
             <pre
               style={{
-                marginTop: "16px",
+                marginTop: "24px",
                 padding: "16px",
                 background: "rgba(255,0,0,0.1)",
                 border: "1px solid rgba(255,0,0,0.3)",
@@ -67,7 +87,7 @@ class ErrorBoundary extends Component<
                 textAlign: "left",
               }}
             >
-              {this.state.error.message}
+              {this.state.error.stack || this.state.error.message}
             </pre>
           )}
         </div>

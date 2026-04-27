@@ -6,25 +6,44 @@ import { useAuth } from "../context/AuthContext";
 import LoadingScreen from "../components/common/LoadingScreen";
 import MainLayout from "../components/layout/MainLayout";
 
-// Lazy-loaded components
-const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
-const AdminScans = lazy(() => import("../pages/admin/AdminScan"));
-const AdminUsers = lazy(() => import("../pages/admin/AdminUser"));
-const Landing = lazy(() => import("../pages/public/Landing"));
-const Login = lazy(() => import("../pages/public/Login"));
-const Signup = lazy(() => import("../pages/public/Signup"));
-const Disclaimer = lazy(() => import("../pages/public/Disclaimer"));
-const Dashboard = lazy(() => import("../pages/user/Dashboard"));
-const Profile = lazy(() => import("../pages/user/Profile"));
-const ForgotPassword = lazy(() => import("../pages/public/ForgotPassword"));
-const ResetPassword = lazy(() => import("../pages/public/ResetPassword"));
-const ScanHistory = lazy(() => import("../pages/user/ScanHistory"));
-const ScanProgress = lazy(() => import("../pages/user/ScanProgress"));
-const ScanResult = lazy(() => import("../pages/user/ScanResult"));
-const StartScan = lazy(() => import("../pages/user/StartScan"));
-const AboutTools = lazy(() => import("../pages/user/AboutTools"));
-const Learn = lazy(() => import("../pages/public/Learn"));
-const NotFound = lazy(() => import("../pages/public/NotFound"));
+// Helper to handle chunk loading errors (happens when app is updated while user is on it)
+const lazyRetry = (componentImport: () => Promise<any>) => {
+  return lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      console.error("Chunk load failed, refreshing page...", error);
+      // Only reload once to avoid infinite loops
+      const hasReloaded = sessionStorage.getItem("chunk_reload_failed");
+      if (!hasReloaded) {
+        sessionStorage.setItem("chunk_reload_failed", "true");
+        window.location.reload();
+        return { default: () => null }; // Return dummy while reloading
+      }
+      throw error; // Rethrow if it fails even after reload
+    }
+  });
+};
+
+// Lazy-loaded components with retry logic
+const AdminDashboard = lazyRetry(() => import("../pages/admin/AdminDashboard"));
+const AdminScans = lazyRetry(() => import("../pages/admin/AdminScan"));
+const AdminUsers = lazyRetry(() => import("../pages/admin/AdminUser"));
+const Landing = lazyRetry(() => import("../pages/public/Landing"));
+const Login = lazyRetry(() => import("../pages/public/Login"));
+const Signup = lazyRetry(() => import("../pages/public/Signup"));
+const Disclaimer = lazyRetry(() => import("../pages/public/Disclaimer"));
+const Dashboard = lazyRetry(() => import("../pages/user/Dashboard"));
+const Profile = lazyRetry(() => import("../pages/user/Profile"));
+const ForgotPassword = lazyRetry(() => import("../pages/public/ForgotPassword"));
+const ResetPassword = lazyRetry(() => import("../pages/public/ResetPassword"));
+const ScanHistory = lazyRetry(() => import("../pages/user/ScanHistory"));
+const ScanProgress = lazyRetry(() => import("../pages/user/ScanProgress"));
+const ScanResult = lazyRetry(() => import("../pages/user/ScanResult"));
+const StartScan = lazyRetry(() => import("../pages/user/StartScan"));
+const AboutTools = lazyRetry(() => import("../pages/user/AboutTools"));
+const Learn = lazyRetry(() => import("../pages/public/Learn"));
+const NotFound = lazyRetry(() => import("../pages/public/NotFound"));
 
 function AppRoutes() {
   const { user, loading } = useAuth();

@@ -31,6 +31,7 @@ const ScanProgress = () => {
   const [status, setStatus] = useState("pending");
   const [percent, setPercent] = useState(12);
   const [error, setError] = useState("");
+  const [scanLoading, setScanLoading] = useState(false);
   const [tool, setTool] = useState<string | undefined>();
   const [batchId, setBatchId] = useState<string>(initialBatchId);
   const [target, setTarget] = useState<string | undefined>();
@@ -240,36 +241,48 @@ const ScanProgress = () => {
   const handleRetry = async () => {
     if (!target || !tool) {
       setError("Cannot retry because scan target/tool is missing.");
+      addToast("error", "Retry Blocked", "Scan metadata lost. Please start a new scan.", 5000);
       return;
     }
     try {
+      setScanLoading(true);
       setError("");
+      
       const normalizedTool =
-        tool.toLowerCase() === "sslscan"
+        tool.toLowerCase() === "sslscan" || tool.toLowerCase() === "ssl"
           ? "ssl"
-          : tool.toLowerCase() === "auto"
+          : tool.toLowerCase() === "auto" || tool.toLowerCase() === "all"
           ? "all"
           : tool.toLowerCase();
+
+      addToast("info", "Restarting Audit", `Re-initializing ${normalizedTool.toUpperCase()} module…`, 3000);
+
       const response = await startScan({
         targetUrl: target,
         scanType: normalizedTool,
       });
+
       const newScanId =
         response.data?.scanId ||
         response.data?.scan?._id ||
         response.data?.scans?.[0]?._id;
       const newBatchId = response.data?.batchId;
+
       if (!newScanId) {
-        setError("Retry started but scan id was not returned.");
-        return;
+        throw new Error("System failed to generate a new scan reference.");
       }
+
       if (newBatchId) {
         navigate(`/scan-progress/${newScanId}?batchId=${encodeURIComponent(newBatchId)}`, { replace: true });
       } else {
         navigate(`/scan-progress/${newScanId}`, { replace: true });
       }
     } catch (e: any) {
-      setError(e?.response?.data?.error || "Retry failed.");
+      const msg = e?.response?.data?.error || e.message || "Retry attempt failed.";
+      setError(msg);
+      addToast("error", "Deployment Failed", msg, 5000);
+    } finally {
+      setScanLoading(false);
     }
   };
 
@@ -408,9 +421,14 @@ const ScanProgress = () => {
                 </button>
               )}
               {status === "failed" && (
-                <button className="result-btn" onClick={handleRetry}>
-                  <RefreshCw size={18} />
-                  <span>Retry Scan</span>
+                <button 
+                  className="result-btn" 
+                  onClick={handleRetry} 
+                  disabled={scanLoading}
+                  style={{ opacity: scanLoading ? 0.7 : 1 }}
+                >
+                  {scanLoading ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
+                  <span>{scanLoading ? "Deploying…" : "Retry Scan"}</span>
                 </button>
               )}
             </div>
