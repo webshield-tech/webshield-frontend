@@ -122,18 +122,23 @@
 .url-input-wrap {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  gap: 12px;
 }
 
 .url-input-wrap .input-icon {
   position: absolute;
   left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--cyber-text-dim);
   transition: color 0.3s ease;
+  z-index: 2;
 }
 
 .url-input-wrap input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 16px 16px 16px 52px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--cyber-border);
@@ -867,27 +872,31 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 .ping-verify-btn {
-  padding: 10px 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--cyber-primary);
   border: 1px solid var(--cyber-border);
   border-radius: 8px;
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  margin-left: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  min-width: 180px;
 }
 
 .ping-verify-btn:hover:not(:disabled) {
   background: var(--cyber-primary);
   color: #000;
   border-color: var(--cyber-primary);
-  box-shadow: 0 0 15px var(--cyber-primary-glow);
+  box-shadow: 0 0 20px var(--cyber-primary-glow);
 }
 
 .ping-verify-btn:disabled {
@@ -896,20 +905,22 @@
 }
 
 .verified-tag {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 24px;
   background: rgba(0, 255, 157, 0.1);
   border: 1px solid var(--cyber-primary);
   border-radius: 8px;
   color: var(--cyber-primary);
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  margin-left: 12px;
   white-space: nowrap;
   animation: pulsePrimary 2s infinite;
+  min-width: 180px;
 }
 
 @keyframes pulsePrimary {
