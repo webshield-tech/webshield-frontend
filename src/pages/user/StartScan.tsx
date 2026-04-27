@@ -219,7 +219,7 @@ const StartScan = () => {
     try {
       setPingLoading(true);
       setError("");
-      const response = await (await import("../../api/scan-api")).pingTarget(url.trim());
+      const response = await pingTarget(url.trim());
       if (response.data.success) {
         setHostVerified(true);
         addToast("success", "Host Reachable", "Target is online. You can now select a tool and begin the scan.", 5000);
@@ -227,8 +227,9 @@ const StartScan = () => {
         setError(response.data.error || "Host is offline.");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Target Unreachable: Please check the URL.");
-      addToast("error", "Host Offline", "Target host is not responding.", 4000);
+      const errMsg = err?.response?.data?.error || "Target Unreachable: Please check the URL.";
+      setError(errMsg);
+      addToast("error", "Host Offline", errMsg, 4000);
     } finally {
       setPingLoading(false);
     }
@@ -279,7 +280,8 @@ const StartScan = () => {
       const response = await startScan(scanData);
 
       if (response?.data?.success) {
-        await refreshUser();
+        // We navigate immediately; the next page will handle its own state/auth checks.
+        // Removing refreshUser() here prevents accidental logouts if this call fails due to server load.
         const scanId  = response.data.scanId || response.data.scan?._id || response.data.scans?.[0]?._id;
         const batchId = response.data.batchId;
         if (scanId) {

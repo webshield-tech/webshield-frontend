@@ -64,18 +64,37 @@ const Dashboard = () => {
   }, [authChecked, loading, user]);
 
   const metrics = useMemo(() => {
-    const total = scans.length;
+    // Group scans by batchId to count Auto-Scans as 1 operation
+    const uniqueOperations = new Set();
+    const batchResults = new Map();
+
+    scans.forEach(s => {
+      const bid = s.results?.batchId;
+      if (bid) {
+        uniqueOperations.add(bid);
+        if (!batchResults.has(bid)) batchResults.set(bid, []);
+        batchResults.get(bid).push(s);
+      } else {
+        uniqueOperations.add(s._id);
+      }
+    });
+
+    const total = uniqueOperations.size;
+    
+    // Status metrics
     const completed = scans.filter((s) => s.status === "completed").length;
     const pending = scans.filter(
       (s) => s.status === "pending" || s.status === "running"
     ).length;
+
     const vulnerabilities = scans.reduce((sum, s) => {
       const vulns = (s.results?.vulnerabilities ||
         s.results?.vulns ||
         []) as any[];
       return sum + (Array.isArray(vulns) ? vulns.length : 0);
     }, 0);
-    const successRate = total ? Math.round((completed / total) * 100) : 0;
+
+    const successRate = total ? Math.round((completed / scans.length) * 100) : 0;
     return { total, completed, pending, vulnerabilities, successRate };
   }, [scans]);
 

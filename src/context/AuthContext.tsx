@@ -62,12 +62,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await getProfile();
       if (res.data?.success) {
         setUser(res.data.user);
-      } else {
+      }
+    } catch (error: any) {
+      // ONLY clear user if it's a definitive authentication failure (401/403)
+      // Otherwise, keep the current user state to prevent logout on 500/Network errors
+      if (error.status === 401 || error.isAuthError || error.response?.status === 401) {
         setUser(null);
       }
-    } catch {
-      // Silently handle — user is simply not authenticated
-      setUser(null);
+      console.warn("[AuthCheck] Profile fetch failed:", error.message || error);
     }
   };
 
