@@ -5,6 +5,7 @@ import api from "./axios";
 export const startScan = (data: {
   targetUrl: string;
   scanType: string;
+  scanMode?: "quick" | "full";
   options?: any;
 }) => {
   return api.post("/scan/start", data);
@@ -48,3 +49,24 @@ export const downloadReport = (scanId: string, language: string = "english") =>
 // View report (returns JSON with content)
 export const viewReport = (scanId: string, language: string = "english") =>
   api.get(`/scan/${scanId}/report/view`, { params: { language } });
+
+export const generateBatchAIReport = (
+  batchId: string,
+  language: string = "english"
+) => {
+  return api.post(`/scan/batch/${batchId}/report/generate`, { language });
+};
+
+export const downloadBatchReport = (
+  batchId: string,
+  language: string = "english"
+) => {
+  return api.get(`/scan/batch/${batchId}/report/download`, { params: { language } });
+};
+
+export const viewBatchReport = (
+  batchId: string,
+  language: string = "english"
+) => {
+  return api.get(`/scan/batch/${batchId}/report/view`, { params: { language } });
+};

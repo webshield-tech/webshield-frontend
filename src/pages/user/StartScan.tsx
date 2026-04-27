@@ -86,7 +86,7 @@ const SCAN_MODE_DESCRIPTIONS: Record<
       title: "Quick Scan",
       detail: "Rapid SQL injection probe on URL parameters and forms.",
       bullets: [
-        "Level 1 / Risk 1 payloads",
+        "Level 2 / Risk 1 payloads",
         "Boolean-based, error-based & union injection",
         "HTML form auto-detection",
         "Estimated time: ~2–4 minutes",
@@ -136,7 +136,7 @@ const SCAN_MODE_DESCRIPTIONS: Record<
         "Nmap — top 100 ports",
         "Nikto — critical web checks",
         "SSLScan — TLS audit",
-        "SQLMap — Level 1 injection probe",
+        "SQLMap — Level 2 injection probe",
         "Estimated time: ~5–8 minutes",
       ],
     },

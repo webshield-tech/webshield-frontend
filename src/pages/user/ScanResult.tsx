@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   Terminal, 
   Download, 
@@ -19,9 +19,13 @@ import {
 import { VulnerabilityRemediation } from "../../components/VulnerabilityRemediation";
 import {
   getScanResultsById,
+  getBatchResults,
   generateAIReportForScan,
   viewReport,
   downloadReport,
+  generateBatchAIReport,
+  viewBatchReport,
+  downloadBatchReport,
   startScan,
 } from "../../api/scan-api";
 import "../../styles/scan-result.css";
@@ -124,8 +128,11 @@ function ReportViewer({ content }: { content: string }) {
 
 const ScanResult = () => {
   const { scanId } = useParams<{ scanId: string }>();
+  const [searchParams] = useSearchParams();
+  const batchId = searchParams.get("batchId") || "";
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
+  const [batchScans, setBatchScans] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ type: ToastType; message: string }>({ type: "", message: "" });
   const [generating, setGenerating] = useState(false);
@@ -135,7 +142,11 @@ const ScanResult = () => {
 
   // reportGeneratedAt is always returned by the API and is more reliable than
   // checking reportContent (which is a large string that may be trimmed)
-  const hasReport = !!(data?.reportGeneratedAt || data?.reportContent);
+  const hasReport = !!(
+    data?.reportGeneratedAt ||
+    data?.reportContent ||
+    batchScans.some((s: any) => s?.reportGeneratedAt || s?.reportContent)
+  );
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -146,21 +157,26 @@ const ScanResult = () => {
     const fetchResult = async () => {
       if (!scanId) return;
       try {
-        const res = await getScanResultsById(scanId);
-        setData(res.data?.scan || res.data);
+        if (batchId) {
+          const batchRes = await getBatchResults(batchId);
+          const scans = Array.isArray(batchRes.data?.scans) ? batchRes.data.scans : [];
+          setBatchScans(scans);
+          setData(scans[0] || null);
+          return;
+        }
+        const singleRes = await getScanResultsById(scanId);
+        setData(singleRes.data?.scan || singleRes.data);
       } catch (e: any) {
         setError(e?.response?.data?.error || "Failed to load scan result.");
       }
     };
     fetchResult();
-  }, [scanId]);
+  }, [scanId, batchId]);
 
-  const vulnerabilities = useMemo(() => {
-    if (!data?.results) return [];
-    const res = data.results;
+  const extractVulnerabilities = (res: any) => {
+    if (!res) return [];
 
     if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
-      // If the vulnerabilities array contains strings (like SQLMap output), map them to objects
       if (typeof res.vulnerabilities[0] === "string") {
         return res.vulnerabilities.map((vuln: string) => ({
           title: "SQL Injection Vulnerability",
@@ -169,7 +185,10 @@ const ScanResult = () => {
           recommendation: "Ensure all user inputs are properly sanitized and use parameterized queries or prepared statements.",
         }));
       }
-      return res.vulnerabilities;
+      return res.vulnerabilities.map((v: any) => ({
+        ...v,
+        title: v.title || v.name || "Detected Vulnerability",
+      }));
     }
 
     // ── Nikto findings ──────────────────────────────────────────────────────────
@@ -241,19 +260,35 @@ const ScanResult = () => {
     if (res.vulnerable && Array.isArray(res.vulnerabilities)) return res.vulnerabilities;
     if (Array.isArray(res.vulns)) return res.vulns;
     return [];
-  }, [data]);
+  };
+
+  const vulnerabilities = useMemo(() => {
+    if (batchId && batchScans.length > 0) {
+      return batchScans.flatMap((scan: any) => extractVulnerabilities(scan?.results || {}));
+    }
+    if (!data?.results) return [];
+    return extractVulnerabilities(data.results);
+  }, [data, batchId, batchScans]);
 
 
   const handleGenerate = async () => {
     if (!scanId) return;
     setGenerating(true);
     try {
-      const res = await generateAIReportForScan(scanId, "english");
+      const res = batchId
+        ? await generateBatchAIReport(batchId, "english")
+        : await generateAIReportForScan(scanId, "english");
       if (res.data?.success) {
         showToast("success", "AI Report generated successfully!");
-        // Refresh data so local state knows report exists
-        const refreshRes = await getScanResultsById(scanId);
-        setData(refreshRes.data?.scan || refreshRes.data);
+        if (batchId) {
+          const refreshBatch = await getBatchResults(batchId);
+          const scans = Array.isArray(refreshBatch.data?.scans) ? refreshBatch.data.scans : [];
+          setBatchScans(scans);
+          setData(scans[0] || null);
+        } else {
+          const refreshRes = await getScanResultsById(scanId);
+          setData(refreshRes.data?.scan || refreshRes.data);
+        }
       } else {
         showToast("error", res.data?.message || "Failed to generate AI report.");
       }
@@ -271,7 +306,9 @@ const ScanResult = () => {
       return;
     }
     try {
-      const res = await viewReport(scanId, "english");
+      const res = batchId
+        ? await viewBatchReport(batchId, "english")
+        : await viewReport(scanId, "english");
       const reportData = res.data;
 
       if (reportData?.success && reportData?.report?.content) {
@@ -293,16 +330,25 @@ const ScanResult = () => {
     }
     setGenerating(true);
     try {
-      const res = await downloadReport(scanId, "english");
+      const res = batchId
+        ? await downloadBatchReport(batchId, "english")
+        : await downloadReport(scanId, "english");
       const reportData = res.data;
       if (reportData?.success && reportData?.report?.content) {
         const target = data?.targetUrl || data?.url || "unknown";
-        const filename = `Vuln-Spectra-Report-${target.replace(/https?:\/\//, "").replace(/[^a-z0-9]/gi, "-")}-${scanId.slice(-6)}`;
+        const suffix = batchId ? `batch-${batchId.slice(-6)}` : scanId?.slice(-6);
+        const filename = `Vuln-Spectra-Report-${target.replace(/https?:\/\//, "").replace(/[^a-z0-9]/gi, "-")}-${suffix}`;
         saveTextAsPdf(filename, reportData.report.content);
         showToast("success", "PDF downloaded successfully.");
-        // Refresh so hasReport badge updates
-        const refreshRes = await getScanResultsById(scanId);
-        setData(refreshRes.data?.scan || refreshRes.data);
+        if (batchId) {
+          const refreshBatch = await getBatchResults(batchId);
+          const scans = Array.isArray(refreshBatch.data?.scans) ? refreshBatch.data.scans : [];
+          setBatchScans(scans);
+          setData(scans[0] || null);
+        } else {
+          const refreshRes = await getScanResultsById(scanId);
+          setData(refreshRes.data?.scan || refreshRes.data);
+        }
       } else {
         showToast("error", "Could not retrieve report content.");
       }
@@ -380,12 +426,12 @@ const ScanResult = () => {
   };
 
   const handleRetryFailedScan = async () => {
-    if (!data?.targetUrl || !data?.scanType) {
+    if (!data?.targetUrl) {
       showToast("error", "Cannot retry this scan.");
       return;
     }
     try {
-      const normalizedTool = String(data.scanType).toLowerCase();
+      const normalizedTool = batchId ? "auto" : String(data.scanType).toLowerCase();
       const retryScanType =
         normalizedTool === "sslscan"
           ? "ssl"
@@ -404,7 +450,12 @@ const ScanResult = () => {
         showToast("error", "Retry started but scan id not received.");
         return;
       }
-      navigate(`/scan-progress/${newScanId}`);
+      const newBatchId = response.data?.batchId;
+      if (newBatchId) {
+        navigate(`/scan-progress/${newScanId}?batchId=${encodeURIComponent(newBatchId)}`);
+      } else {
+        navigate(`/scan-progress/${newScanId}`);
+      }
     } catch (e: any) {
       showToast("error", e?.response?.data?.error || "Retry failed.");
     }
@@ -432,12 +483,12 @@ const ScanResult = () => {
               <ChevronLeft size={18} />
               <span>Scan History</span>
             </Link>
-            <h1 className="header-title">Scan Report</h1>
-            <div className="header-badges">
-              <span className={`status-badge ${data?.status}`}>{data?.status?.toUpperCase() || "…"}</span>
-              <span className="tool-badge">{(data?.scanType || data?.tool || "N/A").toUpperCase()}</span>
+              <h1 className="header-title">Scan Report</h1>
+              <div className="header-badges">
+                <span className={`status-badge ${data?.status}`}>{data?.status?.toUpperCase() || "…"}</span>
+                <span className="tool-badge">{batchId ? "AUTO" : (data?.scanType || data?.tool || "N/A").toUpperCase()}</span>
+              </div>
             </div>
-          </div>
           <div className="header-right">
             <button className="action-btn secondary" onClick={handleDownloadTxt}>
               <FileText size={18} />
