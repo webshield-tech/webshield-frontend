@@ -49,6 +49,8 @@ const ScanProgress = () => {
     "If you select Deep Scan, the process takes longer but performs a much more thorough security analysis."
   ];
 
+  const [batchScans, setBatchScans] = useState<any[]>([]);
+
   const statusLabel = useMemo(() => {
     if (status === "running")   return "Scan in Progress";
     if (status === "pending")   return "Initializing…";
@@ -68,6 +70,7 @@ const ScanProgress = () => {
         "Mapping network topology…",
         "Checking for known CVEs…",
         "Scanning for web vulnerabilities…",
+        "Scanning remote assets_",
       ];
       const interval = setInterval(() => {
         setLogs(prev => [messages[Math.floor(Math.random() * messages.length)], ...prev].slice(0, 6));
@@ -94,6 +97,7 @@ const ScanProgress = () => {
           const batchRes = await getBatchResults(batchId);
           const scans = Array.isArray(batchRes.data?.scans) ? batchRes.data.scans : [];
           if (!scans.length) throw new Error("Batch scan not found.");
+          setBatchScans(scans);
 
           const terminalStates = ["completed", "failed", "cancelled", "canceled"];
           const total    = scans.length;
@@ -220,7 +224,7 @@ const ScanProgress = () => {
 
     poll();
     return () => { if (timer) clearTimeout(timer); };
-  }, [scanId, navigate]);
+  }, [scanId, navigate, batchId]);
 
   const handleCancel = async () => {
     if (!scanId) return;
@@ -284,7 +288,7 @@ const ScanProgress = () => {
             <span>{statusLabel}</span>
           </div>
         </header>
-
+ 
         <div className="progress-main-grid">
           {/* Left Panel */}
           <section className="progress-visual-panel glass-panel">
@@ -297,7 +301,7 @@ const ScanProgress = () => {
             </div>
 
             {tool === "auto" || tool === "all" ? (
-              <AutoScanProgress status={status} percent={percent} />
+              <AutoScanProgress status={status} percent={percent} batchScans={batchScans} />
             ) : (
               <div className="progress-data-wrap">
                 <div className="progress-labels">

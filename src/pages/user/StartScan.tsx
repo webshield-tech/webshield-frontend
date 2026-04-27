@@ -249,8 +249,8 @@ const StartScan = () => {
         scanMode:  chosenMode,
       };
 
-      addToast("info", "Launching Scan", `Starting ${tool.toUpperCase()} in ${chosenMode === "quick" ? "Quick" : "Deep"} mode…`, 3000);
-
+      addToast("info", "Pinging Target", "Checking if the host is alive…", 2000);
+      
       const response = await startScan(scanData);
 
       if (response?.data?.success) {
@@ -275,9 +275,9 @@ const StartScan = () => {
         addToast("error", "Scan Failed", err, 4000);
       }
     } catch (err: any) {
-      const errMsg = err?.response?.data?.error || "Target Unreachable: Please check the URL and try again.";
+      const errMsg = err?.response?.data?.error || "Target Unreachable: Host seems offline or blocking connection.";
       setError(errMsg);
-      addToast("error", "Connection Error", errMsg, 4000);
+      addToast("error", "Connection Error", errMsg, 5000);
     } finally {
       setScanLoading(false);
     }

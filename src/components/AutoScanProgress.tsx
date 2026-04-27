@@ -5,18 +5,31 @@ import "../styles/scan-progress.css";
 interface AutoScanProgressProps {
   status: string;
   percent: number;
+  batchScans?: any[];
 }
 
-export const AutoScanProgress = ({ status, percent }: AutoScanProgressProps) => {
-  // Determine which phase we are in based on overall percentage
+export const AutoScanProgress = ({ status, percent, batchScans = [] }: AutoScanProgressProps) => {
+  // Determine which phase we are in based on overall percentage or batch scans
   const phases = [
     { id: "nmap", name: "Network Reconnaissance (Nmap)", threshold: 0, endThreshold: 25 },
     { id: "nikto", name: "Web Server Audit (Nikto)", threshold: 25, endThreshold: 50 },
-    { id: "sslscan", name: "Encryption Analysis (SSLScan)", threshold: 50, endThreshold: 75 },
+    { id: "ssl", name: "Encryption Analysis (SSLScan)", threshold: 50, endThreshold: 75 },
     { id: "sqlmap", name: "Injection Testing (SQLMap)", threshold: 75, endThreshold: 100 },
   ];
 
   const getPhaseStatus = (phase: any) => {
+    // If we have real batch scans, use their status
+    if (batchScans.length > 0) {
+      const scan = batchScans.find(s => s.scanType === phase.id || (phase.id === "ssl" && s.scanType === "sslscan"));
+      if (scan) {
+        if (["completed"].includes(scan.status)) return "completed";
+        if (["running"].includes(scan.status)) return "running";
+        if (["failed", "cancelled", "canceled"].includes(scan.status)) return "error";
+        return "pending";
+      }
+    }
+
+    // Fallback to percentage-based logic
     if (status === "failed" || status === "canceled" || status === "cancelled") return "error";
     if (percent >= phase.endThreshold || status === "completed") return "completed";
     if (percent >= phase.threshold && percent < phase.endThreshold && status === "running") return "running";
