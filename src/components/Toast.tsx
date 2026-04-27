@@ -184,7 +184,10 @@ export const useToast = () => {
       message,
       duration: duration !== undefined ? duration : 4000,
     };
-    setToasts((prev) => [...prev, newToast]);
+    setToasts((prev) => {
+      const next = [...prev, newToast];
+      return next.length > 3 ? next.slice(next.length - 3) : next;
+    });
     return id;
   };
 
