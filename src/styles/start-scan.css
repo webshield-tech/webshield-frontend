@@ -610,11 +610,11 @@
   max-width: 860px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 36px 40px 32px;
+  padding: 24px 32px 20px;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 16px;
   animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
@@ -656,7 +656,7 @@
 
 .scan-mode-heading {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: #fff;
   margin: 0;
@@ -670,7 +670,7 @@
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 6px 16px;
   font-size: 0.88rem;
   color: var(--cyber-text-dim);
 }
@@ -693,13 +693,13 @@
   position: relative;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 18px;
-  padding: 28px 24px 24px;
+  padding: 16px 20px 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   background: rgba(255,255,255,0.02);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   overflow: hidden;
 }
 
@@ -744,13 +744,13 @@
 
 /* Icon */
 .smc-icon-wrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 4px 0;
+  margin: 0;
 }
 .quick-card .smc-icon-wrap { background: rgba(0,242,255,0.08); color: #00f2ff; }
 .deep-card  .smc-icon-wrap { background: rgba(255,77,77,0.08);  color: #ff4d4d; }
@@ -758,7 +758,7 @@
 /* Title */
 .smc-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #fff;
   margin: 0;
@@ -766,9 +766,9 @@
 
 /* Detail */
 .smc-detail {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: var(--cyber-text-dim);
-  line-height: 1.55;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -776,19 +776,19 @@
 .smc-bullets {
   list-style: none;
   padding: 0;
-  margin: 4px 0 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .smc-bullets li {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  font-size: 0.83rem;
+  gap: 8px;
+  font-size: 0.75rem;
   color: rgba(255,255,255,0.65);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .bullet-dot {
@@ -810,7 +810,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 1px;
-  margin-top: 8px;
+  margin-top: 4px;
   color: #00f2ff;
   animation: fadeIn 0.2s ease;
 }
@@ -831,12 +831,12 @@
 .launch-scan-confirm-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 28px;
-  border-radius: 12px;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 10px;
   border: none;
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 800;
   cursor: pointer;
   transition: all 0.3s ease;
