@@ -173,16 +173,55 @@ const ScanResult = () => {
     fetchResult();
   }, [scanId, batchId]);
 
-  const extractVulnerabilities = (res: any) => {
+  const extractVulnerabilities = (res: any, tool?: string) => {
     if (!res) return [];
 
-    if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
+    const normalizedTool = tool ? tool.toLowerCase() : "";
+
+    // ── SQLMap results ──────────────────────────────────────────────────────────
+    if (normalizedTool === "sqlmap" && Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
       if (typeof res.vulnerabilities[0] === "string") {
         return res.vulnerabilities.map((vuln: string) => ({
           title: "SQL Injection Vulnerability",
           severity: "Critical",
           description: vuln,
           recommendation: "Ensure all user inputs are properly sanitized and use parameterized queries or prepared statements.",
+        }));
+      }
+      return res.vulnerabilities.map((v: any) => ({
+        ...v,
+        title: v.title || v.name || "SQL Injection Vulnerability",
+      }));
+    }
+
+    // ── Nmap vulnerabilities and CVEs ──────────────────────────────────────────
+    if (normalizedTool === "nmap" && Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
+      if (typeof res.vulnerabilities[0] === "string") {
+        return res.vulnerabilities.map((vuln: string) => {
+          const cveMatch = vuln.match(/(CVE-\d{4}-\d{4,7})/i);
+          const title = cveMatch ? `Vulnerability: ${cveMatch[1].toUpperCase()}` : "Service Vulnerability Detected";
+          return {
+            title: title,
+            severity: "High",
+            description: vuln,
+            recommendation: "Apply patches or updates to the affected service. Consider restricting access via firewall.",
+          };
+        });
+      }
+      return res.vulnerabilities.map((v: any) => ({
+        ...v,
+        title: v.title || v.name || "Service Vulnerability Detected",
+      }));
+    }
+
+    // ── Generic fallback for other vulnerabilities array ─────────────────────────
+    if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0 && normalizedTool !== "sqlmap" && normalizedTool !== "nmap") {
+      if (typeof res.vulnerabilities[0] === "string") {
+        return res.vulnerabilities.map((vuln: string) => ({
+          title: "Detected Vulnerability",
+          severity: "High",
+          description: vuln,
+          recommendation: "Review the vulnerability details and apply necessary security patches.",
         }));
       }
       return res.vulnerabilities.map((v: any) => ({
@@ -264,10 +303,10 @@ const ScanResult = () => {
 
   const vulnerabilities = useMemo(() => {
     if (batchId && batchScans.length > 0) {
-      return batchScans.flatMap((scan: any) => extractVulnerabilities(scan?.results || {}));
+      return batchScans.flatMap((scan: any) => extractVulnerabilities(scan?.results || {}, scan?.scanType || scan?.tool));
     }
     if (!data?.results) return [];
-    return extractVulnerabilities(data.results);
+    return extractVulnerabilities(data.results, data?.scanType || data?.tool);
   }, [data, batchId, batchScans]);
 
 
