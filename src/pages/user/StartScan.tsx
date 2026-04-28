@@ -16,7 +16,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { startScan } from "../../api/scan-api";
+import { startScan, pingTarget } from "../../api/scan-api";
 import type { ScanTool } from "../../utils/types";
 import "../../styles/start-scan.css";
 import Lottie from "lottie-react";
@@ -179,6 +179,7 @@ const StartScan = () => {
   const { toasts, addToast, removeToast } = useToast();
 
   const [url,         setUrl]         = useState("");
+  const [sqlmapUrl,   setSqlmapUrl]   = useState("");
   const [tool,        setTool]        = useState<ScanTool>("nmap");
   const [scanMode,    setScanMode]    = useState<"quick" | "full">("quick");
   const [scanLoading, setScanLoading] = useState(false);
@@ -249,6 +250,7 @@ const StartScan = () => {
   const handleToolSelect = (toolId: string) => {
     if (scanLoading) return;
     setTool(toolId as ScanTool);
+    setSqlmapUrl(""); // Reset SQLMap URL when tool changes
     const t = tools.find(t => t.id === toolId);
     if (t) addToast("info", `${t.name} Selected`, t.tooltip, 4000);
   };
@@ -281,11 +283,19 @@ const StartScan = () => {
 
     try {
       setScanLoading(true);
-      const scanData = {
+      const scanData: any = {
         targetUrl: url.trim().replace(/\/+$/, ""),
         scanType:  tool === "sslscan" ? "ssl" : tool === "auto" ? "all" : tool,
         scanMode:  chosenMode,
       };
+
+      // Include sqlmapUrl if SQLMap is involved
+      if (tool === "sqlmap" && sqlmapUrl.trim()) {
+        scanData.sqlmapUrl = sqlmapUrl.trim().replace(/\/+$/, "");
+      }
+      if (tool === "auto" && sqlmapUrl.trim()) {
+        scanData.sqlmapUrl = sqlmapUrl.trim().replace(/\/+$/, "");
+      }
 
       addToast("info", "Scan Initiated", `Launching ${tool.toUpperCase()} assessment…`, 3000);
       
@@ -353,20 +363,32 @@ const StartScan = () => {
               {/* --- TARGET INPUT --- */}
               <div className="input-group">
                 <div className="label-row">
-                  <label>Target Infrastructure URL</label>
+                  <label>
+                    {tool === "auto" 
+                      ? "Base URL (for Nmap, Nikto, SSLScan)" 
+                      : tool === "sqlmap" 
+                      ? "Target URL with Parameters"
+                      : "Target Infrastructure URL"}
+                  </label>
                   <div className="usage-indicator">{usedScans} / {scanLimit}</div>
                 </div>
                 <div className="url-input-wrap">
                   <Globe className="input-icon" size={20} />
                   <input
                     type="text"
-                    placeholder="https://example.com"
+                    placeholder={
+                      tool === "auto" 
+                        ? "http://localhost:8080 or https://example.com" 
+                        : tool === "sqlmap"
+                        ? "http://localhost:8080/vulnerabilities/sqli/?id=1"
+                        : "https://example.com"
+                    }
                     value={url}
                     onChange={(e) => { setUrl(e.target.value); setHostVerified(false); }}
                     disabled={scanLoading}
                     required
                   />
-                  {!hostVerified ? (
+                  {!hostVerified && tool !== "sqlmap" ? (
                     <button 
                       type="button" 
                       className="ping-verify-btn" 
@@ -376,13 +398,71 @@ const StartScan = () => {
                     >
                       {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Check Availability</span>}
                     </button>
-                  ) : (
+                  ) : hostVerified && tool !== "sqlmap" ? (
                     <div className="verified-tag">
                       <Rocket size={14} />
                       <span>ALIVE</span>
                     </div>
-                  )}
+                  ) : null}
                 </div>
+                
+                {/* SQLMap URL field for Auto Scan */}
+                {tool === "auto" && (
+                  <div className="url-input-wrap" style={{ marginTop: "16px" }}>
+                    <div style={{ fontSize: "0.85rem", marginBottom: "8px", color: "rgba(0,242,255,0.7)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span>⚠️ SQLMap URL (with parameters)</span>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                      <div style={{ flex: 1 }}>
+                        <input
+                          type="text"
+                          placeholder="http://localhost:8080/vulnerabilities/sqli/?id=1"
+                          value={sqlmapUrl}
+                          onChange={(e) => setSqlmapUrl(e.target.value)}
+                          disabled={scanLoading}
+                          style={{
+                            width: "100%",
+                            padding: "12px 16px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(0,242,255,0.2)",
+                            borderRadius: "6px",
+                            color: "#fff",
+                            fontFamily: "'Rajdhani', monospace",
+                            fontSize: "0.9rem",
+                          }}
+                        />
+                        <div style={{ fontSize: "0.75rem", marginTop: "6px", color: "rgba(0,242,255,0.6)" }}>
+                          If left blank, will auto-detect for DVWA: /vulnerabilities/sqli/?id=1&Submit=Submit
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* SQLMap guidance for single SQLMap mode */}
+                {tool === "sqlmap" && (
+                  <div style={{
+                    background: "rgba(255,213,79,0.12)",
+                    border: "1px solid rgba(255,213,79,0.3)",
+                    borderRadius: "6px",
+                    padding: "12px",
+                    marginTop: "12px",
+                    fontSize: "0.85rem",
+                    color: "rgba(255,255,255,0.8)",
+                    lineHeight: 1.5
+                  }}>
+                    <strong style={{ color: "#ffd54f" }}>💡 Parameter Required:</strong>
+                    <div style={{ marginTop: "8px" }}>SQLMap needs an injection parameter in the URL:</div>
+                    <div style={{ fontFamily: "'Rajdhani', monospace", fontSize: "0.8rem", marginTop: "8px", padding: "8px", background: "rgba(0,0,0,0.3)", borderRadius: "4px" }}>
+                      <div>✓ ?id=1</div>
+                      <div>✓ ?search=test</div>
+                      <div>✓ ?user=admin&password=admin</div>
+                      <div style={{ marginTop: "8px" }}>DVWA Example:</div>
+                      <div>http://localhost:8080/vulnerabilities/sqli/?id=1&Submit=Submit</div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="usage-bar">
                   <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
                 </div>

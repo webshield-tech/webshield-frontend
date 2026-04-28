@@ -6,6 +6,7 @@ export const startScan = (data: {
   targetUrl: string;
   scanType: string;
   scanMode?: "quick" | "full";
+  sqlmapUrl?: string;
   options?: any;
 }) => {
   return api.post("/scan/start", data);
