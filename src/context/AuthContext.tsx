@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, {
+import {
   createContext,
   useState,
   useContext,
@@ -32,7 +32,7 @@ interface AuthContextType {
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
   acceptTerms: () => Promise<boolean>;
-  socialLogin: (provider: "google" | "github") => Promise<void>;
+  socialLogin: (provider: "google" | "github") => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (res.data.token) {
           localStorage.setItem("authToken", res.data.token);
         }
+        return res.data.user;
       } else {
         throw new Error(res.data?.error || "Login failed");
       }

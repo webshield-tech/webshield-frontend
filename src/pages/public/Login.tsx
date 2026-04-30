@@ -22,6 +22,22 @@ function Login() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
 
+  const handleSocialAction = async (provider: "google" | "github") => {
+    try {
+      setLoading(true);
+      const user = await socialLogin(provider);
+      if (user?.agreedToTerms) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/disclaimer", { replace: true });
+      }
+    } catch (err: any) {
+      setFormError(err.message || `${provider} authentication failed`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError(""); setPasswordError(""); setFormError(""); setFormSuccess("");
@@ -144,6 +160,32 @@ function Login() {
             </motion.div>
           )}
 
+          {/* SOCIAL LOGIN AT TOP */}
+          <div className="social-grid">
+            <button 
+              type="button" 
+              className="social-btn google" 
+              onClick={() => handleSocialAction("google")}
+              disabled={loading}
+            >
+              <Chrome size={20} />
+              <span>Google</span>
+            </button>
+            <button 
+              type="button" 
+              className="social-btn github" 
+              onClick={() => handleSocialAction("github")}
+              disabled={loading}
+            >
+              <Github size={20} />
+              <span>GitHub</span>
+            </button>
+          </div>
+
+          <div className="social-divider">
+            <span>Or use email</span>
+          </div>
+
           {/* Form */}
           <form onSubmit={handleSubmit} noValidate style={{ display: 'contents' }}>
             {/* Email */}
@@ -200,44 +242,6 @@ function Login() {
             </motion.button>
           </form>
 
-          <div className="social-divider">
-            <span>Or continue with</span>
-          </div>
-
-          <div className="social-grid">
-            <button 
-              type="button" 
-              className="social-btn google" 
-              onClick={async () => {
-                try {
-                  await socialLogin("google");
-                  navigate("/dashboard", { replace: true });
-                } catch (err: any) {
-                  setFormError(err.message || "Google login failed");
-                }
-              }}
-              disabled={loading}
-            >
-              <Chrome size={20} />
-              <span>Google</span>
-            </button>
-            <button 
-              type="button" 
-              className="social-btn github" 
-              onClick={async () => {
-                try {
-                  await socialLogin("github");
-                  navigate("/dashboard", { replace: true });
-                } catch (err: any) {
-                  setFormError(err.message || "GitHub login failed");
-                }
-              }}
-              disabled={loading}
-            >
-              <Github size={20} />
-              <span>GitHub</span>
-            </button>
-          </div>
 
           {/* Footer */}
           <div className="auth-footer">
