@@ -47,15 +47,15 @@ const HeroSection = () => {
             <div className="stat-card">
               <div className="stat-icon"><Activity size={20} /></div>
               <div className="stat-info">
-                <div className="stat-value">99.9%</div>
-                <div className="stat-label">ACCURACY</div>
+                <div className="stat-value">4000+</div>
+                <div className="stat-label">VULNS</div>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon"><Cpu size={20} /></div>
               <div className="stat-info">
-                <div className="stat-value">50ms</div>
-                <div className="stat-label">LATENCY</div>
+                <div className="stat-value">9+</div>
+                <div className="stat-label">TOOLS</div>
               </div>
             </div>
             <div className="stat-card">

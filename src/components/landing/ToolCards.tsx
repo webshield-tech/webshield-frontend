@@ -9,48 +9,74 @@ import niktoAnimation from "../../assets/icons/nikto.json";
 const ToolCards = () => {
   const tools = [
     {
-      name: "Nmap",
+      name: "Network Scout",
       animation: nmapAnimation,
       color: "#00f2ff",
-      description: "Network discovery & security auditing suite",
+      description: "Finds open 'doors' (ports) on your website's server.",
       features: ["Port Scanning", "Service Detection", "OS Fingerprinting"],
       delay: "0.1s",
       toolId: "nmap",
-      tag: "NETWORK"
+      tag: "RECON"
     },
     {
-      name: "Nikto",
+      name: "Web Auditor",
       animation: niktoAnimation,
       color: "#ff0055",
-      description: "Comprehensive web server vulnerability scanner",
+      description: "Inspects your server for outdated software and mistakes.",
       features: ["Dangerous Files", "Outdated Software", "Misconfigurations"],
       delay: "0.2s",
       toolId: "nikto",
-      tag: "WEB_SERVER"
+      tag: "CONFIG"
     },
     {
-      name: "SQLMap",
+      name: "Database Guard",
       animation: sqlAnimation,
       color: "#ffd54f",
-      description: "Automated SQL injection and database takeover",
-      features: [
-        "Database Fingerprint",
-        "Data Extraction",
-        "File System Access",
-      ],
+      description: "Tests if your website's forms are leaking sensitive data.",
+      features: ["Injection Detection", "Data Extraction", "Database ID"],
       delay: "0.3s",
       toolId: "sqlmap",
       tag: "DATABASE"
     },
     {
-      name: "SSLScan",
+      name: "Lock Checker",
       animation: sslAnimation,
       color: "#00ff9d",
-      description: "SSL/TLS configuration and cipher analyzer",
+      description: "Verifies your website's security lock (HTTPS) strength.",
       features: ["Cipher Check", "Certificate Info", "Protocol Support"],
       delay: "0.4s",
       toolId: "sslscan",
       tag: "ENCRYPTION"
+    },
+    {
+      name: "Path Finder",
+      animation: nmapAnimation,
+      color: "#ff8c00",
+      description: "Searches for hidden pages and private folders on your site.",
+      features: ["Hidden Paths", "Private Files", "Asset Discovery"],
+      delay: "0.5s",
+      toolId: "gobuster",
+      tag: "HIDDEN"
+    },
+    {
+      name: "Deep Fuzzer",
+      animation: niktoAnimation,
+      color: "#ff00ff",
+      description: "Advanced tool for discovering technical settings & files.",
+      features: ["Header Fuzzing", "Rapid Discovery", "Deep Search"],
+      delay: "0.6s",
+      toolId: "ffuf",
+      tag: "EXPERT"
+    },
+    {
+      name: "Vuln Matcher",
+      animation: sqlAnimation,
+      color: "#ffd54f",
+      description: "Matches your site against 4,000+ known security bugs.",
+      features: ["CVE Matching", "Cloud Exposure", "Zero-day Check"],
+      delay: "0.7s",
+      toolId: "nuclei",
+      tag: "TEMPLATES"
     },
   ];
 
@@ -66,7 +92,9 @@ const ToolCards = () => {
                 "--tool-color": tool.color,
                 "--tool-color-rgb": tool.color === "#00f2ff" ? "0, 242, 255" : 
                                    tool.color === "#ff0055" ? "255, 0, 85" :
-                                   tool.color === "#ffd54f" ? "255, 213, 79" : "0, 255, 157",
+                                   tool.color === "#ffd54f" ? "255, 213, 79" : 
+                                   tool.color === "#ff8c00" ? "255, 140, 0" :
+                                   tool.color === "#ff00ff" ? "255, 0, 255" : "0, 255, 157",
                 animationDelay: tool.delay
               } as React.CSSProperties
             }
