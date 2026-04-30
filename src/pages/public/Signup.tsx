@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  User, Mail, Lock, Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2
+  User, Mail, Lock, Loader2, AlertCircle, CheckCircle2, Github, Chrome
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signupUser } from "../../api/auth-api.ts";
@@ -33,7 +33,7 @@ function strengthLabel(score: number) {
 
 function Signup() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { socialLogin } = useAuth();
 
   const [username, setUsername]             = useState("");
   const [email, setEmail]                   = useState("");
@@ -45,7 +45,7 @@ function Signup() {
   const [fieldErrors, setFieldErrors]       = useState<Record<string, string>>({});
   const [pwTouched, setPwTouched]           = useState(false);
 
-  const { checks, score } = useMemo(() => analysePassword(password), [password]);
+  const { score } = useMemo(() => analysePassword(password), [password]);
   const strength = strengthLabel(score);
 
   const setFieldError = (key: string, msg: string) =>
@@ -76,20 +76,30 @@ function Signup() {
     if (Object.keys(errs).length > 0) { setFieldErrors(errs); return; }
     setFieldErrors({});
 
+    const maliciousPatterns = [
+      /['";]\s*(OR|AND)\s+['"]?1['"]?\s*=\s*['"]?1/i, // SQLi
+      /<script\b[^>]*>([\s\S]*?)<\/script>/i, // XSS
+      /(javascript|vbscript|data):/i, // XSS
+      /UNION\s+SELECT/i, // SQLi
+      /\b(DROP|DELETE|TRUNCATE|UPDATE)\s+TABLE\b/i, // SQLi
+    ];
+    
+    for (const pattern of maliciousPatterns) {
+      if (pattern.test(email) || pattern.test(password) || pattern.test(username)) {
+        setFormError("Nice try, hacker! 🕵️‍♂️ But we're the ones building the shields here. Save your SQLi and XSS for the training labs!");
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       const response = await signupUser({ username, email, password });
 
       if (response.data.success) {
-        setFormSuccess("Account created! Redirecting…");
-        const token = response.data.token;
-        if (token) {
-          localStorage.setItem("authToken", token);
-          if (response.data.user) login(response.data.user);
-          setTimeout(() => navigate("/disclaimer"), 800);
-        } else {
-          setTimeout(() => navigate("/login"), 1500);
-        }
+        setFormSuccess("Registration successful! Check your email for the code.");
+        setTimeout(() => {
+          navigate(`/verify-email?email=${encodeURIComponent(email)}`, { state: { email } });
+        }, 1500);
       }
     } catch (error: any) {
       const msg = error?.response?.data?.error || "";
@@ -240,18 +250,57 @@ function Signup() {
                 <span>Create account</span>
               )}
             </motion.button>
-
-            {/* Footer */}
-            <div className="auth-footer">
-              <p>
-                Already have an account?
-                <Link to="/login" className="auth-link">Log in</Link>
-              </p>
-              <p style={{ marginTop: '12px' }}>
-                <Link to="/" className="auth-home-link">← Back to Home</Link>
-              </p>
-            </div>
           </form>
+
+          <div className="social-divider">
+            <span>Or join with</span>
+          </div>
+
+          <div className="social-grid">
+            <button 
+              type="button" 
+              className="social-btn google" 
+              onClick={async () => {
+                try {
+                  await socialLogin("google");
+                  navigate("/dashboard", { replace: true });
+                } catch (err: any) {
+                  setFormError(err.message || "Google signup failed");
+                }
+              }}
+              disabled={loading}
+            >
+              <Chrome size={20} />
+              <span>Google</span>
+            </button>
+            <button 
+              type="button" 
+              className="social-btn github" 
+              onClick={async () => {
+                try {
+                  await socialLogin("github");
+                  navigate("/dashboard", { replace: true });
+                } catch (err: any) {
+                  setFormError(err.message || "GitHub signup failed");
+                }
+              }}
+              disabled={loading}
+            >
+              <Github size={20} />
+              <span>GitHub</span>
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div className="auth-footer">
+            <p>
+              Already have an account?
+              <Link to="/login" className="auth-link">Log in</Link>
+            </p>
+            <p style={{ marginTop: '12px' }}>
+              <Link to="/" className="auth-home-link">← Back to Home</Link>
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>

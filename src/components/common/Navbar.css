@@ -19,11 +19,10 @@
   height: 100%;
   margin: 0 auto;
   padding: 0 24px;
-  display: grid;
-  /* layout: [logo] [search] [nav links fills middle] [actions fixed right] */
-  grid-template-columns: max-content 240px 1fr auto auto;
+  display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 /* ── LOGO ── */
@@ -50,7 +49,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  /* Fixed column — 220px from grid template */
+  width: 220px;
+  flex-shrink: 0;
 }
 
 .navbar-search .search-icon {
@@ -84,8 +84,9 @@
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 2px;
-  justify-content: center;  /* centred inside its grid column */
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
 }
 
 .nav-link {

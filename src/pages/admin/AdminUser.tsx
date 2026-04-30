@@ -174,17 +174,20 @@ export default function AdminUsers() {
                     <div className="item-info">
                       <span className="title">{u.username}</span>
                       <span className="meta">{u.email}</span>
-                      <span className="time">Joined: {formatDate(u.createdAt)}</span>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <span className="time">Joined: {formatDate(u.createdAt)}</span>
+                        {u.lastIp && <span className="meta" style={{ color: 'var(--cyber-primary)', fontSize: '0.7rem' }}>IP: {u.lastIp}</span>}
+                      </div>
                     </div>
                     <div className="item-side actions">
-                      <button className="admin-action-btn" onClick={() => viewHistory(u)} title="View Logs"><Clock size={16} /></button>
-                      <button className="admin-action-btn" onClick={() => handleUpdateLimit(u)} title="Update Quota"><Edit3 size={16} /></button>
+                      <button className="admin-action-btn" onClick={() => viewHistory(u)} title="View Logs"><Clock size={16} strokeWidth={2.5} color="var(--cyber-text)" /></button>
+                      <button className="admin-action-btn" onClick={() => handleUpdateLimit(u)} title="Update Quota"><Edit3 size={16} strokeWidth={2.5} color="var(--cyber-text)" /></button>
                       <button 
                         className={`admin-action-btn ${u.isBlocked ? 'blocked' : 'active'}`} 
                         onClick={() => handleToggleBlock(u)}
                         title={u.isBlocked ? 'Unblock Operator' : 'Block Operator'}
                       >
-                        <Shield size={16} />
+                        <Shield size={16} strokeWidth={2.5} color={u.isBlocked ? 'var(--cyber-error)' : 'var(--cyber-text)'} />
                       </button>
                     </div>
                   </div>

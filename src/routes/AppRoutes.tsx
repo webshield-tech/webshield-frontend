@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import React, { Suspense, lazy } from "react";
-import AdminRoute from "../routes/AdminRoutes";
+import { Suspense, lazy } from "react";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import { useAuth } from "../context/AuthContext"; 
 import LoadingScreen from "../components/common/LoadingScreen";
@@ -43,6 +42,7 @@ const ScanResult = lazyRetry(() => import("../pages/user/ScanResult"));
 const StartScan = lazyRetry(() => import("../pages/user/StartScan"));
 const AboutTools = lazyRetry(() => import("../pages/user/AboutTools"));
 const Learn = lazyRetry(() => import("../pages/public/Learn"));
+const VerifyEmail = lazyRetry(() => import("../pages/public/VerifyEmail"));
 const NotFound = lazyRetry(() => import("../pages/public/NotFound"));
 
 function AppRoutes() {
@@ -62,6 +62,7 @@ function AppRoutes() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 {/* Disclaimer - special handling: needs auth but blocks access to other pages */}
           <Route 
             path="/disclaimer" 

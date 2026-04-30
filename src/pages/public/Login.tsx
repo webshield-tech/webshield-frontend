@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { 
+  Mail, Lock, Loader2, AlertCircle, CheckCircle2, Github, Chrome
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { LoginUser } from "../../api/auth-api";
 import { useAuth } from "../../context/AuthContext";
@@ -10,7 +12,7 @@ import { validateEmail } from "../../utils/validators";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, socialLogin } = useAuth();
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +33,21 @@ function Login() {
     }
 
     if (!password) { setPasswordError("Password is required."); return; }
+
+    const maliciousPatterns = [
+      /['";]\s*(OR|AND)\s+['"]?1['"]?\s*=\s*['"]?1/i, // SQLi
+      /<script\b[^>]*>([\s\S]*?)<\/script>/i, // XSS
+      /(javascript|vbscript|data):/i, // XSS
+      /UNION\s+SELECT/i, // SQLi
+      /\b(DROP|DELETE|TRUNCATE|UPDATE)\s+TABLE\b/i, // SQLi
+    ];
+    
+    for (const pattern of maliciousPatterns) {
+      if (pattern.test(email) || pattern.test(password)) {
+        setFormError("Nice try, hacker! 🕵️‍♂️ But we're the ones building the shields here. Save your SQLi and XSS for the training labs!");
+        return;
+      }
+    }
 
     try {
       setLoading(true);
@@ -66,6 +83,12 @@ function Login() {
 
       if (msg.toLowerCase().includes("not found") || msg.toLowerCase().includes("does not exist")) {
         setEmailError("No account found with this email.");
+      } else if (msg.includes("EMAIL_NOT_VERIFIED")) {
+        const emailToVerify = error?.response?.data?.email || email;
+        setFormError("Email not verified. Redirecting to verification page...");
+        setTimeout(() => {
+          navigate(`/verify-email?email=${encodeURIComponent(emailToVerify)}`, { state: { email: emailToVerify } });
+        }, 1500);
       } else if (msg.toLowerCase().includes("password") || msg.toLowerCase().includes("incorrect")) {
         setPasswordError("Incorrect password. Please try again.");
       } else if (msg.toLowerCase().includes("suspended") || msg.toLowerCase().includes("blocked")) {
@@ -176,6 +199,45 @@ function Login() {
               )}
             </motion.button>
           </form>
+
+          <div className="social-divider">
+            <span>Or continue with</span>
+          </div>
+
+          <div className="social-grid">
+            <button 
+              type="button" 
+              className="social-btn google" 
+              onClick={async () => {
+                try {
+                  await socialLogin("google");
+                  navigate("/dashboard", { replace: true });
+                } catch (err: any) {
+                  setFormError(err.message || "Google login failed");
+                }
+              }}
+              disabled={loading}
+            >
+              <Chrome size={20} />
+              <span>Google</span>
+            </button>
+            <button 
+              type="button" 
+              className="social-btn github" 
+              onClick={async () => {
+                try {
+                  await socialLogin("github");
+                  navigate("/dashboard", { replace: true });
+                } catch (err: any) {
+                  setFormError(err.message || "GitHub login failed");
+                }
+              }}
+              disabled={loading}
+            >
+              <Github size={20} />
+              <span>GitHub</span>
+            </button>
+          </div>
 
           {/* Footer */}
           <div className="auth-footer">

@@ -483,3 +483,118 @@
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+/* SOCIAL LOGIN SECTION */
+.social-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: rgba(255,255,255,0.2);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.social-divider::before,
+.social-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 1px;
+}
+
+.social-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.social-btn.google:hover:not(:disabled) {
+  border-color: #4285F4;
+  box-shadow: 0 0 15px rgba(66, 133, 244, 0.2);
+}
+
+.social-btn.github:hover:not(:disabled) {
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+.social-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* OTP / Verification Specific */
+.otp-input {
+  letter-spacing: 0.5em !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  text-align: center;
+  font-family: 'Orbitron', monospace !important;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  color: var(--cyber-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 8px 16px;
+  border-radius: 6px;
+  margin: 0 auto;
+}
+
+.resend-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 65, 0.05);
+  text-shadow: 0 0 8px var(--cyber-primary);
+}
+
+.resend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #8b949e;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.text-link:hover {
+  color: #fff;
+}

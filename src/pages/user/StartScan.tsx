@@ -127,27 +127,134 @@ const SCAN_MODE_DESCRIPTIONS: Record<
       ],
     },
   },
+  gobuster: {
+    color: "#ff8c00",
+    quick: {
+      title: "Quick Enumeration",
+      detail: "Rapid directory sweep using a optimized common wordlist.",
+      bullets: [
+        "Common 50 directories sweep",
+        "Fast response detection (-z)",
+        "Estimated time: ~1–2 minutes",
+      ],
+    },
+    full: {
+      title: "Deep Discovery",
+      detail: "Exhaustive directory and file brute-forcing.",
+      bullets: [
+        "Full wordlist enumeration",
+        "Hidden file detection (.env, .git)",
+        "Estimated time: ~5–10 minutes",
+      ],
+    },
+  },
+  ratelimit: {
+    color: "#9d00ff",
+    quick: {
+      title: "Pulse Test",
+      detail: "Quick burst of requests to check for basic 429 response handling.",
+      bullets: [
+        "50 concurrent request burst",
+        "Response status analysis",
+        "Estimated time: ~30 seconds",
+      ],
+    },
+    full: {
+      title: "Sustained Audit",
+      detail: "Intense request sequence to identify complex rate-limiting policies.",
+      bullets: [
+        "150 request sequence",
+        "Latency shift analysis",
+        "Estimated time: ~2 minutes",
+      ],
+    },
+  },
+  ffuf: {
+    color: "#ff00ff",
+    quick: {
+      title: "Fast Fuzz",
+      detail: "High-speed directory discovery with standard wordlist.",
+      bullets: ["200/301 status filtering", "Multi-threaded execution", "Estimated time: ~1 min"],
+    },
+    full: {
+      title: "Recursive Audit",
+      detail: "Exhaustive recursive fuzzing for deep path discovery.",
+      bullets: ["Full status code analysis", "Recursive depth discovery", "Estimated time: ~5 mins"],
+    },
+  },
+  wapiti: {
+    color: "#00d4ff",
+    quick: {
+      title: "Baseline Audit",
+      detail: "Quick web application vulnerability assessment.",
+      bullets: ["Common script vulnerabilities", "Misconfiguration check", "Estimated time: ~3 mins"],
+    },
+    full: {
+      title: "Deep Crawler",
+      detail: "Complete web application security audit with deep crawling.",
+      bullets: ["Level 1 exhaustive crawling", "Injection & XSS audits", "Estimated time: ~10 mins"],
+    },
+  },
+  nuclei: {
+    color: "#ffd54f",
+    quick: {
+      title: "CVE Exposure",
+      detail: "Fast scan for known CVEs and information exposures.",
+      bullets: ["CVE template matching", "Exposure detection", "Estimated time: ~2 mins"],
+    },
+    full: {
+      title: "Full Tech Audit",
+      detail: "Complete Nuclei template suite execution.",
+      bullets: ["Thousands of security templates", "Critical vulnerability check", "Estimated time: ~15 mins"],
+    },
+  },
+  dns: {
+    color: "#69f0ae",
+    quick: {
+      title: "Essential Check",
+      detail: "Fast look up of your main website records.",
+      bullets: ["A/MX/NS records", "Host verification", "Estimated time: ~30 secs"],
+    },
+    full: {
+      title: "Full Audit",
+      detail: "Deep dive into all technical domain settings.",
+      bullets: ["All DNS records", "Infrastructure check", "Estimated time: ~1 min"],
+    },
+  },
+  whois: {
+    color: "#ffffff",
+    quick: {
+      title: "Owner Lookup",
+      detail: "Quickly find out who owns this domain.",
+      bullets: ["Registrar info", "Expiry date", "Estimated time: ~20 secs"],
+    },
+    full: {
+      title: "Full Identity",
+      detail: "Complete registration and server information.",
+      bullets: ["Contact details", "Full name servers", "Estimated time: ~40 secs"],
+    },
+  },
   auto: {
     color: "#ffffff",
     quick: {
-      title: "Quick Scan",
-      detail: "Sequentially runs all four tools in quick mode.",
+      title: "Quick Health Check",
+      detail: "Runs 4 main tools in fast mode to find major bugs quickly.",
       bullets: [
-        "Nmap — top 100 ports",
-        "Nikto — critical web checks",
-        "SSLScan — TLS audit",
-        "SQLMap — Level 2 injection probe",
+        "Network Scout — checks top 100 doors",
+        "Web Auditor — quick server check",
+        "Lock Checker — basic encryption audit",
+        "Database Guard — simple form probe",
         "Estimated time: ~5–8 minutes",
       ],
     },
     full: {
-      title: "Deep Scan",
-      detail: "All four tools in deep mode for a full-spectrum assessment.",
+      title: "Full Security Audit",
+      detail: "Runs all main tools in deep mode for maximum protection.",
       bullets: [
-        "Nmap — all 65,535 ports + OS + CVEs",
-        "Nikto — 6,700+ vulnerability checks",
-        "SSLScan — full cipher & cert chain",
-        "SQLMap — Level 5 + crawl + dump",
+        "Network Scout — checks all 65,535 doors",
+        "Web Auditor — 6,700+ deep server checks",
+        "Lock Checker — full certificate chain audit",
+        "Database Guard — deep database injection test",
         "Estimated time: ~15–25 minutes",
       ],
     },
@@ -156,11 +263,17 @@ const SCAN_MODE_DESCRIPTIONS: Record<
 
 /* ── Tool accent colors ───────────────────────────────────────────────────── */
 const TOOL_COLOR: Record<string, string> = {
-  auto:    "#ffffff",
-  nmap:    "#00f2ff",
-  nikto:   "#ff0055",
-  sqlmap:  "#ffd54f",
-  sslscan: "#00ff9d",
+  auto:      "#ffffff",
+  nmap:      "#00f2ff",
+  nikto:     "#ff0055",
+  sqlmap:    "#ffd54f",
+  sslscan:   "#00ff9d",
+  gobuster:  "#ff8c00",
+  ratelimit: "#9d00ff",
+  ffuf:      "#ff00ff",
+  wapiti:    "#00d4ff",
+  nuclei:    "#ffd54f",
+  dns:       "#69f0ae",
 };
 
 const TOOL_DAILY_LIMITS = [
@@ -168,6 +281,12 @@ const TOOL_DAILY_LIMITS = [
   { id: "nikto", label: "Nikto", limit: 10, color: "#ff0055" },
   { id: "sqlmap", label: "SQLMap", limit: 10, color: "#ffd54f" },
   { id: "sslscan", label: "SSLScan", limit: 10, color: "#00ff9d" },
+  { id: "gobuster", label: "Gobuster", limit: 10, color: "#ff8c00" },
+  { id: "ratelimit", label: "RateLimit", limit: 10, color: "#9d00ff" },
+  { id: "ffuf", label: "FFUF", limit: 10, color: "#ff00ff" },
+  { id: "wapiti", label: "Wapiti", limit: 10, color: "#00d4ff" },
+  { id: "nuclei", label: "Nuclei", limit: 10, color: "#ffd54f" },
+  { id: "dns", label: "DNS", limit: 10, color: "#69f0ae" },
   { id: "auto", label: "Auto", limit: 5, color: "#ffffff" },
 ] as const;
 
@@ -188,6 +307,25 @@ const StartScan = () => {
   const [error,       setError]       = useState("");
   const [showModeModal, setShowModeModal] = useState(false);
   const [isMobile, setIsMobile]       = useState(window.innerWidth < 768);
+  const [toolStats, setToolStats]     = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { getTodayStats } = await import("../../api/scan-api");
+        const res = await getTodayStats();
+        if (res.data?.success) {
+          setToolStats({
+            ...res.data.stats.byTool,
+            auto: res.data.stats.autoUsed
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to fetch tool stats", e);
+      }
+    };
+    if (user) fetchStats();
+  }, [user]);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -211,11 +349,18 @@ const StartScan = () => {
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    { id: "auto",    name: "Auto-Scan", desc: "Full Security Audit",    anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Automated orchestration. Sequentially executes Nmap, Nikto, SSLScan, and SQLMap." },
-    { id: "nmap",    name: "Nmap",      desc: "Network Reconnaissance", anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Advanced port reconnaissance and OS fingerprinting engine." },
-    { id: "nikto",   name: "Nikto",     desc: "Web Server Scanner",     anim: niktoAnimation,   color: "#ff0055", tag: "WEB VULN",   tooltip: "Comprehensive web server scanner. Identifies 6700+ dangerous files/programs." },
-    { id: "sqlmap",  name: "SQLMap",    desc: "SQL Injection Probe",    anim: sqlmapAnimation,  color: "#ffd54f", tag: "DB AUDIT",   tooltip: "Automatic SQL injection detection. Boolean, error, union, time-based & stacked." },
-    { id: "sslscan", name: "SSLScan",   desc: "TLS Configuration",      anim: sslscanAnimation, color: "#00ff9d", tag: "ENCRYPTION", tooltip: "SSL/TLS security auditor. Cipher suites, certificate validity, Heartbleed." },
+    { id: "auto",    name: "Full Audit",   desc: "Complete Security Check", anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Runs multiple tools at once for a complete spectrum assessment." },
+    { id: "nmap",    name: "Network Scout", desc: "Door Finder",         anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Finds out which 'doors' (ports) are open on your website's server." },
+    { id: "nikto",   name: "Web Auditor",  desc: "Server Inspector",     anim: niktoAnimation,   color: "#ff0055", tag: "CONFIG",     tooltip: "Checks if your website server is old or has common mistakes hackers like." },
+    { id: "sqlmap",  name: "Database Guard", desc: "Data Protection",      anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE",   tooltip: "Tests if your forms (like login or search) are leaking your database info." },
+    { id: "sslscan", name: "Lock Checker",   desc: "Security Lock",        anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS",       tooltip: "Makes sure your website's 'green lock' (HTTPS) is strong and up-to-date." },
+    { id: "gobuster", name: "Path Finder",    desc: "Hidden File Search",   anim: nmapAnimation,    color: "#ff8c00", tag: "HIDDEN",      tooltip: "Searches for hidden pages or folders that shouldn't be public." },
+    { id: "ratelimit",name: "Stress Tester",  desc: "Traffic Capacity",     anim: autoAnimation,    color: "#9d00ff", tag: "DDoS",        tooltip: "Checks if your website can handle too many requests without crashing." },
+    { id: "ffuf",    name: "Deep Fuzzer",     desc: "Advanced Search",      anim: niktoAnimation,   color: "#ff00ff", tag: "EXPERT",      tooltip: "A faster way to find hidden files and technical settings." },
+    { id: "wapiti",  name: "All-in-One",      desc: "Web Bug Scanner",      anim: nmapAnimation,    color: "#00d4ff", tag: "SCANNER",     tooltip: "A complete scan for common web bugs like XSS and SQL injection." },
+    { id: "nuclei",  name: "Vuln Matcher",    desc: "Security Bug Check",   anim: sqlmapAnimation,  color: "#ffd54f", tag: "LIBRARY",     tooltip: "Matches your website against a huge list of 4,000+ known security bugs." },
+    { id: "dns",     name: "ID Checker",      desc: "Technical Settings",   anim: autoAnimation,    color: "#69f0ae", tag: "DNS",         tooltip: "Verifies your website's technical domain identity and records." },
+    { id: "whois",   name: "Owner Verifier",  desc: "Domain Ownership",     anim: autoAnimation,    color: "#ffffff", tag: "IDENTITY",    tooltip: "Finds out who owns the domain and when it expires to prevent theft." },
   ] as const;
 
   const handlePingCheck = async () => {
@@ -470,7 +615,7 @@ const StartScan = () => {
                   {TOOL_DAILY_LIMITS.map((item) => (
                     <span key={item.id} className="quota-pill" style={{ color: item.color }}>
                       <strong>{item.label}</strong>
-                      <small>{item.limit}/day</small>
+                      <small>{toolStats[item.id] || 0}/{item.limit}</small>
                     </span>
                   ))}
                 </div>

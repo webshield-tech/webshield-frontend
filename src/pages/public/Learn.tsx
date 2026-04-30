@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Shield, ChevronDown, ChevronUp, ExternalLink, AlertTriangle, Zap, Lock, Code, Globe, Server } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Shield, ChevronDown, ChevronUp, ExternalLink, AlertTriangle, Zap, Lock, Code, Globe, Server, Database } from "lucide-react";
 import "../../styles/learn.css";
+import api from "../../api/axios";
 
+// ... [Keep CVE_DATA and VULN_TYPES as they are] ...
 const CVE_DATA = [
   {
     id: "CVE-2021-44228",
@@ -121,7 +123,7 @@ const VULN_TYPES = [
     name: "Command Injection",
     icon: "server",
     color: "#38bdf8",
-    simple: "Command injection happens when user input is passed to a system shell command without sanitization. The attacker adds shell operators like `;`, `&&`, `|` to run their own commands on the server.",
+    simple: "Command injection happens when user input is passed to a system shell command without sanitization. The attacker adds shell operators like \`;\`, \`&&\`, \`|\` to run their own commands on the server.",
     example: `# App runs: ping <user_input>\n# User enters: 8.8.8.8; cat /etc/passwd\n# Server runs: ping 8.8.8.8; cat /etc/passwd\n# Attacker sees the password file!`,
     impact: "Full server takeover, data exfiltration, ransomware deployment, lateral movement.",
     prevention: "Never pass user input to shell commands. Use language APIs with array arguments. Validate and whitelist input."
@@ -139,7 +141,7 @@ const VULN_TYPES = [
     name: "Path Traversal",
     icon: "alert",
     color: "#fb923c",
-    simple: "Path traversal lets attackers access files outside the intended directory by using `../` sequences in a filename parameter. If an app reads files based on user input without sanitization, attackers can read sensitive system files.",
+    simple: "Path traversal lets attackers access files outside the intended directory by using \`../\` sequences in a filename parameter. If an app reads files based on user input without sanitization, attackers can read sensitive system files.",
     example: `# App loads profile picture:\nGET /image?file=profile.jpg\n\n# Attacker requests:\nGET /image?file=../../../../etc/passwd\n\n# Server reads and returns /etc/passwd!`,
     impact: "Source code disclosure, password exposure, config file leakage, potential RCE via log poisoning.",
     prevention: "Canonicalize file paths and validate they start with the expected base directory. Never pass raw user input to file reading functions."
@@ -149,7 +151,10 @@ const VULN_TYPES = [
 export default function Learn() {
   const [openCve, setOpenCve] = useState<string | null>(null);
   const [openVuln, setOpenVuln] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"cve" | "vulns">("vulns");
+  const [activeTab, setActiveTab] = useState<"cve" | "vulns" | "exploitdb">("vulns");
+  const [exploits, setExploits] = useState<any[]>([]);
+  const [loadingExploits, setLoadingExploits] = useState(false);
+  const [exploitError, setExploitError] = useState<string | null>(null);
 
   const severityColor: Record<string, string> = {
     "Critical": "#f87171",
@@ -159,7 +164,7 @@ export default function Learn() {
   };
 
   const getIcon = (name: string, size = 20) => {
-    switch(name) {
+    switch (name) {
       case "server": return <Server size={size} />;
       case "globe": return <Globe size={size} />;
       case "lock": return <Lock size={size} />;
@@ -169,6 +174,26 @@ export default function Learn() {
       default: return <Shield size={size} />;
     }
   };
+
+  useEffect(() => {
+    if (activeTab === "exploitdb" && exploits.length === 0 && !loadingExploits && !exploitError) {
+      setLoadingExploits(true);
+      api.get("/api/exploit/latest")
+        .then((res) => {
+          if (res.data && res.data.success) {
+            setExploits(res.data.exploits || []);
+          } else {
+            setExploitError("Failed to load exploits.");
+          }
+        })
+        .catch((err) => {
+          setExploitError(err.response?.data?.error || "Error connecting to Exploit-DB feed.");
+        })
+        .finally(() => {
+          setLoadingExploits(false);
+        });
+    }
+  }, [activeTab, exploits.length, loadingExploits, exploitError]);
 
   return (
     <div className="learn-page">
@@ -193,11 +218,17 @@ export default function Learn() {
         >
           <AlertTriangle size={16} /> Real-World CVEs
         </button>
+        <button
+          className={`learn-tab ${activeTab === "exploitdb" ? "active" : ""}`}
+          onClick={() => setActiveTab("exploitdb")}
+        >
+          <Database size={16} /> Exploit-DB (Latest)
+        </button>
       </div>
 
       {/* Vulnerability Types */}
       {activeTab === "vulns" && (
-        <div className="learn-grid">
+        <div className="learn-grid">ssName="learn-grid"&gt;
           {VULN_TYPES.map((v) => (
             <div key={v.name} className="learn-card">
               <div className="learn-card-header" onClick={() => setOpenVuln(openVuln === v.name ? null : v.name)}>
@@ -290,6 +321,30 @@ export default function Learn() {
                   </a>
                 </div>
               )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Exploit-DB Latest */}
+      {activeTab === "exploitdb" && (
+        <div className="cve-list">
+          {loadingExploits && <p style={{ color: "#8b949e", textAlign: "center", padding: "2rem" }}>Loading latest exploits...</p>}
+          {exploitError && <p style={{ color: "#f87171", textAlign: "center", padding: "2rem" }}>{exploitError}</p>}
+          {!loadingExploits && !exploitError && exploits.map((exploit, idx) => (
+            <div key={idx} className="cve-card" style={{ padding: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                <h4 style={{ margin: 0, color: "#e6edf3", fontSize: "1rem" }}>{exploit.title}</h4>
+                <span style={{ color: "#8b949e", fontSize: "0.8rem", whiteSpace: "nowrap", marginLeft: "1rem" }}>
+                  {new Date(exploit.pubDate).toLocaleDateString()}
+                </span>
+              </div>
+              <p style={{ color: "#8b949e", fontSize: "0.9rem", marginTop: 0, marginBottom: "1rem" }}>
+                {exploit.description}
+              </p>
+              <a href={exploit.link} target="_blank" rel="noreferrer" className="cve-ref-link" style={{ display: "inline-flex", padding: "0.25rem 0.5rem", background: "#38bdf820", color: "#38bdf8", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600 }}>
+                <ExternalLink size={14} /> View on Exploit-DB
+              </a>
             </div>
           ))}
         </div>

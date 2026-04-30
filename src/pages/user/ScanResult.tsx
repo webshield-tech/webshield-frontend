@@ -136,9 +136,7 @@ const ScanResult = () => {
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ type: ToastType; message: string }>({ type: "", message: "" });
   const [generating, setGenerating] = useState(false);
-  const [exploiting, setExploiting] = useState(false);
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
-  const [exploitTarget, setExploitTarget] = useState<string>("");
 
   // reportGeneratedAt is always returned by the API and is more reliable than
   // checking reportContent (which is a large string that may be trimmed)
@@ -424,45 +422,6 @@ const ScanResult = () => {
     showToast("success", "Raw data downloaded successfully.");
   };
 
-  const handleExploitRequest = (vulnTitle: string) => {
-    setExploitTarget(vulnTitle);
-  };
-
-  const executeExploit = async () => {
-    if (!exploitTarget) return;
-    const vulnTitle = exploitTarget;
-    setExploitTarget("");
-    setExploiting(true);
-    showToast("error", "Initiating PoC Mode…");
-
-    try {
-      const baseUrl = String(api.defaults.baseURL || "").replace(/\/+$/, "");
-      const exploitPath = baseUrl.endsWith("/api") ? "/exploit" : "/api/exploit";
-      const response = await api.post(exploitPath, {
-        scanId,
-        targetUrl: data?.targetUrl || data?.url,
-        vulnTitle,
-        confirmation: true,
-        captchaToken: "verified-human-token-12345"
-      });
-      const resData = response.data;
-      if (resData.success) {
-        showToast("success", "PoC completed. Check results.");
-        if (resData.simulation?.explanation) {
-            setReportModal({
-                open: true,
-                content: `### Proof of Concept Results\n\n**What happened?**\n${resData.simulation.explanation.what}\n\n**Impact**\n${resData.simulation.explanation.impact}\n\n**Why is it dangerous?**\n${resData.simulation.explanation.danger}\n\n**Result**\n${resData.simulation.explanation.poc_result}`
-            });
-        }
-      } else {
-        showToast("error", "PoC blocked: " + (resData.error || "Payload rejected by WAF."));
-      }
-    } catch (e: any) {
-      showToast("error", e?.response?.data?.error || "Connection error during PoC simulation.");
-    } finally {
-      setExploiting(false);
-    }
-  };
 
   const handleRetryFailedScan = async () => {
     if (!data?.targetUrl) {
@@ -639,17 +598,7 @@ const ScanResult = () => {
                               vulnerabilityTitle={v.title || v.name || "Unknown"}
                               severity={v.severity}
                             />
-                          {(v.severity === "High" || v.severity === "Critical") && (
-                            <button
-                              className="action-btn error"
-                              style={{ marginTop: "12px", fontSize: "0.8rem", padding: "6px 14px" }}
-                              onClick={() => handleExploitRequest(v.title || v.name)}
-                              disabled={exploiting}
-                            >
-                              <Sparkles size={14} />
-                              <span>{exploiting ? "Running PoC…" : "Proof of Concept (PoC) Mode"}</span>
-                            </button>
-                          )}
+
                         </div>
                       </div>
                     ))
@@ -722,38 +671,7 @@ const ScanResult = () => {
           </div>
         )}
 
-        {exploitTarget && (
-          <div className="modal-overlay-premium" onClick={() => setExploitTarget("")}>
-            <div className="modal-content-premium" style={{ maxWidth: "500px" }} onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-title" style={{ color: "var(--cyber-accent)" }}>
-                  <AlertTriangle size={20} />
-                  <span>Confirm Exploit Simulation</span>
-                </div>
-                <button className="close-modal-btn" onClick={() => setExploitTarget("")}>
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="modal-body-premium">
-                <p style={{ marginBottom: "16px" }}>
-                  You are about to launch a safe Proof of Concept (PoC) for <strong>{exploitTarget}</strong>.
-                </p>
-                <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.5, marginBottom: "20px" }}>
-                  By proceeding, you confirm that you have explicit authorization to perform active security testing on this target. This action will be logged.
-                </p>
-                <div style={{ background: "rgba(255, 0, 85, 0.1)", borderLeft: "3px solid var(--cyber-accent)", padding: "12px", fontSize: "0.85rem", color: "var(--cyber-text)" }}>
-                  ⚠️ Only use this feature on systems you own or have permission to test (e.g., localhost).
-                </div>
-              </div>
-              <div className="modal-footer" style={{ display: "flex", gap: "12px" }}>
-                <button className="action-btn secondary" onClick={() => setExploitTarget("")}>Cancel</button>
-                <button className="action-btn primary" style={{ background: "var(--cyber-accent)", boxShadow: "0 0 15px rgba(255,0,85,0.4)" }} onClick={executeExploit}>
-                  I Confirm, Launch PoC
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     </div>
   );

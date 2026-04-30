@@ -21,6 +21,10 @@ export const getScanHistory = () => {
   return api.get("/scan/history");
 };
 
+export const getTodayStats = () => {
+  return api.get("/scan/stats/today");
+};
+
 // Get scan results by ID
 export const getScanResultsById = (scanId: string) => {
   return api.get(`/scan/${scanId}`);

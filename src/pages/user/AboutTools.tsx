@@ -1,6 +1,6 @@
 import React from "react";
 import Lottie from "lottie-react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { 
   Shield, 
   ChevronLeft, 
@@ -9,7 +9,9 @@ import {
   Cpu, 
   Globe, 
   Database, 
-  Lock 
+  Lock,
+  Search,
+  User
 } from "lucide-react";
 import "../../styles/about-tools.css";
 import nmapAnimation from "../../assets/icons/nmap.json";
@@ -20,68 +22,158 @@ import sslAnimation from "../../assets/icons/ssl.json";
 const toolData = [
   {
     id: "nmap",
-    title: "Nmap",
-    subtitle: "Network discovery & security auditing",
+    title: "Network Scout",
+    subtitle: "Door Finder (Nmap)",
     animation: nmapAnimation,
     icon: <Globe size={20} />,
     color: "#00d4ff",
-    badges: ["Port Scanning", "Service Detection", "OS Fingerprinting"],
+    badges: ["Finds Open Doors", "Server ID", "System Check"],
     description:
-      "Scans a website or server to find which network ports are open and what services run on them. Essential for understanding your network exposure.",
+      "Nmap acts like a scout. It scans your website's server to find which 'doors' (ports) are open to the internet. If a door is open that shouldn't be, hackers can use it to enter.",
     whenToUse:
-      "When you need to discover what services are exposed to the internet on a network.",
-    features: ["Port Scanning", "Service Detection", "OS Fingerprinting"],
+      "Use this to see exactly what services your server is exposing to the world.",
+    features: ["Open Port Detection", "Service Identification", "OS Guessing"],
     delay: "0.1s",
   },
   {
     id: "nikto",
-    title: "Nikto",
-    subtitle: "Web server vulnerability scanner",
+    title: "Web Auditor",
+    subtitle: "Server Inspector (Nikto)",
     animation: niktoAnimation,
     icon: <Cpu size={20} />,
     color: "#ff6b6b",
-    badges: ["Dangerous Files", "Outdated Software", "Misconfigurations"],
+    badges: ["Old Software", "Server Mistakes", "Risky Files"],
     description:
-      "Checks a web server for outdated software, common misconfigurations, and dangerous files. Fast way to find basic web security issues.",
+      "Nikto is an inspector for your web server. It checks if your software is outdated or if you've made common setup mistakes that make it easy for hackers to break in.",
     whenToUse:
-      "When you want a comprehensive web server vulnerability assessment.",
-    features: ["Dangerous Files", "Outdated Software", "Misconfigurations"],
+      "Use this to find common server-level vulnerabilities and dangerous files.",
+    features: ["Outdated Software Check", "Config Audit", "Hidden File Search"],
     delay: "0.3s",
   },
   {
     id: "sqlmap",
-    title: "SQLMap",
-    subtitle: "SQL injection detection & exploitation",
+    title: "Database Guard",
+    subtitle: "Data Protection (SQLMap)",
     animation: sqlAnimation,
     icon: <Database size={20} />,
     color: "#ffd54f",
-    badges: ["Database Fingerprint", "Data Extraction", "Automated Testing"],
+    badges: ["Login Security", "Data Leak Check", "Auto Test"],
     description:
-      "Detects and exploits SQL injection vulnerabilities that allow attackers to read or manipulate database data. Use responsibly and with permission.",
+      "SQLMap tests your website's forms (like login or search bars). It checks if a hacker can trick your website into leaking your entire database, including passwords and user info.",
     whenToUse:
-      "When you suspect user input may be vulnerable to SQL injection attacks.",
-    features: ["Database Fingerprint", "Data Extraction", "File System Access"],
+      "Use this to make sure your website's forms are not vulnerable to database theft.",
+    features: ["Injection Detection", "Data Access Test", "Database ID"],
     delay: "0.5s",
   },
   {
     id: "sslscan",
-    title: "SSLScan",
-    subtitle: "SSL/TLS configuration analyzer",
+    title: "Lock Checker",
+    subtitle: "Security Lock (SSLScan)",
     animation: sslAnimation,
     icon: <Lock size={20} />,
     color: "#69f0ae",
-    badges: ["Cipher Check", "Certificate Info", "Protocol Support"],
+    badges: ["Encryption Check", "Green Lock Audit", "Privacy"],
     description:
-      "Tests the website's TLS/SSL settings to show supported versions, weak ciphers, and certificate information. Ensures secure encryption is used.",
+      "SSLScan checks the 'green lock' (HTTPS) on your website. It makes sure the encryption used to protect your users' data is strong and follows the latest security standards.",
     whenToUse:
-      "When you need to verify a site's TLS/SSL configuration and encryption strength.",
-    features: ["Cipher Check", "Certificate Info", "Protocol Support"],
+      "Use this to ensure your website's encryption cannot be cracked by modern attacks.",
+    features: ["Encryption Strength", "Certificate Check", "Protocol Audit"],
     delay: "0.7s",
+  },
+  {
+    id: "gobuster",
+    title: "Path Finder",
+    subtitle: "Hidden File Search (Gobuster)",
+    animation: nmapAnimation,
+    icon: <Search size={20} />,
+    color: "#ff8c00",
+    badges: ["Hidden Folders", "Private Files", "Fast Search"],
+    description: "Gobuster searches for hidden pages, folders, or admin panels on your website that you didn't mean to make public. It helps find things that shouldn't be found.",
+    whenToUse: "To find forgotten admin pages, backup files, or private folders.",
+    features: ["Hidden Path Discovery", "Fast Brute-force", "Secret Asset Find"],
+    delay: "0.9s",
+  },
+  {
+    id: "ratelimit",
+    title: "Stress Tester",
+    subtitle: "Traffic Capacity (RateLimit)",
+    animation: sslAnimation,
+    icon: <Shield size={20} />,
+    color: "#9d00ff",
+    badges: ["DDoS Check", "Speed Limit", "Crash Test"],
+    description: "This tool checks if your website can handle too much traffic at once. It helps prevent 'DDoS' attacks where hackers try to crash your site by sending too many requests.",
+    whenToUse: "When you want to know if your website will crash under heavy traffic or attacks.",
+    features: ["High Traffic Test", "Crash Resistance", "Limit Verification"],
+    delay: "1.1s",
+  },
+  {
+    id: "ffuf",
+    title: "Deep Fuzzer",
+    subtitle: "Advanced Search (FFUF)",
+    animation: niktoAnimation,
+    icon: <Search size={20} />,
+    color: "#ff00ff",
+    badges: ["Expert Search", "Deep Discovery", "Fast Fuzzing"],
+    description: "FFUF is a very fast tool for experts to find hidden parts of a website. It can find secret settings and hidden files that other tools might miss.",
+    whenToUse: "For a deeper, faster search of hidden technical parts of your website.",
+    features: ["Header Search", "Fast Discovery", "Technical Audit"],
+    delay: "1.3s",
+  },
+  {
+    id: "wapiti",
+    title: "All-in-One",
+    subtitle: "Web Bug Scanner (Wapiti)",
+    animation: nmapAnimation,
+    icon: <Globe size={20} />,
+    color: "#00d4ff",
+    badges: ["Full Audit", "Common Bug Find", "Easy Scan"],
+    description: "Wapiti is like a general health checkup for your website. It looks for many common security bugs like XSS (malicious scripts) and SQL injection all in one go.",
+    whenToUse: "When you want a quick but comprehensive check for common website bugs.",
+    features: ["Deep Crawling", "XSS Detection", "General Security Audit"],
+    delay: "1.5s",
+  },
+  {
+    id: "nuclei",
+    title: "Vuln Matcher",
+    subtitle: "Security Bug Check (Nuclei)",
+    animation: sqlAnimation,
+    icon: <Database size={20} />,
+    color: "#ffd54f",
+    badges: ["4000+ Bug List", "Latest Threats", "Auto Check"],
+    description: "Nuclei matches your website against a huge library of over 4,000 known security bugs. It's the best way to find out if your site has a famous vulnerability.",
+    whenToUse: "To quickly check if your website is affected by any well-known security threats.",
+    features: ["Community Templates", "Latest Bug Detection", "Infrastructure Audit"],
+    delay: "1.7s",
+  },
+  {
+    id: "dns",
+    title: "ID Checker",
+    subtitle: "Technical Settings (DNS)",
+    animation: sslAnimation,
+    icon: <Info size={20} />,
+    color: "#69f0ae",
+    badges: ["Domain Identity", "Email Setup", "Server Connect"],
+    description: "This tool checks the 'identity' settings of your domain. It makes sure your website is connected to the right servers and your email settings are secure.",
+    whenToUse: "To verify that your website's technical domain configuration is correct.",
+    features: ["Domain Record Check", "Identity Verify", "Technical Audit"],
+    delay: "1.9s",
+  },
+  {
+    id: "whois",
+    title: "Owner Verifier",
+    subtitle: "Domain Ownership (Whois)",
+    animation: sslAnimation,
+    icon: <User size={20} />,
+    color: "#ffffff",
+    badges: ["Identity Verification", "Expiry Date", "Owner Info"],
+    description: "Whois finds out who officially owns your domain and when it expires. This helps you prevent 'domain theft' and makes sure your identity is protected.",
+    whenToUse: "To verify domain registration details and prevent expiration issues.",
+    features: ["Ownership Check", "Registration Data", "Expiry Alert"],
+    delay: "2.1s",
   },
 ];
 
 const AboutTools: React.FC = () => {
-  const navigate = useNavigate();
 
   return (
     <div className="about-page-v2">

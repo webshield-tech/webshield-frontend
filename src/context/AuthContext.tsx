@@ -8,6 +8,8 @@ import React, {
 } from "react";
 import { Profile as getProfile, LogoutUser } from "../api/auth-api";
 import api from "../api/axios";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider, githubProvider } from "../config/firebase";
 
 interface User {
   _id: string;
@@ -30,6 +32,7 @@ interface AuthContextType {
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
   acceptTerms: () => Promise<boolean>;
+  socialLogin: (provider: "google" | "github") => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,6 +89,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const socialLogin = async (providerName: "google" | "github") => {
+    try {
+      setLoading(true);
+      const provider = providerName === "google" ? googleProvider : githubProvider;
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken();
+      
+      // Send token to backend to verify and create session
+      const res = await api.post("/user/firebase-login", { token });
+      
+      if (res.data?.success) {
+        setUser(res.data.user);
+        if (res.data.token) {
+          localStorage.setItem("authToken", res.data.token);
+        }
+      } else {
+        throw new Error(res.data?.error || "Login failed");
+      }
+    } catch (error: any) {
+      console.error("Social Login Error:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
   // Cookie check function
   const getCookie = (name: string) => {
@@ -124,6 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         checkAuth,
         refreshUser: checkAuth,
         acceptTerms,
+        socialLogin,
       }}
     >
       {children}
