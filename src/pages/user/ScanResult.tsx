@@ -253,9 +253,11 @@ const ScanResult = () => {
         
         const isCloudflare = port.toLowerCase().includes("cloudflare");
         const isProxy = port.toLowerCase().includes("proxy");
+        const hasVersionInfo = /\d+\.\d+/.test(port); // e.g., 2.4.7
         
         let severity = "Medium";
-        if (isStandardWeb) severity = "Low";
+        // It's only truly LOW if it's a security proxy or a standard port WITHOUT exposed version info
+        if (isStandardWeb && !hasVersionInfo) severity = "Low";
         if (isCloudflare || isProxy) severity = "Low";
 
         return {
@@ -263,11 +265,15 @@ const ScanResult = () => {
           severity: severity,
           description: (isCloudflare || isProxy)
             ? `Security Proxy detected on ${port}. Your website is protected by a secondary layer (like Cloudflare or a Load Balancer).`
+            : (isStandardWeb && hasVersionInfo)
+            ? `VULNERABILITY: Standard web port ${port} is exposed and revealing specific version information (${port}). This can be used by attackers to find specific exploits.`
             : isStandardWeb 
             ? `Standard web service detected on ${port}. This is expected for a public web server.`
             : `Network service exposed on ${port}.`,
           recommendation: (isCloudflare || isProxy)
             ? "No action required. Cloudflare protection is active and shielding your origin server."
+            : (isStandardWeb && hasVersionInfo)
+            ? "Hide your server version headers (Server Tokens) and ensure the service is patched to the latest version."
             : isStandardWeb
             ? "Ensure the service is up-to-date and using encrypted communication (HTTPS)."
             : "Close unnecessary ports or restrict access using firewall rules.",
