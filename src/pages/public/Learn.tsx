@@ -175,6 +175,28 @@ export default function Learn() {
     }
   };
 
+  const getManualCheckSteps = (exploit: any) => {
+    const title = String(exploit?.title || "").toLowerCase();
+    const steps = [
+      "Identify the exact product and version mentioned in the advisory.",
+      "Compare your server/app version with the affected range.",
+      "Review vendor guidance and apply the recommended patch or config change.",
+      "Re-check headers, version banners, or public metadata to confirm the fix.",
+    ];
+
+    if (title.includes("wordpress") || title.includes("plugin")) {
+      steps.unshift("Check your WordPress core and plugin versions in wp-admin > Updates.");
+    }
+    if (title.includes("apache") || title.includes("nginx")) {
+      steps.unshift("Confirm your web server version via server headers or package manager.");
+    }
+    if (title.includes("sql")) {
+      steps.unshift("Review database queries for unsafe string concatenation.");
+    }
+
+    return steps.slice(0, 5);
+  };
+
   useEffect(() => {
     if (activeTab === "exploitdb" && exploits.length === 0 && !loadingExploits && !exploitError) {
       setLoadingExploits(true);
@@ -228,7 +250,7 @@ export default function Learn() {
 
       {/* Vulnerability Types */}
       {activeTab === "vulns" && (
-        <div className="learn-grid">ssName="learn-grid"&gt;
+        <div className="learn-grid">
           {VULN_TYPES.map((v) => (
             <div key={v.name} className="learn-card">
               <div className="learn-card-header" onClick={() => setOpenVuln(openVuln === v.name ? null : v.name)}>
@@ -329,6 +351,9 @@ export default function Learn() {
       {/* Exploit-DB Latest */}
       {activeTab === "exploitdb" && (
         <div className="cve-list">
+          <div className="learn-callout">
+            Showing the latest web-focused Exploit-DB entries with safe, manual validation steps.
+          </div>
           {loadingExploits && <p style={{ color: "#8b949e", textAlign: "center", padding: "2rem" }}>Loading latest exploits...</p>}
           {exploitError && <p style={{ color: "#f87171", textAlign: "center", padding: "2rem" }}>{exploitError}</p>}
           {!loadingExploits && !exploitError && exploits.map((exploit, idx) => (
@@ -339,9 +364,24 @@ export default function Learn() {
                   {new Date(exploit.pubDate).toLocaleDateString()}
                 </span>
               </div>
+              {Array.isArray(exploit.cves) && exploit.cves.length > 0 && (
+                <div className="exploit-tags">
+                  {exploit.cves.map((cve: string) => (
+                    <span key={cve} className="exploit-tag">{cve}</span>
+                  ))}
+                </div>
+              )}
               <p style={{ color: "#8b949e", fontSize: "0.9rem", marginTop: 0, marginBottom: "1rem" }}>
                 {exploit.description}
               </p>
+              <div className="learn-section">
+                <h4>Manual Check (Safe)</h4>
+                <ul className="learn-checklist">
+                  {getManualCheckSteps(exploit).map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ul>
+              </div>
               <a href={exploit.link} target="_blank" rel="noreferrer" className="cve-ref-link" style={{ display: "inline-flex", padding: "0.25rem 0.5rem", background: "#38bdf820", color: "#38bdf8", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600 }}>
                 <ExternalLink size={14} /> View on Exploit-DB
               </a>

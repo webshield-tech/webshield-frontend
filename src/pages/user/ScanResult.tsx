@@ -17,7 +17,8 @@ import {
   X,
   Rocket,
   Globe,
-  Shield
+  Shield,
+  Wand2
 } from "lucide-react";
 import { VulnerabilityRemediation } from "../../components/VulnerabilityRemediation";
 import {
@@ -143,6 +144,48 @@ function riskColor(score: number) {
   return "#4cd964";
 }
 
+function getSuggestionItems(analysis: any) {
+  const suggestions = [] as Array<{ title: string; reason: string }>;
+  const attackSurface = analysis?.attack_surface || {};
+  const findings = Array.isArray(analysis?.findings) ? analysis.findings : [];
+  const info = Array.isArray(analysis?.informational_findings) ? analysis.informational_findings : [];
+
+  const hasForms = findings.some((f: any) => String(f.title || "").toLowerCase().includes("sql")) ||
+    info.some((f: any) => String(f.title || "").toLowerCase().includes("form"));
+  const hasDirs = Array.isArray(attackSurface.directories_found) && attackSurface.directories_found.length > 0;
+  const hasTls = findings.some((f: any) => /tls|ssl|certificate|cipher/i.test(String(f.title || "")));
+  const hasAuth = findings.some((f: any) => /login|auth|session|cookie/i.test(String(f.title || "")));
+
+  if (hasForms) {
+    suggestions.push({ title: "SQLMap", reason: "Forms or input fields detected. SQLMap can validate SQL injection risk." });
+  }
+  if (hasDirs) {
+    suggestions.push({ title: "Gobuster", reason: "Directories were found. Gobuster can probe hidden endpoints." });
+  }
+  if (hasTls) {
+    suggestions.push({ title: "SSLScan", reason: "TLS/SSL findings detected. SSLScan verifies protocol and cipher safety." });
+  }
+  if (hasAuth) {
+    suggestions.push({ title: "Wapiti", reason: "Auth-related patterns detected. Wapiti can check input validation and session controls." });
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push({ title: "Nuclei", reason: "No specific tool match. Nuclei provides broad template-based checks." });
+  }
+
+  return suggestions.slice(0, 4);
+}
+
+function simplifyTitle(title: string) {
+  const t = String(title || "");
+  if (/sql injection/i.test(t)) return "Database input risk";
+  if (/xss/i.test(t)) return "Unsafe input display";
+  if (/tls|ssl|certificate|cipher/i.test(t)) return "Weak encryption settings";
+  if (/open port/i.test(t)) return "Open network access";
+  if (/directory|gobuster/i.test(t)) return "Exposed paths";
+  return t;
+}
+
 // ─── BatchAnalysisPanel ───────────────────────────────────────────────────────
 function BatchAnalysisPanel({ analysis, scanPlan }: { analysis: any, scanPlan?: any }) {
   const { summary, attack_surface, findings, informational_findings, prioritized_actions, final_recommendation } = analysis;
@@ -230,6 +273,22 @@ function BatchAnalysisPanel({ analysis, scanPlan }: { analysis: any, scanPlan?: 
         </div>
       )}
 
+      {/* ── Tool Suggestions ── */}
+      <div style={panelStyle}>
+        <p style={labelStyle}>Suggested Next Tools</p>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          {getSuggestionItems(analysis).map((s, idx) => (
+            <div key={idx} style={{ border: "1px solid rgba(0,212,255,0.2)", background: "rgba(0,212,255,0.08)", padding: "10px 14px", borderRadius: 6, minWidth: 180 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Wand2 size={14} color="#00d4ff" />
+                <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.78rem", fontWeight: 700 }}>{s.title}</span>
+              </div>
+              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.78rem", margin: "8px 0 0 0" }}>{s.reason}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ── Scan Plan Transparency ── */}
       {scanPlan?.details && (
         <div style={panelStyle}>
@@ -278,10 +337,11 @@ function BatchAnalysisPanel({ analysis, scanPlan }: { analysis: any, scanPlan?: 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {findings.map((f: any, i: number) => {
               const fc = SEVERITY_COLORS[f.severity] || "#888";
+              const friendlyTitle = simplifyTitle(f.title);
               return (
                 <div key={i} style={{ borderLeft: `3px solid ${fc}`, paddingLeft: 16, paddingBottom: 4 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.82rem", fontWeight: 700, color: "#fff" }}>{f.title}</span>
+                    <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.82rem", fontWeight: 700, color: "#fff" }}>{friendlyTitle || f.title}</span>
                     <span style={{ background: fc, color: "#000", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem", fontWeight: 700 }}>{f.severity}</span>
                     <span style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem" }}>
                       Fix: {f.fix_priority}
@@ -385,6 +445,13 @@ const ScanResult = () => {
     data?.reportContent ||
     batchScans.some((s: any) => s?.reportGeneratedAt || s?.reportContent)
   );
+
+  const whoisInfo = useMemo(() => {
+    if (!batchId) return null;
+    const whoisScan = batchScans.find((s: any) => String(s.scanType).toLowerCase() === "whois");
+    const raw = whoisScan?.results?.whois?.data || whoisScan?.results?.rawOutput || "";
+    return raw ? String(raw).slice(0, 1200) : "";
+  }, [batchId, batchScans]);
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -578,6 +645,13 @@ const ScanResult = () => {
     if (!data?.results) return [];
     return extractVulnerabilities(data.results, data?.scanType || data?.tool);
   }, [data, batchId, batchScans]);
+
+  const simpleFindings = useMemo(() => {
+    return vulnerabilities.map((v: any) => ({
+      ...v,
+      simpleTitle: simplifyTitle(v.title || v.name || "Detected Vulnerability"),
+    }));
+  }, [vulnerabilities]);
 
 
   const handleGenerate = async () => {
@@ -792,6 +866,15 @@ const ScanResult = () => {
         ) : (
           <div className="result-grid-layout">
             <aside className="result-sidebar">
+              {data?.results?.platformDetection && (
+                <div className="platform-highlight">
+                  <div className="platform-title">Platform Detected</div>
+                  <div className="platform-value">{data.platform || "Unknown"}</div>
+                  <div className="platform-meta">
+                    Confidence {Math.round((data.results.platformDetection.confidence || 0) * 100)}%
+                  </div>
+                </div>
+              )}
               <div className="summary-panel glass-panel">
                 <div className="panel-section">
                   <label>Target URL</label>
@@ -867,32 +950,41 @@ const ScanResult = () => {
             <main className="result-main-area">
               {/* ── Batch mode: Structured AI Analysis Panel ─────────────────── */}
               {batchId && batchAnalysis ? (
-                <BatchAnalysisPanel analysis={batchAnalysis} scanPlan={batchScans?.[0]?.scanPlan} />
+                <>
+                  <BatchAnalysisPanel analysis={batchAnalysis} scanPlan={batchScans?.[0]?.scanPlan} />
+                  {whoisInfo && (
+                    <div className="whois-panel glass-panel">
+                      <div className="whois-title">WHOIS (Informational)</div>
+                      <pre className="whois-content">{whoisInfo}</pre>
+                    </div>
+                  )}
+                </>
               ) : (
               <div className="findings-container">
                 <div className="findings-header">
                   <h3>Findings</h3>
                   <div className="finding-stats">
+                    <span className="critical">{simpleFindings.filter((v: any) => v.severity === "Critical").length} Critical</span>
                     <span className="high">{vulnerabilities.filter((v: any) => v.severity === "High").length} High</span>
                     <span className="med">{vulnerabilities.filter((v: any) => v.severity === "Medium").length} Medium</span>
                     <span className="low">{vulnerabilities.filter((v: any) => v.severity === "Low").length} Low</span>
                   </div>
                 </div>
                 <div className="findings-list">
-                  {vulnerabilities.length > 0 ? (
-                    vulnerabilities.map((v: any, i: number) => (
+                  {simpleFindings.length > 0 ? (
+                    simpleFindings.map((v: any, i: number) => (
                       <div className={`finding-card severity-${v.severity?.toLowerCase()}`} key={i}>
                         <div className="finding-icon"><AlertTriangle size={24} /></div>
                         <div className="finding-content">
                           <div className="f-header">
-                            <h4>{v.title || v.name || "Unnamed Vulnerability"}</h4>
+                            <h4>{v.simpleTitle || v.title || v.name || "Unnamed Vulnerability"}</h4>
                             <span className="severity-tag">{v.severity || "Unknown"}</span>
                           </div>
-                          <p>{v.description || "No description provided by the scanning engine."}</p>
+                          <p>{v.description || "We found a security issue that should be reviewed."}</p>
                           {v.recommendation && (
                             <div className="recommendation">
                               <CheckCircle size={14} />
-                              <span>Recommendation: {v.recommendation}</span>
+                              <span>Fix: {v.recommendation}</span>
                             </div>
                           )}
                           <VulnerabilityRemediation vulnerabilityTitle={v.title || v.name || "Unknown"} severity={v.severity} />

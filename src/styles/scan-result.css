@@ -233,6 +233,7 @@
 }
 
 .finding-stats span { padding: 4px 12px; border-radius: 100px; }
+.finding-stats .critical { background: rgba(255, 45, 85, 0.1); color: #ff2d55; border: 1px solid #ff2d55; }
 .finding-stats .high { background: rgba(255, 0, 85, 0.1); color: var(--cyber-accent); border: 1px solid var(--cyber-accent); }
 .finding-stats .med { background: rgba(255, 170, 0, 0.1); color: #ffa600; border: 1px solid #ffa600; }
 .finding-stats .low { background: rgba(0, 212, 255, 0.1); color: var(--cyber-primary); border: 1px solid var(--cyber-primary); }
@@ -262,6 +263,7 @@
 .severity-high { border-left-color: var(--cyber-accent); }
 .severity-medium { border-left-color: #ffa600; }
 .severity-low { border-left-color: var(--cyber-primary); }
+.severity-critical { border-left-color: #ff2d55; box-shadow: 0 0 24px rgba(255, 45, 85, 0.2); }
 
 .finding-icon {
   width: 48px;
@@ -289,7 +291,15 @@
   font-weight: 800;
   margin-left: 12px;
   vertical-align: middle;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
+
+.severity-critical .severity-tag { background: rgba(255,45,85,0.15); color: #ff2d55; }
+.severity-high .severity-tag { background: rgba(255,107,53,0.15); color: #ff6b35; }
+.severity-medium .severity-tag { background: rgba(245,166,35,0.15); color: #f5a623; }
+.severity-low .severity-tag { background: rgba(76,217,100,0.15); color: #4cd964; }
 
 .finding-content p {
   color: var(--cyber-text-dim);
@@ -311,6 +321,64 @@
   font-family: 'Rajdhani', sans-serif;
   font-weight: 700;
   font-size: 0.9rem;
+}
+
+.platform-highlight {
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05));
+  border: 1px solid rgba(0,212,255,0.35);
+  box-shadow: 0 0 28px rgba(0,212,255,0.15);
+  border-radius: 10px;
+  padding: 20px 22px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.platform-title {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 8px;
+}
+
+.platform-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.platform-meta {
+  font-size: 0.72rem;
+  color: rgba(0,212,255,0.8);
+}
+
+.whois-panel {
+  padding: 22px 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.whois-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+
+.whois-content {
+  background: #0b0b0b;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 16px;
+  color: rgba(255,255,255,0.7);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  max-height: 280px;
+  overflow: auto;
 }
 
 /* Raw Output */

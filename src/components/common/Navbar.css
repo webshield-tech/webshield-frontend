@@ -471,6 +471,12 @@
   .mobile-toggle { display: flex; }
 }
 
+@media (max-width: 1350px) {
+  .navbar-search { width: 170px; }
+  .nav-link { padding: 6px 8px; font-size: 0.72rem; }
+  .navbar-logo-text { font-size: 0.82rem; letter-spacing: 1.5px; }
+}
+
 @media (max-width: 600px) {
   .top-navbar { height: 56px; }
   .navbar-container { padding: 0 16px; }

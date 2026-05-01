@@ -24,6 +24,25 @@ import "../../styles/scan-progress.css";
 
 const POLL_MS = 3000;
 
+const TOOL_TITLES: Record<string, string> = {
+  nmap: "Network Reconnaissance (Nmap)",
+  nuclei: "Template Scan (Nuclei)",
+  nikto: "Web Server Audit (Nikto)",
+  ssl: "Encryption Analysis (SSLScan)",
+  sqlmap: "Injection Testing (SQLMap)",
+  wapiti: "Web App Audit (Wapiti)",
+  gobuster: "Directory Discovery (Gobuster)",
+  ffuf: "Fuzzing & Enumeration (FFUF)",
+  ratelimit: "Rate Limiter Check",
+  dns: "DNS Reconnaissance",
+  whois: "WHOIS Lookup",
+};
+
+const normalizeTool = (value?: string) => {
+  const key = String(value || "").toLowerCase();
+  return key === "sslscan" ? "ssl" : key;
+};
+
 const ScanProgress = () => {
   const { scanId } = useParams<{ scanId: string }>();
   const [searchParams] = useSearchParams();
@@ -123,11 +142,22 @@ const ScanProgress = () => {
               const lines = partial.split("\n").map((l: string) => l.trim()).filter(Boolean).slice(-4);
               if (lines.length) { setLogs(lines.reverse()); }
             } else {
-              setLogs(prev => [`[${String(runningScan.scanType || "unknown").toUpperCase()}] Scan running…`, ...prev].slice(0, 6));
+              const planOrder = Array.isArray(scans[0]?.scanPlan?.run)
+                ? scans[0]?.scanPlan?.run.map(normalizeTool)
+                : scans.map((s: any) => normalizeTool(s?.scanType || s?.tool));
+              const currentTool = normalizeTool(runningScan.scanType || runningScan.tool);
+              const stepIndex = planOrder.indexOf(currentTool);
+              const stepLabel = stepIndex >= 0
+                ? `Step ${stepIndex + 1}/${planOrder.length}`
+                : "Step";
+              const toolTitle = TOOL_TITLES[currentTool] || String(runningScan.scanType || "unknown").toUpperCase();
+              setLogs(prev => [`${stepLabel}: ${toolTitle} in progress…`, ...prev].slice(0, 6));
             }
           }
           if (pendingScan && !runningScan) {
-            setLogs(prev => [`[${String(pendingScan.scanType || "unknown").toUpperCase()}] Queued — waiting for previous tool to finish…`, ...prev].slice(0, 6));
+            const nextTool = normalizeTool(pendingScan.scanType || pendingScan.tool);
+            const nextTitle = TOOL_TITLES[nextTool] || String(pendingScan.scanType || "unknown").toUpperCase();
+            setLogs(prev => [`Queued: ${nextTitle} will start after current tool finishes…`, ...prev].slice(0, 6));
           }
 
           const allDone = scans.every((s: any) => terminalStates.includes(String(s?.status || "")));
@@ -316,7 +346,12 @@ const ScanProgress = () => {
             </div>
 
             {tool === "auto" || tool === "all" ? (
-              <AutoScanProgress status={status} percent={percent} batchScans={batchScans} />
+              <AutoScanProgress
+                status={status}
+                percent={percent}
+                batchScans={batchScans}
+                scanPlan={batchScans?.[0]?.scanPlan}
+              />
             ) : (
               <div className="progress-data-wrap">
                 <div className="progress-labels">

@@ -349,7 +349,7 @@ const StartScan = () => {
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    { id: "auto",    name: "Full Audit",   desc: "Auto Scan (Multi-Tool)",   anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Runs Nmap, Nikto, SSLScan, and SQLMap sequentially for a complete assessment." },
+    { id: "auto",    name: "Full Audit",   desc: "Smart Auto Scan (Multi-Tool)",   anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Runs a smart multi-tool sequence (Nmap, Nuclei, Nikto, SSLScan, SQLMap, Wapiti, Gobuster, FFUF, RateLimit, DNS, WHOIS) based on live recon." },
     { id: "nmap",    name: "Nmap",         desc: "Network Mapper",          anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Discovers open ports and services running on the target server." },
     { id: "nikto",   name: "Nikto",        desc: "Web Server Scanner",      anim: niktoAnimation,   color: "#ff0055", tag: "CONFIG",     tooltip: "Scans for outdated server software and dangerous files/configurations." },
     { id: "sqlmap",  name: "SQLMap",       desc: "SQL Injection Tool",      anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE",   tooltip: "Automatic SQL injection and database takeover tool." },
