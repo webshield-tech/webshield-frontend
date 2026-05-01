@@ -17,12 +17,15 @@ import {
   Linkedin,
   Mail
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { getScanHistory } from "../../api/scan-api";
 import { useToast, ToastContainer } from "../../components/Toast";
 import nmapAnimation from "../../assets/icons/nmap.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
 import Lottie from "lottie-react";
+import "../../styles/dashboard.css";
 
 interface Scan {
   _id: string;
@@ -59,7 +62,14 @@ const Dashboard = () => {
         const arr = res.data?.scans || res.data?.history || [];
         setScans(Array.isArray(arr) ? arr : []);
       } catch (e: any) {
-        setError(e?.response?.data?.error || "Failed to load dashboard data");
+        console.error("[Dashboard] Load failed:", e);
+        if (e?.status === 401 || e?.isAuthError) {
+          setError("Session expired. Please log in again.");
+          // Optional: redirect to login
+          // navigate("/login?session=expired");
+        } else {
+          setError(e?.response?.data?.error || "Connection error. Please refresh the page.");
+        }
       } finally {
         setDashboardLoading(false);
       }
