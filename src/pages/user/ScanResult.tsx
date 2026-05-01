@@ -246,12 +246,33 @@ const ScanResult = () => {
 
     // ── Nmap open ports ─────────────────────────────────────────────────────────
     if (Array.isArray(res.openPorts) && res.openPorts.length > 0) {
-      return res.openPorts.map((port: string) => ({
-        title: `Open Port: ${port}`,
-        severity: "Medium",
-        description: `Network service exposed on ${port}.`,
-        recommendation: "Close unnecessary ports or restrict access using firewall rules.",
-      }));
+      return res.openPorts.map((port: string) => {
+        const portNumMatch = port.match(/^(\d+)/);
+        const portNum = portNumMatch ? parseInt(portNumMatch[1], 10) : 0;
+        const isStandardWeb = portNum === 80 || portNum === 443;
+        
+        const isCloudflare = port.toLowerCase().includes("cloudflare");
+        const isProxy = port.toLowerCase().includes("proxy");
+        
+        let severity = "Medium";
+        if (isStandardWeb) severity = "Low";
+        if (isCloudflare || isProxy) severity = "Low";
+
+        return {
+          title: `Open Port: ${port}`,
+          severity: severity,
+          description: (isCloudflare || isProxy)
+            ? `Security Proxy detected on ${port}. Your website is protected by a secondary layer (like Cloudflare or a Load Balancer).`
+            : isStandardWeb 
+            ? `Standard web service detected on ${port}. This is expected for a public web server.`
+            : `Network service exposed on ${port}.`,
+          recommendation: (isCloudflare || isProxy)
+            ? "No action required. Cloudflare protection is active and shielding your origin server."
+            : isStandardWeb
+            ? "Ensure the service is up-to-date and using encrypted communication (HTTPS)."
+            : "Close unnecessary ports or restrict access using firewall rules.",
+        };
+      });
     }
 
     // ── SSLScan issues ───────────────────────────────────────────────────────────
