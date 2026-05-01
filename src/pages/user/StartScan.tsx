@@ -151,20 +151,20 @@ const SCAN_MODE_DESCRIPTIONS: Record<
   ratelimit: {
     color: "#9d00ff",
     quick: {
-      title: "Pulse Test",
-      detail: "Quick burst of requests to check for basic 429 response handling.",
+      title: "Rate Limit Probe",
+      detail: "Checks if the website has active rate and request limiters for APIs.",
       bullets: [
-        "50 concurrent request burst",
-        "Response status analysis",
+        "100 concurrent request burst",
+        "API endpoint activity check",
         "Estimated time: ~30 seconds",
       ],
     },
     full: {
-      title: "Sustained Audit",
-      detail: "Intense request sequence to identify complex rate-limiting policies.",
+      title: "DDoS Resistance Audit",
+      detail: "Intense stress test to verify WAF/Firewall request limiting and API stability.",
       bullets: [
-        "150 request sequence",
-        "Latency shift analysis",
+        "Sustained 200+ request sequence",
+        "API health & response consistency",
         "Estimated time: ~2 minutes",
       ],
     },
@@ -355,7 +355,7 @@ const StartScan = () => {
     { id: "sqlmap",  name: "SQLMap",       desc: "SQL Injection Tool",      anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE",   tooltip: "Automatic SQL injection and database takeover tool." },
     { id: "sslscan", name: "SSLScan",      desc: "TLS/SSL Auditor",         anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS",       tooltip: "Tests SSL/TLS protocols and cipher suites for vulnerabilities." },
     { id: "gobuster", name: "Gobuster",     desc: "Directory Brute-force",   anim: nmapAnimation,    color: "#ff8c00", tag: "HIDDEN",      tooltip: "Discovers hidden directories and files on the web server." },
-    { id: "ratelimit",name: "RateLimit",    desc: "Stress Tester",           anim: autoAnimation,    color: "#9d00ff", tag: "DDoS",        tooltip: "Tests how the target handles a high volume of concurrent requests." },
+    { id: "ratelimit",name: "RateLimit",    desc: "API & Request Limiter",   anim: autoAnimation,    color: "#9d00ff", tag: "DDoS",        tooltip: "Checks if your website rate limiter and request limiter are active, and verifies if APIs are reachable." },
     { id: "ffuf",    name: "FFUF",         desc: "Fast Web Fuzzer",         anim: niktoAnimation,   color: "#ff00ff", tag: "EXPERT",      tooltip: "A fast web fuzzer written in Go, used for directory discovery." },
     { id: "wapiti",  name: "Wapiti",       desc: "Web App Auditor",         anim: nmapAnimation,    color: "#00d4ff", tag: "SCANNER",     tooltip: "Audits the security of your web applications by crawling them." },
     { id: "nuclei",  name: "Nuclei",       desc: "Template-based Scanner",  anim: sqlmapAnimation,  color: "#ffd54f", tag: "LIBRARY",     tooltip: "Fast and customizable vulnerability scanner based on simple YAML templates." },
