@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import { Shield, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, RefreshCw, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";

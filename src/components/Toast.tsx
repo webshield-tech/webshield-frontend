@@ -158,10 +158,10 @@ const Toast = ({ toast, onClose }: ToastProps) => {
 
 interface ToastContainerProps {
   toasts: ToastMessage[];
-  onRemove: (id: string) => void;
+  removeToast: (id: string) => void;
 }
 
-export const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
+export const ToastContainer = ({ toasts, removeToast }: ToastContainerProps) => {
   return (
     <div
       style={{
@@ -179,7 +179,7 @@ export const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
       <AnimatePresence>
         {toasts.map((toast) => (
           <div key={toast.id} style={{ pointerEvents: "auto", display: 'flex', justifyContent: 'flex-end' }}>
-            <Toast toast={toast} onClose={onRemove} />
+            <Toast toast={toast} onClose={removeToast} />
           </div>
         ))}
       </AnimatePresence>

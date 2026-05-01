@@ -404,10 +404,13 @@ const StartScan = () => {
     e.preventDefault();
     setError("");
 
-    if (user && user.usedScan >= user.scanLimit) {
-      const msg = `Daily limit reached (${user.scanLimit}). Buy Premium to run more scans.`;
+    const selectedToolLimit = TOOL_DAILY_LIMITS.find(t => t.id === tool);
+    const usedForThisTool = toolStats[tool] || 0;
+
+    if (selectedToolLimit && usedForThisTool >= selectedToolLimit.limit) {
+      const msg = `Daily limit for ${selectedToolLimit.label} reached (${selectedToolLimit.limit}/${selectedToolLimit.limit}). Please try again tomorrow.`;
       setError(msg);
-      addToast("error", "Scan Limit Reached", msg, 4000);
+      addToast("error", "Tool Limit Reached", msg, 4000);
       return;
     }
 
@@ -522,7 +525,6 @@ const StartScan = () => {
                       ? "Target URL with Parameters"
                       : "Target Infrastructure URL"}
                   </label>
-                  <div className="usage-indicator">{usedScans} / {scanLimit}</div>
                 </div>
                 <div className="url-input-wrap">
                   <Globe className="input-icon" size={20} />
@@ -615,9 +617,7 @@ const StartScan = () => {
                   </div>
                 )}
                 
-                <div className="usage-bar">
-                  <div className="bar-fill" style={{ width: `${usagePercent}%` }}></div>
-                </div>
+
                 <div className="quota-summary">
                   {TOOL_DAILY_LIMITS.map((item) => (
                     <span key={item.id} className="quota-pill" style={{ color: item.color }}>
