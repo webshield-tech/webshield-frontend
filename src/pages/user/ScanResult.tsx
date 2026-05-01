@@ -14,7 +14,10 @@ import {
   Search,
   FileText,
   Loader2,
-  X
+  X,
+  Rocket,
+  Globe,
+  Shield
 } from "lucide-react";
 import { VulnerabilityRemediation } from "../../components/VulnerabilityRemediation";
 import {
@@ -536,6 +539,28 @@ const ScanResult = () => {
                       <AlertTriangle size={14} />
                       <span className="text-accent">{vulnerabilities.length} vulnerabilities</span>
                     </div>
+                  </div>
+                </div>
+                <div className="panel-divider"></div>
+                <div className="panel-section">
+                  <label>Infrastructure</label>
+                  <div className="infra-stats">
+                    <div className="infra-item" title="Detected Operating System">
+                      <Rocket size={14} />
+                      <span className="truncate">{data.platform || "Detection in progress..."}</span>
+                    </div>
+                    {data.results?.serverInfo && (
+                      <div className="infra-item" title="Web Server Info">
+                        <Globe size={14} />
+                        <span className="truncate">{data.results.serverInfo}</span>
+                      </div>
+                    )}
+                    {data.results?.techStack && (
+                      <div className="infra-item" title="Technology Stack">
+                        <Shield size={14} />
+                        <span className="truncate">{data.results.techStack}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
