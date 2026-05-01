@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   Terminal, 
@@ -33,7 +33,6 @@ import {
 } from "../../api/scan-api";
 import "../../styles/scan-result.css";
 import saveTextAsPdf from "../../utils/saveAsPdf";
-import api from "../../api/axios";
 
 type ToastType = "success" | "error" | "";
 
@@ -129,13 +128,251 @@ function ReportViewer({ content }: { content: string }) {
   );
 }
 
+// ─── Severity helpers ─────────────────────────────────────────────────────────
+const SEVERITY_COLORS: Record<string, string> = {
+  Critical: "#ff2d55",
+  High:     "#ff6b35",
+  Medium:   "#f5a623",
+  Low:      "#4cd964",
+};
+
+function riskColor(score: number) {
+  if (score >= 75) return "#ff2d55";
+  if (score >= 50) return "#ff6b35";
+  if (score >= 25) return "#f5a623";
+  return "#4cd964";
+}
+
+// ─── BatchAnalysisPanel ───────────────────────────────────────────────────────
+function BatchAnalysisPanel({ analysis, scanPlan }: { analysis: any, scanPlan?: any }) {
+  const { summary, attack_surface, findings, informational_findings, prioritized_actions, final_recommendation } = analysis;
+  const score  = summary?.risk_score ?? 0;
+  const color  = riskColor(score);
+  const radius = 54;
+  const circ   = 2 * Math.PI * radius;
+  const dash   = circ - (score / 100) * circ;
+
+  const panelStyle: React.CSSProperties = {
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "10px",
+    padding: "22px 26px",
+    marginBottom: "20px",
+  };
+  const labelStyle: React.CSSProperties = {
+    fontFamily: "'Orbitron',sans-serif",
+    fontSize: "0.7rem",
+    letterSpacing: "2px",
+    textTransform: "uppercase",
+    color: "rgba(255,255,255,0.4)",
+    marginBottom: "12px",
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+
+      {/* ── Executive Summary ── */}
+      <div style={{ ...panelStyle, borderLeft: `3px solid ${color}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "28px", flexWrap: "wrap" }}>
+          {/* Risk Gauge */}
+          <div style={{ position: "relative", width: 130, height: 130, flexShrink: 0 }}>
+            <svg width="130" height="130" viewBox="0 0 130 130">
+              <circle cx="65" cy="65" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
+              <circle cx="65" cy="65" r={radius} fill="none" stroke={color} strokeWidth="10"
+                strokeDasharray={circ} strokeDashoffset={dash}
+                strokeLinecap="round" transform="rotate(-90 65 65)"
+                style={{ transition: "stroke-dashoffset 1s ease" }} />
+            </svg>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "1.8rem", fontWeight: 800, color }}>{score}</span>
+              <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", letterSpacing: 1 }}>RISK SCORE</span>
+            </div>
+          </div>
+
+          {/* Summary text */}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <span style={{ background: color, color: "#000", padding: "3px 10px", borderRadius: 4, fontFamily: "'Orbitron',sans-serif", fontSize: "0.72rem", fontWeight: 800, letterSpacing: 1 }}>
+                {summary?.overall_status}
+              </span>
+              <span style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)", padding: "3px 10px", borderRadius: 4, fontSize: "0.72rem" }}>
+                {summary?.scan_quality}
+              </span>
+              <span style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)", padding: "3px 10px", borderRadius: 4, fontSize: "0.72rem" }}>
+                Confidence {Math.round((summary?.confidence_score ?? 0) * 100)}%
+              </span>
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: 1.65, fontSize: "0.95rem", margin: 0 }}>
+              {summary?.key_message}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Attack Surface ── */}
+      {attack_surface && (
+        <div style={panelStyle}>
+          <p style={labelStyle}>Attack Surface</p>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            {[
+              { label: "Open Ports",    items: attack_surface.open_ports },
+              { label: "Directories",   items: attack_surface.directories_found },
+              { label: "Technologies",  items: attack_surface.technologies_detected },
+            ].map(({ label, items }) => (
+              <div key={label} style={{ flex: 1, minWidth: 160 }}>
+                <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>{label}</p>
+                {items?.length ? items.map((it: string, i: number) => (
+                  <span key={i} style={{ display: "inline-block", background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "var(--cyber-primary,#00d4ff)", borderRadius: 4, padding: "2px 8px", fontSize: "0.78rem", marginRight: 6, marginBottom: 6 }}>{it}</span>
+                )) : <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.82rem" }}>None detected</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Scan Plan Transparency ── */}
+      {scanPlan?.details && (
+        <div style={panelStyle}>
+          <p style={labelStyle}>Smart Scan Plan (AI Orchestrator)</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {Object.entries(scanPlan.details).map(([tool, info]: [string, any], i: number) => {
+              const isRun = info.decision === "run";
+              const color = isRun ? "#00ff9d" : "#ff6b35";
+              const bgColor = isRun ? "rgba(0,255,157,0.1)" : "rgba(255,107,53,0.1)";
+              const borderColor = isRun ? "rgba(0,255,157,0.3)" : "rgba(255,107,53,0.3)";
+
+              return (
+                <div key={i} style={{ border: `1px solid ${borderColor}`, background: bgColor, borderRadius: 6, padding: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                    <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.85rem", fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{tool}</span>
+                    <span style={{ background: color, color: "#000", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem", fontWeight: 700 }}>
+                      {isRun ? "✔ EXECUTED" : "⏭ SKIPPED"}
+                    </span>
+                    <span style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem" }}>
+                      Confidence {Math.round((info.confidence || 1) * 100)}%
+                    </span>
+                  </div>
+                  <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", margin: "0 0 6px 0" }}><strong>Reason:</strong> {info.reason}</p>
+                  
+                  {info.evidence && info.evidence.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", margin: "0 0 4px 0", textTransform: "uppercase" }}>Evidence</p>
+                      <ul style={{ margin: 0, paddingLeft: 16, color: "rgba(255,255,255,0.6)", fontSize: "0.8rem", listStyleType: "square" }}>
+                        {info.evidence.map((ev: string, idx: number) => (
+                          <li key={idx}>{ev}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Correlated Findings ── */}
+      {findings?.length > 0 && (
+        <div style={panelStyle}>
+          <p style={labelStyle}>Vulnerability Findings ({findings.length})</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {findings.map((f: any, i: number) => {
+              const fc = SEVERITY_COLORS[f.severity] || "#888";
+              return (
+                <div key={i} style={{ borderLeft: `3px solid ${fc}`, paddingLeft: 16, paddingBottom: 4 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.82rem", fontWeight: 700, color: "#fff" }}>{f.title}</span>
+                    <span style={{ background: fc, color: "#000", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem", fontWeight: 700 }}>{f.severity}</span>
+                    <span style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem" }}>
+                      Fix: {f.fix_priority}
+                    </span>
+                    <span style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem" }}>
+                      Confidence {Math.round((f.confidence ?? 0) * 100)}%
+                    </span>
+                    {f.exploitability && (
+                      <span style={{ background: "rgba(255,107,53,0.15)", border: "1px solid rgba(255,107,53,0.3)", color: "#ff6b35", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem" }}>
+                        Exploitability: {f.exploitability}
+                      </span>
+                    )}
+                    {f.detection_sources?.length > 0 && (
+                      <span style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00d4ff", padding: "2px 8px", borderRadius: 3, fontSize: "0.7rem" }}>
+                        Sources: {f.detection_sources.join(", ")}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.88rem", margin: "0 0 6px 0", lineHeight: 1.6 }}>{f.description}</p>
+                  {f.confidence_reason && <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.82rem", margin: "0 0 6px 0", fontStyle: "italic" }}>Why: {f.confidence_reason}</p>}
+                  {f.impact && <p style={{ color: "rgba(255,100,100,0.85)", fontSize: "0.83rem", margin: "0 0 4px 0" }}><strong>Impact:</strong> {f.impact}</p>}
+                  {f.evidence && <p style={{ color: "rgba(255,255,255,0.38)", fontSize: "0.78rem", fontFamily: "monospace", margin: "0 0 6px 0" }}>{f.evidence}</p>}
+                  {f.recommendation && <p style={{ color: "rgba(0,212,255,0.85)", fontSize: "0.83rem", margin: "0 0 4px 0" }}><strong>Fix:</strong> {f.recommendation}</p>}
+                  {f.platform_specific_fix && f.platform_specific_fix !== "N/A" && (
+                    <p style={{ color: "rgba(0,255,157,0.8)", fontSize: "0.82rem", margin: "0 0 4px 0" }}><strong>Platform:</strong> {f.platform_specific_fix}</p>
+                  )}
+                  {f.references?.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                      {f.references.map((ref: string, ri: number) => (
+                        <span key={ri} style={{ background: "rgba(255,45,85,0.12)", border: "1px solid rgba(255,45,85,0.25)", color: "#ff2d55", padding: "1px 7px", borderRadius: 3, fontSize: "0.72rem" }}>{ref}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Informational Findings ── */}
+      {informational_findings?.length > 0 && (
+        <div style={panelStyle}>
+          <p style={labelStyle}>Informational Observations ({informational_findings.length})</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {informational_findings.map((f: any, i: number) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ color: "rgba(255,255,255,0.25)", marginTop: 2 }}>&#9675;</span>
+                <div>
+                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", fontWeight: 600 }}>{f.title}: </span>
+                  <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.83rem" }}>{f.description}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Prioritized Actions ── */}
+      {prioritized_actions?.length > 0 && (
+        <div style={{ ...panelStyle, borderLeft: "3px solid #00ff9d" }}>
+          <p style={labelStyle}>Prioritized Remediation Steps</p>
+          <ol style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
+            {prioritized_actions.map((action: string, i: number) => (
+              <li key={i} style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem", lineHeight: 1.6 }}>{action}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* ── Final Recommendation ── */}
+      {final_recommendation && (
+        <div style={{ ...panelStyle, borderLeft: "3px solid rgba(0,212,255,0.5)" }}>
+          <p style={labelStyle}>Final Recommendation</p>
+          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.92rem", lineHeight: 1.7, margin: 0 }}>{final_recommendation}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 const ScanResult = () => {
+
   const { scanId } = useParams<{ scanId: string }>();
   const [searchParams] = useSearchParams();
   const batchId = searchParams.get("batchId") || "";
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [batchScans, setBatchScans] = useState<any[]>([]);
+  const [batchAnalysis, setBatchAnalysis] = useState<any>(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ type: ToastType; message: string }>({ type: "", message: "" });
   const [generating, setGenerating] = useState(false);
@@ -163,6 +400,11 @@ const ScanResult = () => {
           const scans = Array.isArray(batchRes.data?.scans) ? batchRes.data.scans : [];
           setBatchScans(scans);
           setData(scans[0] || null);
+          // Try loading existing batch analysis if already generated
+          try {
+            const viewRes = await viewBatchReport(batchId, "english");
+            if (viewRes.data?.report?.analysis) setBatchAnalysis(viewRes.data.report.analysis);
+          } catch { /* not yet generated — that's fine */ }
           return;
         }
         const singleRes = await getScanResultsById(scanId);
@@ -348,6 +590,7 @@ const ScanResult = () => {
       if (res.data?.success) {
         showToast("success", "AI Report generated successfully!");
         if (batchId) {
+          if (res.data?.analysis) setBatchAnalysis(res.data.analysis);
           const refreshBatch = await getBatchResults(batchId);
           const scans = Array.isArray(refreshBatch.data?.scans) ? refreshBatch.data.scans : [];
           setBatchScans(scans);
@@ -378,6 +621,9 @@ const ScanResult = () => {
         : await viewReport(scanId, "english");
       const reportData = res.data;
 
+      if (reportData?.success && reportData?.report?.analysis) {
+        setBatchAnalysis(reportData.report.analysis);
+      }
       if (reportData?.success && reportData?.report?.content) {
         setReportModal({ open: true, content: reportData.report.content });
       } else {
@@ -619,6 +865,10 @@ const ScanResult = () => {
             </aside>
 
             <main className="result-main-area">
+              {/* ── Batch mode: Structured AI Analysis Panel ─────────────────── */}
+              {batchId && batchAnalysis ? (
+                <BatchAnalysisPanel analysis={batchAnalysis} scanPlan={batchScans?.[0]?.scanPlan} />
+              ) : (
               <div className="findings-container">
                 <div className="findings-header">
                   <h3>Findings</h3>
@@ -628,14 +878,11 @@ const ScanResult = () => {
                     <span className="low">{vulnerabilities.filter((v: any) => v.severity === "Low").length} Low</span>
                   </div>
                 </div>
-
                 <div className="findings-list">
                   {vulnerabilities.length > 0 ? (
                     vulnerabilities.map((v: any, i: number) => (
                       <div className={`finding-card severity-${v.severity?.toLowerCase()}`} key={i}>
-                        <div className="finding-icon">
-                          <AlertTriangle size={24} />
-                        </div>
+                        <div className="finding-icon"><AlertTriangle size={24} /></div>
                         <div className="finding-content">
                           <div className="f-header">
                             <h4>{v.title || v.name || "Unnamed Vulnerability"}</h4>
@@ -648,40 +895,26 @@ const ScanResult = () => {
                               <span>Recommendation: {v.recommendation}</span>
                             </div>
                           )}
-                            <VulnerabilityRemediation 
-                              vulnerabilityTitle={v.title || v.name || "Unknown"}
-                              severity={v.severity}
-                            />
-
+                          <VulnerabilityRemediation vulnerabilityTitle={v.title || v.name || "Unknown"} severity={v.severity} />
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="raw-results-panel glass-panel">
-                      <div className="panel-header-mini">
-                        <Terminal size={16} />
-                        <span>Scan Analysis Results</span>
-                      </div>
+                      <div className="panel-header-mini"><Terminal size={16} /><span>Scan Analysis Results</span></div>
                       <div style={{ padding: "24px", textAlign: "center" }}>
-                        {data?.status === "completed" && vulnerabilities.length === 0 ? (
-                          <>
-                            <CheckCircle size={48} style={{ color: "var(--cyber-primary)", margin: "0 auto 16px auto", display: "block" }} />
-                            <h3 style={{ color: "var(--cyber-text)", marginBottom: "8px" }}>No Vulnerabilities Found!</h3>
-                            <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: "500px", margin: "0 auto" }}>
-                              Great news! The scanning engine did not detect any high-severity issues on this target during this specific scan. However, security is an ongoing process. We recommend running deep scans regularly and combining automated tools with manual testing.
-                            </p>
-                          </>
+                        {data?.status === "completed" ? (
+                          <><CheckCircle size={48} style={{ color: "var(--cyber-primary)", margin: "0 auto 16px auto", display: "block" }} />
+                          <h3 style={{ color: "var(--cyber-text)", marginBottom: "8px" }}>No Vulnerabilities Found!</h3>
+                          <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: "500px", margin: "0 auto" }}>
+                            The scanning engine did not detect any high-severity issues. Generate an AI Report for a full correlated analysis.
+                          </p></>
                         ) : data?.status === "failed" ? (
-                           <>
-                             <AlertTriangle size={48} style={{ color: "var(--cyber-accent)", margin: "0 auto 16px auto", display: "block" }} />
-                             <h3 style={{ color: "var(--cyber-text)", marginBottom: "8px" }}>Scan Failed / Host Unreachable</h3>
-                             <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: "500px", margin: "0 auto" }}>
-                               The scanning engine could not reach the target or encountered an error. Please ensure the target is online, your URL is correct, and that firewalls are not blocking the scan.
-                             </p>
-                             <pre className="raw-terminal" style={{ marginTop: "20px", textAlign: "left" }}>
-                               {typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : data.results || "No error details provided."}
-                             </pre>
-                           </>
+                          <><AlertTriangle size={48} style={{ color: "var(--cyber-accent)", margin: "0 auto 16px auto", display: "block" }} />
+                          <h3 style={{ color: "var(--cyber-text)", marginBottom: "8px" }}>Scan Failed / Host Unreachable</h3>
+                          <pre className="raw-terminal" style={{ marginTop: "20px", textAlign: "left" }}>
+                            {typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : data.results || "No error details."}
+                          </pre></>
                         ) : (
                           <pre className="raw-terminal" style={{ textAlign: "left" }}>
                             {typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : data.results || "No output data available."}
@@ -692,6 +925,7 @@ const ScanResult = () => {
                   )}
                 </div>
               </div>
+              )}
             </main>
           </div>
         )}
