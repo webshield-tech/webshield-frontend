@@ -70,7 +70,7 @@ const Dashboard = () => {
     };
 
     load();
-  }, [authChecked, loading, user, welcomeShown, addToast]);
+  }, [authChecked, loading, user, addToast]);
 
   const metrics = useMemo(() => {
     // Group scans by batchId to count Auto-Scans as 1 operation

@@ -45,7 +45,11 @@ function Login() {
         navigate("/disclaimer", { replace: true });
       }
     } catch (err: any) {
-      setFormError(err.message || `${provider} authentication failed`);
+      if (err.code === "auth/account-exists-with-different-credential" || err.message?.includes("account-exists")) {
+        setFormError("This email is already registered with a different sign-in method (e.g., password or another social provider). Please use your original method to log in.");
+      } else {
+        setFormError(err.message || `${provider} authentication failed`);
+      }
     } finally {
       setLoading(false);
     }
