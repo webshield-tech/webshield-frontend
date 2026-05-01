@@ -51,9 +51,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (!authChecked || loading || !user?.agreedToTerms) return;
 
-    if (!welcomeShown && user) {
+    if (user && !sessionStorage.getItem("dashboard_welcome_shown")) {
       addToast("success", "Access Granted", `Welcome back, ${user.username}. System status is nominal.`, 5000);
-      setWelcomeShown(true);
+      sessionStorage.setItem("dashboard_welcome_shown", "true");
     }
 
     const load = async () => {

@@ -554,11 +554,13 @@ const ScanResult = () => {
                   <div className="metric-row">
                     <div className="m-item">
                       <Clock size={14} />
-                      <span>{data.startedAt ? new Date(data.startedAt).toLocaleTimeString() : "N/A"}</span>
+                      <span>{data.createdAt ? new Date(data.createdAt).toLocaleTimeString() : data.startedAt ? new Date(data.startedAt).toLocaleTimeString() : "N/A"}</span>
                     </div>
                     <div className="m-item">
                       <AlertTriangle size={14} />
-                      <span className="text-accent">{vulnerabilities.length} vulnerabilities</span>
+                      <span className="text-accent">
+                        {vulnerabilities.length} {vulnerabilities.some((v: any) => ["Critical", "High"].includes(v.severity)) ? "vulnerabilities" : "findings"}
+                      </span>
                     </div>
                   </div>
                 </div>
