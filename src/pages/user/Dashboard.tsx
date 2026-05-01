@@ -10,12 +10,7 @@ import {
   Play, 
   ArrowUpRight,
   Info,
-  CheckCircle2,
-  Globe,
-  MessageSquare,
-  Github,
-  Linkedin,
-  Mail
+  CheckCircle2
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getScanHistory } from "../../api/scan-api";
@@ -46,7 +41,6 @@ const Dashboard = () => {
   const [scans, setScans] = useState<Scan[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState("");
-  const [welcomeShown, setWelcomeShown] = useState(false);
 
   useEffect(() => {
     if (!authChecked || loading || !user?.agreedToTerms) return;
