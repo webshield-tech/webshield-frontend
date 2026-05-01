@@ -10,9 +10,13 @@ import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
 import { validateEmail } from "../../utils/validators";
 
+import { useToast, ToastContainer } from "../../components/Toast";
+import { useEffect } from "react";
+
 function Login() {
   const navigate = useNavigate();
   const { login, socialLogin } = useAuth();
+  const { toasts, addToast, removeToast } = useToast();
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +25,15 @@ function Login() {
   const [passwordError, setPasswordError] = useState("");
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("session") === "expired") {
+      addToast("info", "Session Expired", "Your session has timed out. Please log in again to continue.", 6000);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [addToast]);
 
   const handleSocialAction = async (provider: "google" | "github") => {
     try {
@@ -255,6 +268,7 @@ function Login() {
           </div>
         </div>
       </motion.div>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }

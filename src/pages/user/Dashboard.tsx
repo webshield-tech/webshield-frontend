@@ -17,9 +17,7 @@ import {
   Linkedin,
   Mail
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
-import { getScanHistory } from "../../api/scan-api";
-import "../../styles/dashboard.css";
+import { useToast, ToastContainer } from "../../components/Toast";
 import nmapAnimation from "../../assets/icons/nmap.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
@@ -41,12 +39,19 @@ interface Scan {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, loading, authChecked } = useAuth();
+  const { toasts, addToast, removeToast } = useToast();
   const [scans, setScans] = useState<Scan[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState("");
+  const [welcomeShown, setWelcomeShown] = useState(false);
 
   useEffect(() => {
     if (!authChecked || loading || !user?.agreedToTerms) return;
+
+    if (!welcomeShown && user) {
+      addToast("success", "Access Granted", `Welcome back, ${user.username}. System status is nominal.`, 5000);
+      setWelcomeShown(true);
+    }
 
     const load = async () => {
       try {
@@ -61,7 +66,7 @@ const Dashboard = () => {
     };
 
     load();
-  }, [authChecked, loading, user]);
+  }, [authChecked, loading, user, welcomeShown, addToast]);
 
   const metrics = useMemo(() => {
     // Group scans by batchId to count Auto-Scans as 1 operation
@@ -255,6 +260,7 @@ const Dashboard = () => {
       </div>
 
 
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

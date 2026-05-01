@@ -349,18 +349,18 @@ const StartScan = () => {
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    { id: "auto",    name: "Full Audit",   desc: "Complete Security Check", anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Runs multiple tools at once for a complete spectrum assessment." },
-    { id: "nmap",    name: "Network Scout", desc: "Door Finder",         anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Finds out which 'doors' (ports) are open on your website's server." },
-    { id: "nikto",   name: "Web Auditor",  desc: "Server Inspector",     anim: niktoAnimation,   color: "#ff0055", tag: "CONFIG",     tooltip: "Checks if your website server is old or has common mistakes hackers like." },
-    { id: "sqlmap",  name: "Database Guard", desc: "Data Protection",      anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE",   tooltip: "Tests if your forms (like login or search) are leaking your database info." },
-    { id: "sslscan", name: "Lock Checker",   desc: "Security Lock",        anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS",       tooltip: "Makes sure your website's 'green lock' (HTTPS) is strong and up-to-date." },
-    { id: "gobuster", name: "Path Finder",    desc: "Hidden File Search",   anim: nmapAnimation,    color: "#ff8c00", tag: "HIDDEN",      tooltip: "Searches for hidden pages or folders that shouldn't be public." },
-    { id: "ratelimit",name: "Stress Tester",  desc: "Traffic Capacity",     anim: autoAnimation,    color: "#9d00ff", tag: "DDoS",        tooltip: "Checks if your website can handle too many requests without crashing." },
-    { id: "ffuf",    name: "Deep Fuzzer",     desc: "Advanced Search",      anim: niktoAnimation,   color: "#ff00ff", tag: "EXPERT",      tooltip: "A faster way to find hidden files and technical settings." },
-    { id: "wapiti",  name: "All-in-One",      desc: "Web Bug Scanner",      anim: nmapAnimation,    color: "#00d4ff", tag: "SCANNER",     tooltip: "A complete scan for common web bugs like XSS and SQL injection." },
-    { id: "nuclei",  name: "Vuln Matcher",    desc: "Security Bug Check",   anim: sqlmapAnimation,  color: "#ffd54f", tag: "LIBRARY",     tooltip: "Matches your website against a huge list of 4,000+ known security bugs." },
-    { id: "dns",     name: "ID Checker",      desc: "Technical Settings",   anim: autoAnimation,    color: "#69f0ae", tag: "DNS",         tooltip: "Verifies your website's technical domain identity and records." },
-    { id: "whois",   name: "Owner Verifier",  desc: "Domain Ownership",     anim: autoAnimation,    color: "#ffffff", tag: "IDENTITY",    tooltip: "Finds out who owns the domain and when it expires to prevent theft." },
+    { id: "auto",    name: "Full Audit",   desc: "Auto Scan (Multi-Tool)",   anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Runs Nmap, Nikto, SSLScan, and SQLMap sequentially for a complete assessment." },
+    { id: "nmap",    name: "Nmap",         desc: "Network Mapper",          anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Discovers open ports and services running on the target server." },
+    { id: "nikto",   name: "Nikto",        desc: "Web Server Scanner",      anim: niktoAnimation,   color: "#ff0055", tag: "CONFIG",     tooltip: "Scans for outdated server software and dangerous files/configurations." },
+    { id: "sqlmap",  name: "SQLMap",       desc: "SQL Injection Tool",      anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE",   tooltip: "Automatic SQL injection and database takeover tool." },
+    { id: "sslscan", name: "SSLScan",      desc: "TLS/SSL Auditor",         anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS",       tooltip: "Tests SSL/TLS protocols and cipher suites for vulnerabilities." },
+    { id: "gobuster", name: "Gobuster",     desc: "Directory Brute-force",   anim: nmapAnimation,    color: "#ff8c00", tag: "HIDDEN",      tooltip: "Discovers hidden directories and files on the web server." },
+    { id: "ratelimit",name: "RateLimit",    desc: "Stress Tester",           anim: autoAnimation,    color: "#9d00ff", tag: "DDoS",        tooltip: "Tests how the target handles a high volume of concurrent requests." },
+    { id: "ffuf",    name: "FFUF",         desc: "Fast Web Fuzzer",         anim: niktoAnimation,   color: "#ff00ff", tag: "EXPERT",      tooltip: "A fast web fuzzer written in Go, used for directory discovery." },
+    { id: "wapiti",  name: "Wapiti",       desc: "Web App Auditor",         anim: nmapAnimation,    color: "#00d4ff", tag: "SCANNER",     tooltip: "Audits the security of your web applications by crawling them." },
+    { id: "nuclei",  name: "Nuclei",       desc: "Template-based Scanner",  anim: sqlmapAnimation,  color: "#ffd54f", tag: "LIBRARY",     tooltip: "Fast and customizable vulnerability scanner based on simple YAML templates." },
+    { id: "dns",     name: "DNS Recon",    desc: "Domain Inspector",        anim: autoAnimation,    color: "#69f0ae", tag: "DNS",         tooltip: "Enumerates DNS records and infrastructure details." },
+    { id: "whois",   name: "Whois",        desc: "Domain Lookup",           anim: autoAnimation,    color: "#ffffff", tag: "IDENTITY",    tooltip: "Retrieves registration information for the target domain." },
   ] as const;
 
   const handlePingCheck = async () => {
@@ -418,8 +418,15 @@ const StartScan = () => {
       return;
     }
 
-    setScanMode("quick");
-    setShowModeModal(true);
+    // Only show modal for tools that support multiple modes
+    const toolsWithModes = ["auto", "nmap", "nikto", "sqlmap", "sslscan"];
+    if (toolsWithModes.includes(tool)) {
+      setScanMode("quick");
+      setShowModeModal(true);
+    } else {
+      // Launch directly for other tools
+      launchScan("quick");
+    }
   };
 
   const launchScan = async (chosenMode: "quick" | "full") => {
