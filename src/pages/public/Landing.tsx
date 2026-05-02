@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Lock, Zap, FileText, Github, Linkedin, Menu, X, ArrowRight, ExternalLink, Globe, MessageSquare, Mail } from "lucide-react";
+import { Shield, Lock, Zap, FileText, Linkedin, Menu, X, ArrowRight, Globe, MessageSquare, Mail } from "lucide-react";
 import HeroSection from "../../components/landing/HeroSection";
 import ToolCards from "../../components/landing/ToolCards";
 import "../../styles/landing.css";
@@ -166,10 +166,6 @@ const Landing = () => {
               <MessageSquare size={28} color="#5865F2" />
               <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>Discord</span>
             </a>
-            <a href="https://github.com/orgs/fsociety-pk" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
-              <Github size={28} color="#fff" />
-              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>GitHub</span>
-            </a>
             <a href="https://www.linkedin.com/company/fsociety-pk/" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "20px", background: "rgba(0, 255, 157, 0.05)", border: "1px solid var(--cyber-border)", borderRadius: "8px", textDecoration: "none", color: "var(--cyber-text)", transition: "all 0.3s ease" }}>
               <Linkedin size={28} color="#0077b5" />
               <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "#fff" }}>LinkedIn</span>
@@ -196,9 +192,6 @@ const Landing = () => {
               Next-generation cybersecurity platform designed for modern web developers and security researchers.
             </p>
             <div className="social-links-premium">
-              <a href="https://github.com/thehusnain" target="_blank" rel="noopener noreferrer" className="social-icon-btn">
-                <Github size={20} />
-              </a>
               <a href="https://www.linkedin.com/in/husnain-fiaz-7a4761369" target="_blank" rel="noopener noreferrer" className="social-icon-btn">
                 <Linkedin size={20} />
               </a>
@@ -220,9 +213,6 @@ const Landing = () => {
             </div>
             <div className="footer-col">
               <h4>Resources</h4>
-              <a href="https://github.com/vuln-spectra-tech" target="_blank" rel="noopener noreferrer">
-                Open Source <ExternalLink size={12} />
-              </a>
               <a href="/docs">Documentation</a>
               <a href="/blog">Blog</a>
             </div>
