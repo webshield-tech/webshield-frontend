@@ -116,6 +116,9 @@ export const Navbar = () => {
   };
 
   const isAdmin = !!user && user.role === "admin";
+  const handleProfileClick = () => {
+    navigate(isAdmin ? "/admin" : "/profile");
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -256,8 +259,8 @@ export const Navbar = () => {
           {/* User Profile */}
           <div 
             className="user-profile-nav-btn premium-profile" 
-            onClick={() => navigate("/profile")}
-            title="View Security Profile"
+            onClick={handleProfileClick}
+            title={isAdmin ? "Open Admin Panel" : "View Security Profile"}
           >
             <div className="avatar-circle">
               <UserIcon size={18} />

@@ -11,6 +11,11 @@ import gobusterIcon from "../assets/icons/gobuster.json";
 import nucleiIcon from "../assets/icons/nuclie.json";
 import dnsIcon from "../assets/icons/dns-recon.json";
 import whoisIcon from "../assets/icons/whois.json";
+import rateLimitIcon from "../assets/icons/rate-limit.json";
+import aiSearchingIcon from "../assets/icons/aiSearching.json";
+import infoIcon from "../assets/icons/info.json";
+import profileIcon from "../assets/icons/profile.json";
+import startIcon from "../assets/icons/start.json";
 
 interface AutoScanProgressProps {
   status: string;
@@ -34,8 +39,10 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
     sqlmap: sqlIcon,
     wapiti: wapatiIcon,
     gobuster: gobusterIcon,
-    dns: dnsIcon,
-    whois: whoisIcon,
+    ffuf: aiSearchingIcon,
+    ratelimit: rateLimitIcon,
+    dns: infoIcon,
+    whois: profileIcon,
   };
 
   const TOOL_LABELS: Record<string, string> = {
