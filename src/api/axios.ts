@@ -4,7 +4,31 @@ const rawBaseUrl =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   "http://localhost:4000";
-const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
+
+const buildBaseUrl = (value: string) => {
+  const normalized = value.replace(/\/+$/, "");
+
+  try {
+    const parsed = new URL(normalized);
+    const isLocalhost =
+      parsed.hostname === "localhost" ||
+      parsed.hostname === "127.0.0.1" ||
+      parsed.hostname === "0.0.0.0";
+
+    // Production backend is mounted under /api/v1.
+    // Keep localhost flexible for local development, but auto-add the prefix
+    // for deployed hosts when the env only points at the origin.
+    if (!isLocalhost && (parsed.pathname === "" || parsed.pathname === "/")) {
+      parsed.pathname = "/api/v1";
+    }
+
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return normalized;
+  }
+};
+
+const BASE_URL = buildBaseUrl(rawBaseUrl);
 
 const api = axios.create({
   baseURL: BASE_URL,

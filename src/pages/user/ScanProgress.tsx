@@ -350,7 +350,7 @@ const ScanProgress = () => {
                 status={status}
                 percent={percent}
                 batchScans={batchScans}
-                scanPlan={batchScans?.[0]?.scanPlan}
+                scanPlan={batchScans?.[0]?.results?.scanPlan || batchScans?.[0]?.scanPlan}
               />
             ) : (
               <div className="progress-data-wrap">
