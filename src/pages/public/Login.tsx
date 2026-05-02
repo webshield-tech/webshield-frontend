@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { 
   Mail, Lock, Loader2, AlertCircle, CheckCircle2
 } from "lucide-react";
@@ -26,7 +26,8 @@ import { useEffect } from "react";
 
 function Login() {
   const navigate = useNavigate();
-  const { login, socialLogin, refreshUser } = useAuth();
+  const location = useLocation();
+  const { login, socialLogin, refreshUser, user } = useAuth();
   const { toasts, addToast, removeToast } = useToast();
 
   const [email, setEmail]       = useState("");
@@ -46,10 +47,29 @@ function Login() {
     }
   }, [addToast]);
 
+  useEffect(() => {
+    if (loading || !location.pathname.startsWith("/login")) return;
+
+    if (user) {
+      const role = String(user.role || "").trim().toLowerCase();
+      if (role === "admin" || role === "superadmin") {
+        navigate("/admin", { replace: true });
+      } else if (user.agreedToTerms) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/disclaimer", { replace: true });
+      }
+    }
+  }, [loading, location.pathname, navigate, user]);
+
   const handleSocialAction = async () => {
     try {
       setLoading(true);
       const user = await socialLogin("google");
+
+      // Redirect flows will continue after the Firebase redirect completes.
+      if (!user) return;
+
       const freshUser = await refreshUser();
       const activeUser = freshUser || user;
       const role = String(activeUser?.role || "").trim().toLowerCase();

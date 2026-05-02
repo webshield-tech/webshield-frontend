@@ -8,7 +8,7 @@ import {
 } from "react";
 import { Profile as getProfile, LogoutUser } from "../api/auth-api";
 import api from "../api/axios";
-import { signInWithPopup } from "firebase/auth";
+import { getRedirectResult, signInWithPopup, signInWithRedirect } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
 
 interface User {
@@ -67,6 +67,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const finalizeFirebaseLogin = async (firebaseUser: { getIdToken: () => Promise<string> }) => {
+    const token = await firebaseUser.getIdToken();
+
+    // Send token to backend to verify and create session
+    const res = await api.post("/user/firebase-login", { token });
+
+    if (!res.data?.success) {
+      throw new Error(res.data?.error || "Login failed");
+    }
+
+    setUser(res.data.user);
+    const userKey = res.data.user?._id || res.data.user?.userId;
+    if (userKey) {
+      sessionStorage.setItem("dashboard_welcome_pending", String(userKey));
+    }
+    if (res.data.token) {
+      localStorage.setItem("authToken", res.data.token);
+    }
+
+    return res.data.user;
+  };
+
   const checkAuth = async () => {
     try {
       const res = await getProfile();
@@ -104,25 +126,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
-      const token = await result.user.getIdToken();
-      
-      // Send token to backend to verify and create session
-      const res = await api.post("/user/firebase-login", { token });
-      
-      if (res.data?.success) {
-        setUser(res.data.user);
-        const userKey = res.data.user?._id || res.data.user?.userId;
-        if (userKey) {
-          sessionStorage.setItem("dashboard_welcome_pending", String(userKey));
-        }
-        if (res.data.token) {
-          localStorage.setItem("authToken", res.data.token);
-        }
-        return res.data.user;
-      } else {
-        throw new Error(res.data?.error || "Login failed");
-      }
+      return await finalizeFirebaseLogin(result.user);
     } catch (error: any) {
+      const message = String(error?.message || "");
+      const code = String(error?.code || "");
+
+      // Popup flows can fail under strict COOP policies; fall back to redirect.
+      if (
+        code === "auth/popup-blocked" ||
+        code === "auth/popup-closed-by-user" ||
+        code === "auth/cancelled-popup-request" ||
+        code === "auth/operation-not-supported-in-this-environment" ||
+        /cross-origin-opener-policy|window\.closed|popup/i.test(message)
+      ) {
+        await signInWithRedirect(auth, googleProvider);
+        return null;
+      }
+
       console.error("Social Login Error:", error);
       throw error;
     } finally {
@@ -131,31 +151,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-  // Cookie check function
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return null;
-  };
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+      return null;
+    };
 
-  const token = getCookie('token') || localStorage.getItem("authToken");
-  
-  if (!token) {
-    setUser(null);
-    setAuthChecked(true);
-    setLoading(false);
-    return;
-  }
-  const init = async () => {
-    setLoading(true);
-    await checkAuth();
-    setAuthChecked(true);
-    setLoading(false);
-  };
-  
-  init();
-}, []);
+    const init = async () => {
+      setLoading(true);
+
+      try {
+        const redirectResult = await getRedirectResult(auth);
+        if (redirectResult?.user) {
+          await finalizeFirebaseLogin(redirectResult.user);
+          await checkAuth();
+          setAuthChecked(true);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.warn("[Auth] Google redirect login failed:", error);
+      }
+
+      const token = getCookie("token") || localStorage.getItem("authToken");
+
+      if (!token) {
+        setUser(null);
+        setAuthChecked(true);
+        setLoading(false);
+        return;
+      }
+
+      await checkAuth();
+      setAuthChecked(true);
+      setLoading(false);
+    };
+
+    init();
+  }, []);
 
   return (
     <AuthContext.Provider
