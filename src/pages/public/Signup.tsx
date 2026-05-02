@@ -69,10 +69,10 @@ function Signup() {
     return errs;
   };
 
-  const handleSocialAction = async (provider: "google") => {
+  const handleSocialAction = async () => {
     try {
       setLoading(true);
-      const user = await socialLogin(provider);
+      const user = await socialLogin("google");
       if (user?.agreedToTerms) {
         navigate("/dashboard", { replace: true });
       } else {
@@ -82,7 +82,7 @@ function Signup() {
       if (err.code === "auth/account-exists-with-different-credential" || err.message?.includes("account-exists")) {
         setFormError("This email is already registered with a different sign-in method. Please go to the Login page and use your original method.");
       } else {
-        setFormError(err.message || `${provider} authentication failed`);
+        setFormError(err.message || "Google authentication failed");
       }
     } finally {
       setLoading(false);
@@ -173,7 +173,7 @@ function Signup() {
             <button 
               type="button" 
               className="social-btn google" 
-              onClick={() => handleSocialAction("google")}
+              onClick={handleSocialAction}
               disabled={loading}
             >
               <Chrome size={20} />

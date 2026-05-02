@@ -9,7 +9,7 @@ import {
 import { Profile as getProfile, LogoutUser } from "../api/auth-api";
 import api from "../api/axios";
 import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider, githubProvider } from "../config/firebase";
+import { auth, googleProvider } from "../config/firebase";
 
 interface User {
   _id: string;
@@ -32,7 +32,7 @@ interface AuthContextType {
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
   acceptTerms: () => Promise<boolean>;
-  socialLogin: (provider: "google" | "github") => Promise<User | null>;
+  socialLogin: (provider: "google") => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,11 +93,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const socialLogin = async (providerName: "google" | "github") => {
+  const socialLogin = async (providerName: "google") => {
     try {
       setLoading(true);
-      const provider = providerName === "google" ? googleProvider : githubProvider;
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
       
       // Send token to backend to verify and create session

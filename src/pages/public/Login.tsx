@@ -35,10 +35,10 @@ function Login() {
     }
   }, [addToast]);
 
-  const handleSocialAction = async (provider: "google" | "github") => {
+  const handleSocialAction = async () => {
     try {
       setLoading(true);
-      const user = await socialLogin(provider);
+      const user = await socialLogin("google");
       if (user?.agreedToTerms) {
         navigate("/dashboard", { replace: true });
       } else {
@@ -48,7 +48,7 @@ function Login() {
       if (err.code === "auth/account-exists-with-different-credential" || err.message?.includes("account-exists")) {
         setFormError("This email is already registered with a different sign-in method (e.g., password or another social provider). Please use your original method to log in.");
       } else {
-        setFormError(err.message || `${provider} authentication failed`);
+        setFormError(err.message || "Google authentication failed");
       }
     } finally {
       setLoading(false);
@@ -182,7 +182,7 @@ function Login() {
             <button 
               type="button" 
               className="social-btn google" 
-              onClick={() => handleSocialAction("google")}
+              onClick={handleSocialAction}
               disabled={loading}
             >
               <Chrome size={20} />

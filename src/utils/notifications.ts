@@ -88,11 +88,14 @@ export function addNotification(notification: Partial<AppNotification>) {
 /**
  * Mark all notifications as read locally
  */
-export function markAllNotificationsReadLocal() {
+export function markAllNotificationsRead() {
   const notifications = loadNotifications();
   const updated = notifications.map((n) => ({ ...n, read: true }));
   saveNotifications(updated);
+  return updated;
 }
+
+export const markAllNotificationsReadLocal = markAllNotificationsRead;
 
 /**
  * Remove a notification locally
