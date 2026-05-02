@@ -30,6 +30,13 @@ const buildBaseUrl = (value: string) => {
 
 const BASE_URL = buildBaseUrl(rawBaseUrl);
 
+// Debug: expose and log the computed BASE_URL so deployed frontend logs show it.
+// This helps diagnose mismatches between frontend and backend paths (e.g. /api/v1).
+try {
+  // eslint-disable-next-line no-console
+  console.debug("[API] Computed BASE_URL:", BASE_URL);
+} catch (e) {}
+
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -90,3 +97,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+export { BASE_URL };
