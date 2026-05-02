@@ -73,7 +73,7 @@ const Disclaimer = () => {
             <div className="pulse-ring"></div>
           </div>
           <h1 className="text-gradient">Ethical Use Agreement</h1>
-          <p>Please read and accept the terms before continuing</p>
+          <p>Read once, accept once, and continue to the dashboard</p>
         </header>
 
         {error && (
@@ -84,41 +84,39 @@ const Disclaimer = () => {
         )}
 
         <div className="protocol-container glass-panel">
-          <div className="protocol-scroll-area">
+          <div className="protocol-grid">
             <section className="protocol-section">
               <div className="section-title">
                 <FileText size={16} />
-                <span>Section 1 — Purpose</span>
+                <span>Purpose</span>
               </div>
               <p>
-                All tools and intelligence provided within Vuln Spectra are designed exclusively for
-                <strong> educational and ethical security assessment</strong> purposes. Any use outside this
-                scope constitutes a violation of the operator agreement and may result in account termination.
+                Vuln Spectra is for <strong>authorized, educational security testing only</strong>. Use it to
+                evaluate systems you own or are explicitly permitted to test.
               </p>
             </section>
 
             <section className="protocol-section">
               <div className="section-title">
                 <Lock size={16} />
-                <span>Section 2 — Prohibited Actions</span>
+                <span>Not Allowed</span>
               </div>
               <div className="conduct-grid">
-                <div className="conduct-item"><span>[✗]</span> Unauthorized data exfiltration</div>
-                <div className="conduct-item"><span>[✗]</span> Network disruption attacks (DDoS, etc.)</div>
-                <div className="conduct-item"><span>[✗]</span> Unauthorized system infiltration</div>
-                <div className="conduct-item"><span>[✗]</span> Scanning systems you don't own or have permission to test</div>
+                <div className="conduct-item"><span>[✗]</span> Unauthorized data access</div>
+                <div className="conduct-item"><span>[✗]</span> Disruption, DDoS, or sabotage</div>
+                <div className="conduct-item"><span>[✗]</span> Attacking systems without permission</div>
+                <div className="conduct-item"><span>[✗]</span> Testing public targets like production services you do not own</div>
               </div>
             </section>
 
-            <section className="protocol-section">
+            <section className="protocol-section protocol-wide">
               <div className="section-title">
                 <AlertTriangle size={16} />
-                <span>Section 3 — Liability</span>
+                <span>Responsibility</span>
               </div>
               <p>
-                Vuln Spectra and its developers assume <strong>no liability</strong> for actions taken by
-                operators. All tools are provided "as-is" with no guarantee of stability or outcome.
-                You assume 100% legal responsibility for how you use this platform.
+                The platform is provided as-is. You are fully responsible for how you use it, and you must
+                follow all applicable laws and internal policies.
               </p>
             </section>
           </div>
@@ -134,7 +132,7 @@ const Disclaimer = () => {
                 />
                 {checked && <CheckCircle2 size={16} />}
               </div>
-              <span>I have read and agree to all terms and conditions above</span>
+              <span>I have read and agree to the ethical use terms above</span>
             </label>
             {checkboxError && <p className="error-hint">{checkboxError}</p>}
           </div>

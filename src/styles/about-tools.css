@@ -23,6 +23,29 @@
   text-align: center;
 }
 
+.back-btn-v2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--cyber-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--cyber-text);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+
+.back-btn-v2:hover {
+  background: rgba(0, 242, 255, 0.08);
+  border-color: rgba(0, 242, 255, 0.35);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 .about-title-group {
   margin-top: 32px;
 }
@@ -76,6 +99,17 @@
   flex-direction: column;
   align-items: center;
   gap: 32px;
+}
+
+.tool-id-tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--tool-accent);
+  letter-spacing: 2px;
 }
 
 .lottie-wrap {
@@ -214,4 +248,78 @@
   .about-title-group h1 {
     font-size: 2rem;
   }
+
+  .about-page-premium {
+    padding-top: 64px;
+  }
+
+  .tool-info-card {
+    padding: 24px;
+  }
+
+  .lottie-wrap {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+.auto-tools-info {
+  margin-bottom: 16px;
+  padding: 22px;
+  border: 1px solid var(--cyber-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.auto-tools-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.auto-tools-copy {
+  color: var(--cyber-text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.auto-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.auto-tool-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.auto-tool-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.auto-tool-card h3 {
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+  color: var(--tool-accent);
+}
+
+.auto-tool-card p {
+  font-size: 0.78rem;
+  color: var(--cyber-text-dim);
+  line-height: 1.45;
 }

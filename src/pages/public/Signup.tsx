@@ -2,13 +2,24 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  User, Mail, Lock, Loader2, AlertCircle, CheckCircle2, Chrome
+  User, Mail, Lock, Loader2, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signupUser } from "../../api/auth-api.ts";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
 import { validateUsername, validateEmail, validatePassword } from "../../utils/validators";
+
+function GoogleBrandMark() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path fill="#4285F4" d="M21.35 11.1h-9.18v2.9h5.28c-.23 1.26-.95 2.33-2.03 3.05v2.53h3.29c1.92-1.77 3.02-4.38 3.02-7.48 0-.71-.06-1.22-.38-1.9Z" />
+      <path fill="#34A853" d="M12.17 22c2.74 0 5.04-.9 6.72-2.4l-3.29-2.53c-.91.61-2.08.98-3.43.98-2.64 0-4.88-1.78-5.68-4.18H2.98v2.62A10 10 0 0 0 12.17 22Z" />
+      <path fill="#FBBC05" d="M6.49 13.87A6.01 6.01 0 0 1 6.18 12c0-.65.11-1.28.31-1.87V7.51H2.98A10 10 0 0 0 2 12c0 1.61.38 3.14 1.04 4.49l3.45-2.62Z" />
+      <path fill="#EA4335" d="M12.17 5.95c1.49 0 2.82.52 3.87 1.53l2.9-2.9C17.2 2.98 14.9 2 12.17 2 8.5 2 5.22 4.09 3.49 7.51l3.5 2.62c.78-2.4 3.02-4.18 5.18-4.18Z" />
+    </svg>
+  );
+}
 
 /* ---- Password analysis ---- */
 function analysePassword(pw: string) {
@@ -176,8 +187,8 @@ function Signup() {
               onClick={handleSocialAction}
               disabled={loading}
             >
-              <Chrome size={20} />
-              <span>Google</span>
+              <span className="social-icon-bubble"><GoogleBrandMark /></span>
+              <span>Continue with Google</span>
             </button>
           </div>
 

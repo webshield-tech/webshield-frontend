@@ -115,7 +115,7 @@ export const Navbar = () => {
     }
   };
 
-  const isAdmin = !!user && user.role === "admin";
+  const isAdmin = !!user && ["admin", "superadmin"].includes(String(user.role || "").trim().toLowerCase());
   const handleProfileClick = () => {
     navigate(isAdmin ? "/admin" : "/profile");
   };

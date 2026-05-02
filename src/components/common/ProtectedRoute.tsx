@@ -13,6 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const role = String(user?.role || "").trim().toLowerCase();
 
   if (loading) {
     return <LoadingScreen />;
@@ -23,7 +24,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (adminOnly && user.role !== "admin") {
+  if (adminOnly && role !== "admin" && role !== "superadmin") {
     return <Navigate to="/dashboard" replace />;
   }
 

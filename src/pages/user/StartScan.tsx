@@ -25,6 +25,13 @@ import niktoAnimation   from "../../assets/icons/nikto.json";
 import sqlmapAnimation  from "../../assets/icons/sql.json";
 import sslscanAnimation from "../../assets/icons/ssl.json";
 import autoAnimation    from "../../assets/icons/Success.json";
+import gobusterAnimation from "../../assets/icons/gobuster.json";
+import ffufAnimation from "../../assets/icons/ffuf.json";
+import wapitiAnimation from "../../assets/icons/wapiti.json";
+import nucleiAnimation from "../../assets/icons/nuclie.json";
+import dnsAnimation from "../../assets/icons/dns-recon.json";
+import whoisAnimation from "../../assets/icons/whois.json";
+import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 import { useToast, ToastContainer } from "../../components/Toast";
 
 /* ── Per-tool scan mode descriptions ─────────────────────────────────────── */
@@ -255,6 +262,7 @@ const SCAN_MODE_DESCRIPTIONS: Record<
         "Web Auditor — 6,700+ deep server checks",
         "Lock Checker — full certificate chain audit",
         "Database Guard — deep database injection test",
+        "Traffic Guard — request throttling and API resistance check",
         "Estimated time: ~15–25 minutes",
       ],
     },
@@ -275,6 +283,24 @@ const TOOL_COLOR: Record<string, string> = {
   nuclei:    "#ffd54f",
   dns:       "#69f0ae",
 };
+
+function buildSqlmapTarget(baseUrl: string) {
+  const trimmed = baseUrl.trim().replace(/\/+$/, "");
+  if (!trimmed) return "";
+
+  try {
+    const parsed = new URL(trimmed);
+    if (!parsed.searchParams.has("id")) {
+      parsed.searchParams.set("id", parsed.search ? parsed.searchParams.get("id") || "1" : "1");
+    }
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    if (trimmed.includes("?")) {
+      return trimmed.includes("id=") ? trimmed : `${trimmed}&id=1`;
+    }
+    return `${trimmed}?id=1`;
+  }
+}
 
 const TOOL_DAILY_LIMITS = [
   { id: "nmap", label: "Nmap", limit: 10, color: "#00f2ff" },
@@ -298,7 +324,6 @@ const StartScan = () => {
   const { toasts, addToast, removeToast } = useToast();
 
   const [url,         setUrl]         = useState("");
-  const [sqlmapUrl,   setSqlmapUrl]   = useState("");
   const [tool,        setTool]        = useState<ScanTool>("nmap");
   const [scanMode,    setScanMode]    = useState<"quick" | "full">("quick");
   const [scanLoading, setScanLoading] = useState(false);
@@ -308,6 +333,9 @@ const StartScan = () => {
   const [showModeModal, setShowModeModal] = useState(false);
   const [isMobile, setIsMobile]       = useState(window.innerWidth < 768);
   const [toolStats, setToolStats]     = useState<Record<string, number>>({});
+  const [scanFlow, setScanFlow]       = useState<"auto" | "manual">(
+    searchParams.get("mode") === "manual" ? "manual" : "auto"
+  );
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -340,27 +368,32 @@ const StartScan = () => {
         auto: "auto", all: "auto",
         nmap: "nmap", nikto: "nikto", sqlmap: "sqlmap",
         ssl: "sslscan", sslscan: "sslscan",
+        gobuster: "gobuster", ffuf: "ffuf", wapiti: "wapiti",
+        nuclei: "nuclei", dns: "dns", whois: "whois", ratelimit: "ratelimit",
       };
       const mapped = toolMap[toolParam];
-      if (mapped) setTool(mapped);
+      if (mapped) {
+        setTool(mapped);
+        if (mapped !== "auto") setScanFlow("manual");
+      }
     }
   }, [searchParams]);
 
   if (!authChecked || authLoading) return null;
 
   const tools = [
-    { id: "auto",    name: "Full Audit",   desc: "Smart Auto Scan (Multi-Tool)",   anim: autoAnimation,    color: "#fff",    tag: "ALL-IN-ONE",  tooltip: "Runs a smart multi-tool sequence (Nmap, Nuclei, Nikto, SSLScan, SQLMap, Wapiti, Gobuster, FFUF, RateLimit, DNS, WHOIS) based on live recon." },
-    { id: "nmap",    name: "Nmap",         desc: "Network Mapper",          anim: nmapAnimation,    color: "#00f2ff", tag: "RECON",       tooltip: "Discovers open ports and services running on the target server." },
-    { id: "nikto",   name: "Nikto",        desc: "Web Server Scanner",      anim: niktoAnimation,   color: "#ff0055", tag: "CONFIG",     tooltip: "Scans for outdated server software and dangerous files/configurations." },
-    { id: "sqlmap",  name: "SQLMap",       desc: "SQL Injection Tool",      anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE",   tooltip: "Automatic SQL injection and database takeover tool." },
-    { id: "sslscan", name: "SSLScan",      desc: "TLS/SSL Auditor",         anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS",       tooltip: "Tests SSL/TLS protocols and cipher suites for vulnerabilities." },
-    { id: "gobuster", name: "Gobuster",     desc: "Directory Brute-force",   anim: nmapAnimation,    color: "#ff8c00", tag: "HIDDEN",      tooltip: "Discovers hidden directories and files on the web server." },
-    { id: "ratelimit",name: "RateLimit",    desc: "API & Request Limiter",   anim: autoAnimation,    color: "#9d00ff", tag: "DDoS",        tooltip: "Checks if your website rate limiter and request limiter are active, and verifies if APIs are reachable." },
-    { id: "ffuf",    name: "FFUF",         desc: "Fast Web Fuzzer",         anim: niktoAnimation,   color: "#ff00ff", tag: "EXPERT",      tooltip: "A fast web fuzzer written in Go, used for directory discovery." },
-    { id: "wapiti",  name: "Wapiti",       desc: "Web App Auditor",         anim: nmapAnimation,    color: "#00d4ff", tag: "SCANNER",     tooltip: "Audits the security of your web applications by crawling them." },
-    { id: "nuclei",  name: "Nuclei",       desc: "Template-based Scanner",  anim: sqlmapAnimation,  color: "#ffd54f", tag: "LIBRARY",     tooltip: "Fast and customizable vulnerability scanner based on simple YAML templates." },
-    { id: "dns",     name: "DNS Recon",    desc: "Domain Inspector",        anim: autoAnimation,    color: "#69f0ae", tag: "DNS",         tooltip: "Enumerates DNS records and infrastructure details." },
-    { id: "whois",   name: "Whois",        desc: "Domain Lookup",           anim: autoAnimation,    color: "#ffffff", tag: "IDENTITY",    tooltip: "Retrieves registration information for the target domain." },
+    { id: "auto",     name: "Auto Scan",     desc: "Recon-driven smart sequence", anim: autoAnimation,     color: "#fff",    tag: "SMART",    tooltip: "Runs a smart sequence based on live reconnaissance: platform detection first, then only the tools the target actually needs." },
+    { id: "nmap",     name: "Nmap",          desc: "Network Mapper",              anim: nmapAnimation,     color: "#00f2ff", tag: "RECON",    tooltip: "Discovers open ports and exposed services." },
+    { id: "nikto",    name: "Nikto",         desc: "Web Server Scanner",          anim: niktoAnimation,    color: "#ff0055", tag: "CONFIG",   tooltip: "Scans for outdated server software and common misconfigurations." },
+    { id: "sqlmap",   name: "SQLMap",        desc: "SQL Injection Tool",          anim: sqlmapAnimation,   color: "#ffd54f", tag: "DATABASE", tooltip: "Checks parameterized URLs and forms for SQL injection." },
+    { id: "sslscan",  name: "SSLScan",       desc: "TLS/SSL Auditor",             anim: sslscanAnimation,  color: "#00ff9d", tag: "HTTPS",    tooltip: "Tests TLS protocols, certificates, and cipher strength." },
+    { id: "gobuster", name: "Gobuster",      desc: "Directory Discovery",         anim: gobusterAnimation, color: "#ff8c00", tag: "HIDDEN",   tooltip: "Finds hidden directories, files, and admin paths." },
+    { id: "ratelimit",name: "RateLimit",     desc: "Request Throttle Check",      anim: rateLimitAnimation,color: "#9d00ff", tag: "DDoS",     tooltip: "Checks rate limiting and request throttling behavior." },
+    { id: "ffuf",     name: "FFUF",          desc: "Fast Web Fuzzer",             anim: ffufAnimation,     color: "#ff00ff", tag: "EXPERT",   tooltip: "Fuzzes for hidden routes and parameter space quickly." },
+    { id: "wapiti",   name: "Wapiti",        desc: "Web App Auditor",             anim: wapitiAnimation,   color: "#00d4ff", tag: "SCANNER",  tooltip: "Crawls the app to find XSS, CSRF, and input flaws." },
+    { id: "nuclei",   name: "Nuclei",        desc: "Template Scanner",            anim: nucleiAnimation,   color: "#ffd54f", tag: "TEMPLATES",tooltip: "Runs template-based checks for common exposures and CVEs." },
+    { id: "dns",      name: "DNS Recon",     desc: "Domain Inspector",            anim: dnsAnimation,      color: "#69f0ae", tag: "DOMAIN",   tooltip: "Enumerates DNS records and infrastructure details." },
+    { id: "whois",    name: "Whois",         desc: "Domain Lookup",               anim: whoisAnimation,    color: "#ffffff", tag: "IDENTITY", tooltip: "Retrieves registration information for the target domain." },
   ] as const;
 
   const handlePingCheck = async () => {
@@ -395,7 +428,6 @@ const StartScan = () => {
   const handleToolSelect = (toolId: string) => {
     if (scanLoading) return;
     setTool(toolId as ScanTool);
-    setSqlmapUrl(""); // Reset SQLMap URL when tool changes
     const t = tools.find(t => t.id === toolId);
     if (t) addToast("info", `${t.name} Selected`, t.tooltip, 4000);
   };
@@ -444,12 +476,11 @@ const StartScan = () => {
         scanMode:  chosenMode,
       };
 
-      // Include sqlmapUrl if SQLMap is involved
-      if (tool === "sqlmap" && sqlmapUrl.trim()) {
-        scanData.sqlmapUrl = sqlmapUrl.trim().replace(/\/+$/, "");
+      if (tool === "sqlmap") {
+        scanData.sqlmapUrl = buildSqlmapTarget(scanData.targetUrl);
       }
-      if (tool === "auto" && sqlmapUrl.trim()) {
-        scanData.sqlmapUrl = sqlmapUrl.trim().replace(/\/+$/, "");
+      if (tool === "auto") {
+        scanData.sqlmapUrl = buildSqlmapTarget(scanData.targetUrl);
       }
 
       addToast("info", "Scan Initiated", `Launching ${tool.toUpperCase()} assessment…`, 3000);
@@ -488,6 +519,14 @@ const StartScan = () => {
   const usagePercent = scanLimit > 0 ? (usedScans / scanLimit) * 100 : 0;
   const accentColor  = TOOL_COLOR[tool] || "var(--cyber-primary)";
   const modeInfo     = SCAN_MODE_DESCRIPTIONS[tool];
+  const autoTools = tools.filter((t) => ["nmap", "nikto", "sslscan", "sqlmap", "nuclei", "ratelimit"].includes(t.id));
+  const smartSequence = [
+    { title: "1. Platform detection", detail: "Identify hosting, stack, and CMS signals first." },
+    { title: "2. Network scan", detail: "Run Nmap to map live services and ports." },
+    { title: "3. Web validation", detail: "Use Nikto and SSLScan to review web and TLS hardening." },
+    { title: "4. Input checks", detail: "Run SQLMap or Wapiti only when forms or backend signals exist." },
+    { title: "5. Deep discovery", detail: "Gobuster, FFUF, DNS, Whois, and RateLimit run only on deeper targets." },
+  ];
 
   return (
     <div className={`scan-page-premium ${isMobile ? "mobile" : ""}`}>
@@ -516,14 +555,11 @@ const StartScan = () => {
 
             <form className="scan-form-v2" onSubmit={handleInitialize}>
               {/* --- TARGET INPUT --- */}
-              <div className="input-group">
+              <div className="target-panel glass-panel">
+                <div className="input-group">
                 <div className="label-row">
                   <label>
-                    {tool === "auto" 
-                      ? "Base URL (for Nmap, Nikto, SSLScan)" 
-                      : tool === "sqlmap" 
-                      ? "Target URL with Parameters"
-                      : "Target Infrastructure URL"}
+                    Target URL
                   </label>
                 </div>
                 <div className="url-input-wrap">
@@ -531,10 +567,8 @@ const StartScan = () => {
                   <input
                     type="text"
                     placeholder={
-                      tool === "auto" 
+                      scanFlow === "auto"
                         ? "http://localhost:8080 or https://example.com" 
-                        : tool === "sqlmap"
-                        ? "http://localhost:8080/vulnerabilities/sqli/?id=1"
                         : "https://example.com"
                     }
                     value={url}
@@ -542,7 +576,7 @@ const StartScan = () => {
                     disabled={scanLoading}
                     required
                   />
-                  {!hostVerified && tool !== "sqlmap" ? (
+                  {!hostVerified ? (
                     <button 
                       type="button" 
                       className="ping-verify-btn" 
@@ -552,71 +586,26 @@ const StartScan = () => {
                     >
                       {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Check Availability</span>}
                     </button>
-                  ) : hostVerified && tool !== "sqlmap" ? (
+                  ) : (
                     <div className="verified-tag">
                       <Rocket size={14} />
                       <span>ALIVE</span>
                     </div>
-                  ) : null}
+                  )}
                 </div>
-                
-                {/* SQLMap URL field for Auto Scan */}
-                {tool === "auto" && (
-                  <div className="url-input-wrap" style={{ marginTop: "16px" }}>
-                    <div style={{ fontSize: "0.85rem", marginBottom: "8px", color: "rgba(0,242,255,0.7)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span>⚠️ SQLMap URL (with parameters)</span>
-                    </div>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                      <div style={{ flex: 1 }}>
-                        <input
-                          type="text"
-                          placeholder="http://localhost:8080/vulnerabilities/sqli/?id=1"
-                          value={sqlmapUrl}
-                          onChange={(e) => setSqlmapUrl(e.target.value)}
-                          disabled={scanLoading}
-                          style={{
-                            width: "100%",
-                            padding: "12px 16px",
-                            background: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(0,242,255,0.2)",
-                            borderRadius: "6px",
-                            color: "#fff",
-                            fontFamily: "'Rajdhani', monospace",
-                            fontSize: "0.9rem",
-                          }}
-                        />
-                        <div style={{ fontSize: "0.75rem", marginTop: "6px", color: "rgba(0,242,255,0.6)" }}>
-                          If left blank, will auto-detect for DVWA: /vulnerabilities/sqli/?id=1&Submit=Submit
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* SQLMap guidance for single SQLMap mode */}
-                {tool === "sqlmap" && (
-                  <div style={{
-                    background: "rgba(255,213,79,0.12)",
-                    border: "1px solid rgba(255,213,79,0.3)",
-                    borderRadius: "6px",
-                    padding: "12px",
-                    marginTop: "12px",
-                    fontSize: "0.85rem",
-                    color: "rgba(255,255,255,0.8)",
-                    lineHeight: 1.5
-                  }}>
-                    <strong style={{ color: "#ffd54f" }}>💡 Parameter Required:</strong>
-                    <div style={{ marginTop: "8px" }}>SQLMap needs an injection parameter in the URL:</div>
-                    <div style={{ fontFamily: "'Rajdhani', monospace", fontSize: "0.8rem", marginTop: "8px", padding: "8px", background: "rgba(0,0,0,0.3)", borderRadius: "4px" }}>
-                      <div>✓ ?id=1</div>
-                      <div>✓ ?search=test</div>
-                      <div>✓ ?user=admin&password=admin</div>
-                      <div style={{ marginTop: "8px" }}>DVWA Example:</div>
-                      <div>http://localhost:8080/vulnerabilities/sqli/?id=1&Submit=Submit</div>
-                    </div>
+                <div className="url-hint-row">
+                  <div className="url-hint-pill">
+                    <Info size={14} />
+                    <span>Check availability first, then choose Auto Scan or Manual Tool Scan.</span>
                   </div>
-                )}
-                
+                  {(tool === "sqlmap" || scanFlow === "auto") && (
+                    <div className="sqlmap-hint-pill">
+                      <Info size={14} />
+                      <span>SQLMap auto-adds a safe parameter like <strong>?id=1</strong> when needed.</span>
+                    </div>
+                  )}
+                </div>
 
                 <div className="quota-summary">
                   {TOOL_DAILY_LIMITS.map((item) => (
@@ -628,44 +617,111 @@ const StartScan = () => {
                 </div>
               </div>
 
+              <div className="scan-flow-toggle">
+                <button
+                  type="button"
+                  className={`flow-toggle-btn ${scanFlow === "auto" ? "active" : ""}`}
+                  onClick={() => { setScanFlow("auto"); setTool("auto"); }}
+                >
+                  Auto Scan
+                </button>
+                <button
+                  type="button"
+                  className={`flow-toggle-btn ${scanFlow === "manual" ? "active" : ""}`}
+                  onClick={() => { setScanFlow("manual"); if (tool === "auto") setTool("nmap"); }}
+                >
+                  Manual Tool Scan
+                </button>
+              </div>
+
+              {scanFlow === "auto" && (
+                <div className="smart-sequence-panel glass-panel">
+                  <div className="card-header">
+                    <Info size={18} className="text-primary" />
+                    <span>What Auto Scan Does</span>
+                  </div>
+                  <p className="smart-sequence-copy">
+                    Auto scan checks the platform first and then runs only the tools that make sense for the target.
+                    It is the recommended option when you want a guided scan without choosing tools one by one.
+                  </p>
+                  <div className="smart-sequence-grid">
+                    {smartSequence.map((step) => (
+                      <div key={step.title} className="smart-sequence-step">
+                        <strong>{step.title}</strong>
+                        <span>{step.detail}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              </div>
+
               {/* --- SCANNERS --- */}
               <div className="module-group" style={{ marginTop: '10px' }}>
-                <label>Select Deployment Module</label>
-                <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
-                  {tools.map((t) => (
-                    <div
-                      key={t.id}
-                      className={`module-card ${tool === t.id ? "selected" : ""}`}
-                      onClick={() => handleToolSelect(t.id)}
-                      title={t.tooltip}
-                      style={{ "--accent-color": t.color } as any}
-                    >
-                      <div className="module-tag">{t.tag}</div>
-                      <div className="module-icon">
-                        <Lottie animationData={t.anim} loop className="lottie-mini" />
-                      </div>
-                      <div className="module-info">
-                        <h3>{t.name}</h3>
-                        <p>{t.desc}</p>
-                      </div>
-                      <div className="selection-indicator">
-                        <Zap size={14} fill="currentColor" />
-                      </div>
+                <label>{scanFlow === "auto" ? "Auto Scan Plan" : "Select Deployment Module"}</label>
+                {scanFlow === "auto" && (
+                  <p className="module-helper-text">
+                    Auto scan starts with the smallest safe checks and expands only when the target shows backend, input, or TLS signals.
+                  </p>
+                )}
+                {scanFlow === "auto" ? (
+                  <div className="auto-tools-info">
+                    <div className="auto-tools-header">
+                      <Shield size={18} className="text-primary" />
+                      <span>Tools used in Auto Scan</span>
                     </div>
-                  ))}
-                </div>
+                    <p className="auto-tools-copy">
+                      These tools are run automatically by the backend depending on the target. You do not select them here.
+                    </p>
+                    <div className="auto-tools-grid">
+                      {autoTools.map((t) => (
+                        <div key={t.id} className="auto-tool-card" style={{ "--accent-color": t.color } as any}>
+                          <Lottie animationData={t.anim} loop className="auto-tool-icon" />
+                          <div>
+                            <h3>{t.name}</h3>
+                            <p>{t.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
+                    {tools.map((t) => (
+                      <div
+                        key={t.id}
+                        className={`module-card ${tool === t.id ? "selected" : ""}`}
+                        onClick={() => handleToolSelect(t.id)}
+                        title={t.tooltip}
+                        style={{ "--accent-color": t.color } as any}
+                      >
+                        <div className="module-tag">{t.tag}</div>
+                        <div className="module-icon">
+                          <Lottie animationData={t.anim} loop className="lottie-mini" />
+                        </div>
+                        <div className="module-info">
+                          <h3>{t.name}</h3>
+                          <p>{t.desc}</p>
+                        </div>
+                        <div className="selection-indicator">
+                          <Zap size={14} fill="currentColor" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button type="submit" className="launch-btn" disabled={scanLoading || !url.trim()} style={{ marginTop: '10px' }}>
                 {scanLoading ? (
                   <>
                     <Loader2 className="animate-spin" size={22} />
-                    <span>Deploying…</span>
+                    <span>{scanFlow === "auto" ? "Running Smart Sequence…" : "Deploying…"}</span>
                   </>
                 ) : (
                   <>
                     <Shield size={22} />
-                    <span>{isMobile ? "Audit" : "Initialize Security Scan"}</span>
+                    <span>{scanFlow === "auto" ? (isMobile ? "Auto Audit" : "Initialize Auto Scan") : (isMobile ? "Audit" : "Initialize Security Scan")}</span>
                     <ArrowRight size={22} />
                   </>
                 )}

@@ -29,8 +29,8 @@ interface AuthContextType {
   authChecked: boolean;
   login: (userData: User) => void;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  checkAuth: () => Promise<User | null>;
+  refreshUser: () => Promise<User | null>;
   acceptTerms: () => Promise<boolean>;
   socialLogin: (provider: "google") => Promise<User | null>;
 }
@@ -48,13 +48,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
-  const login = (userData: User) => setUser(userData);
+  const login = (userData: User) => {
+    setUser(userData);
+    const userKey = userData._id || userData.userId;
+    if (userKey) {
+      sessionStorage.setItem("dashboard_welcome_pending", String(userKey));
+    }
+  };
 
   const logout = async () => {
     try {
       await LogoutUser();
     } finally {
       setUser(null);
+      sessionStorage.removeItem("dashboard_welcome_pending");
       sessionStorage.clear();
       localStorage.removeItem("authToken");
     }
@@ -65,9 +72,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await getProfile();
       if (res.data?.success) {
         setUser(res.data.user);
-        return true;
+        return res.data.user;
       }
-      return false;
+      return null;
     } catch (error: any) {
       // ONLY clear user if it's a definitive authentication failure (401/403)
       // Otherwise, keep the current user state to prevent logout on 500/Network errors
@@ -76,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       // For other errors (timeouts, network issues), silently continue without clearing user
       console.warn("[AuthCheck] Profile fetch failed:", error.message || error);
-      return false;
+      return null;
     }
   };
 
@@ -104,6 +111,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (res.data?.success) {
         setUser(res.data.user);
+        const userKey = res.data.user?._id || res.data.user?.userId;
+        if (userKey) {
+          sessionStorage.setItem("dashboard_welcome_pending", String(userKey));
+        }
         if (res.data.token) {
           localStorage.setItem("authToken", res.data.token);
         }

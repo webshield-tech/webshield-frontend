@@ -21,6 +21,7 @@ import {
   Wand2
 } from "lucide-react";
 import { VulnerabilityRemediation } from "../../components/VulnerabilityRemediation";
+import { getRemediationForVulnerability } from "../../utils/vulnerabilityPatches";
 import {
   getScanResultsById,
   getBatchResults,
@@ -184,6 +185,64 @@ function simplifyTitle(title: string) {
   if (/open port/i.test(t)) return "Open network access";
   if (/directory|gobuster/i.test(t)) return "Exposed paths";
   return t;
+}
+
+function getPlatformFix(platform: string, title: string, tool: string) {
+  const p = String(platform || "").toLowerCase();
+  const t = String(title || "").toLowerCase();
+  const toolName = String(tool || "").toLowerCase();
+
+  if (t.includes("open network access") || t.includes("open port") || toolName === "nmap") {
+    if (p.includes("vercel") || p.includes("netlify") || p.includes("cloudflare")) {
+      return "This is normal for hosted web apps. Keep only HTTP/HTTPS exposed and review platform firewall settings.";
+    }
+    if (p.includes("aws") || p.includes("digitalocean") || p.includes("render") || p.includes("heroku")) {
+      return "Use your cloud dashboard or security groups to allow only the needed public ports.";
+    }
+    if (p.includes("nginx") || p.includes("apache") || p.includes("litespeed")) {
+      return "Keep only the public web ports open and close anything not needed in the server firewall or host config.";
+    }
+  }
+
+  if (toolName === "sqlmap" || t.includes("database input risk")) {
+    if (p.includes("wordpress")) return "Use prepared statements in custom code and keep plugins/themes updated.";
+    if (p.includes("django")) return "Use Django ORM queries and avoid raw SQL unless absolutely required.";
+    if (p.includes("laravel")) return "Use Eloquent or parameterized queries and validate request input before database access.";
+    if (p.includes("express") || p.includes("node")) return "Use parameterized queries, input validation, and avoid string-built SQL in routes.";
+    return "Use parameterized queries and validate user input before it reaches the database.";
+  }
+
+  if (toolName === "sslscan" || t.includes("weak encryption")) {
+    if (p.includes("nginx")) return "Set ssl_protocols to TLSv1.2 TLSv1.3 and reload Nginx after the change.";
+    if (p.includes("apache")) return "Disable old TLS versions in Apache and restart the service after updating the config.";
+    if (p.includes("cloudflare")) return "Check the origin certificate and TLS mode in the Cloudflare dashboard.";
+    return "Disable old TLS versions and keep only modern cipher suites enabled.";
+  }
+
+  if (toolName === "nikto" || t.includes("exposed paths") || t.includes("misconfiguration")) {
+    if (p.includes("wordpress")) return "Update plugins, themes, and WordPress core, then remove any public debug files.";
+    if (p.includes("nginx")) return "Review server headers, block directory listing, and remove test or backup files.";
+    if (p.includes("apache")) return "Hide version headers, disable directory listing, and remove sample files.";
+    return "Remove test files, hide version details, and patch the exposed service.";
+  }
+
+  if (toolName === "gobuster" || toolName === "ffuf") {
+    return "Review the discovered paths, remove unused admin areas, and protect sensitive endpoints with authentication.";
+  }
+
+  if (toolName === "wapiti") {
+    return "Protect forms with validation, CSRF tokens, and output encoding in the application layer.";
+  }
+
+  if (toolName === "dns") {
+    return "Review DNS records, remove stale entries, and avoid publishing internal hostnames publicly.";
+  }
+
+  if (toolName === "whois") {
+    return "Keep registrar details current and enable domain lock and privacy protection if available.";
+  }
+
+  return "Review the finding, patch the affected component, and re-scan to confirm the fix.";
 }
 
 // ─── BatchAnalysisPanel ───────────────────────────────────────────────────────
@@ -365,6 +424,9 @@ function BatchAnalysisPanel({ analysis, scanPlan }: { analysis: any, scanPlan?: 
                   {f.impact && <p style={{ color: "rgba(255,100,100,0.85)", fontSize: "0.83rem", margin: "0 0 4px 0" }}><strong>Impact:</strong> {f.impact}</p>}
                   {f.evidence && <p style={{ color: "rgba(255,255,255,0.38)", fontSize: "0.78rem", fontFamily: "monospace", margin: "0 0 6px 0" }}>{f.evidence}</p>}
                   {f.recommendation && <p style={{ color: "rgba(0,212,255,0.85)", fontSize: "0.83rem", margin: "0 0 4px 0" }}><strong>Fix:</strong> {f.recommendation}</p>}
+                  {f.patchTitle && (
+                    <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.82rem", margin: "0 0 4px 0" }}><strong>Patch focus:</strong> {f.patchTitle} - {f.patchAdvice}</p>
+                  )}
                   {f.platform_specific_fix && f.platform_specific_fix !== "N/A" && (
                     <p style={{ color: "rgba(0,255,157,0.8)", fontSize: "0.82rem", margin: "0 0 4px 0" }}><strong>Platform:</strong> {f.platform_specific_fix}</p>
                   )}
@@ -487,20 +549,24 @@ const ScanResult = () => {
     if (!res) return [];
 
     const normalizedTool = tool ? tool.toLowerCase() : "";
+    const platform = String(data?.platform || data?.results?.platformDetection?.platform || "");
 
     // ── SQLMap results ──────────────────────────────────────────────────────────
     if (normalizedTool === "sqlmap" && Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0) {
       if (typeof res.vulnerabilities[0] === "string") {
         return res.vulnerabilities.map((vuln: string) => ({
-          title: "SQL Injection Vulnerability",
+          title: "Database input risk",
           severity: "Critical",
           description: vuln,
-          recommendation: "Ensure all user inputs are properly sanitized and use parameterized queries or prepared statements.",
+          recommendation: "Use parameterized queries and validate input before it reaches the database.",
+          platform_specific_fix: getPlatformFix(platform, "Database input risk", normalizedTool),
         }));
       }
       return res.vulnerabilities.map((v: any) => ({
         ...v,
-        title: v.title || v.name || "SQL Injection Vulnerability",
+        title: v.title || v.name || "Database input risk",
+        recommendation: v.recommendation || "Use parameterized queries and validate input before it reaches the database.",
+        platform_specific_fix: v.platform_specific_fix || getPlatformFix(platform, v.title || v.name || "Database input risk", normalizedTool),
       }));
     }
 
@@ -509,18 +575,21 @@ const ScanResult = () => {
       if (typeof res.vulnerabilities[0] === "string") {
         return res.vulnerabilities.map((vuln: string) => {
           const cveMatch = vuln.match(/(CVE-\d{4}-\d{4,7})/i);
-          const title = cveMatch ? `Vulnerability: ${cveMatch[1].toUpperCase()}` : "Service Vulnerability Detected";
+          const title = cveMatch ? `Service issue: ${cveMatch[1].toUpperCase()}` : "Service issue detected";
           return {
             title: title,
             severity: "High",
             description: vuln,
-            recommendation: "Apply patches or updates to the affected service. Consider restricting access via firewall.",
+            recommendation: "Patch the affected service and restrict access to only what is needed.",
+            platform_specific_fix: getPlatformFix(platform, title, normalizedTool),
           };
         });
       }
       return res.vulnerabilities.map((v: any) => ({
         ...v,
-        title: v.title || v.name || "Service Vulnerability Detected",
+        title: v.title || v.name || "Service issue detected",
+        recommendation: v.recommendation || "Patch the affected service and restrict access to only what is needed.",
+        platform_specific_fix: v.platform_specific_fix || getPlatformFix(platform, v.title || v.name || "Service issue detected", normalizedTool),
       }));
     }
 
@@ -528,15 +597,18 @@ const ScanResult = () => {
     if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0 && normalizedTool !== "sqlmap" && normalizedTool !== "nmap") {
       if (typeof res.vulnerabilities[0] === "string") {
         return res.vulnerabilities.map((vuln: string) => ({
-          title: "Detected Vulnerability",
+          title: "Security issue detected",
           severity: "High",
           description: vuln,
-          recommendation: "Review the vulnerability details and apply necessary security patches.",
+          recommendation: "Review the issue and apply the recommended patch or configuration change.",
+          platform_specific_fix: getPlatformFix(platform, "Security issue detected", normalizedTool),
         }));
       }
       return res.vulnerabilities.map((v: any) => ({
         ...v,
-        title: v.title || v.name || "Detected Vulnerability",
+        title: v.title || v.name || "Security issue detected",
+        recommendation: v.recommendation || "Review the issue and apply the recommended patch or configuration change.",
+        platform_specific_fix: v.platform_specific_fix || getPlatformFix(platform, v.title || v.name || "Security issue detected", normalizedTool),
       }));
     }
 
@@ -546,10 +618,11 @@ const ScanResult = () => {
       const high = new Set((res.highFindings || []).map((x: string) => String(x)));
       const medium = new Set((res.mediumFindings || []).map((x: string) => String(x)));
       return res.findings.map((finding: string) => ({
-        title: finding,
+        title: simplifyTitle(finding),
         severity: critical.has(finding) ? "Critical" : high.has(finding) ? "High" : medium.has(finding) ? "Medium" : "Low",
         description: finding,
-        recommendation: "Review this finding and harden configuration before production.",
+        recommendation: "Review this finding and harden the related service or setting.",
+        platform_specific_fix: getPlatformFix(platform, simplifyTitle(finding), normalizedTool),
       }));
     }
 
@@ -570,22 +643,23 @@ const ScanResult = () => {
         if (isCloudflare || isProxy) severity = "Low";
 
         return {
-          title: `Open Port: ${port}`,
+          title: isStandardWeb && !hasVersionInfo ? "Normal web port" : `Open service: ${port}`,
           severity: severity,
           description: (isCloudflare || isProxy)
             ? `Security Proxy detected on ${port}. Your website is protected by a secondary layer (like Cloudflare or a Load Balancer).`
             : (isStandardWeb && hasVersionInfo)
-            ? `VULNERABILITY: Standard web port ${port} is exposed and revealing specific version information (${port}). This can be used by attackers to find specific exploits.`
+            ? `Service version details are visible on ${port}. This can help attackers match known issues.`
             : isStandardWeb 
-            ? `Standard web service detected on ${port}. This is expected for a public web server.`
+            ? `This is a normal web port and is expected for a public website.`
             : `Network service exposed on ${port}.`,
           recommendation: (isCloudflare || isProxy)
-            ? "No action required. Cloudflare protection is active and shielding your origin server."
+            ? "No action required. Your protective layer is active."
             : (isStandardWeb && hasVersionInfo)
-            ? "Hide your server version headers (Server Tokens) and ensure the service is patched to the latest version."
+            ? "Hide version details and patch the service to the latest release."
             : isStandardWeb
-            ? "Ensure the service is up-to-date and using encrypted communication (HTTPS)."
-            : "Close unnecessary ports or restrict access using firewall rules.",
+            ? "Keep the site on HTTPS and review the service only if it should not be public."
+            : "Close the port if it is not needed or restrict it with firewall rules.",
+          platform_specific_fix: getPlatformFix(platform, isStandardWeb ? "Normal web port" : "Open service", normalizedTool),
         };
       });
     }
@@ -650,6 +724,10 @@ const ScanResult = () => {
     return vulnerabilities.map((v: any) => ({
       ...v,
       simpleTitle: simplifyTitle(v.title || v.name || "Detected Vulnerability"),
+      patchTitle: getRemediationForVulnerability(v.title || v.name || "Detected Vulnerability")?.name || "General patch guidance",
+      patchAdvice:
+        getRemediationForVulnerability(v.title || v.name || "Detected Vulnerability")?.steps?.[0]?.description ||
+        "Review the issue and apply the recommended patch.",
     }));
   }, [vulnerabilities]);
 

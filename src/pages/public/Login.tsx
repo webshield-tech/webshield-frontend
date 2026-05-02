@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { 
-  Mail, Lock, Loader2, AlertCircle, CheckCircle2, Chrome
+  Mail, Lock, Loader2, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { LoginUser } from "../../api/auth-api";
@@ -10,12 +10,23 @@ import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
 import { validateEmail } from "../../utils/validators";
 
+function GoogleBrandMark() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path fill="#4285F4" d="M21.35 11.1h-9.18v2.9h5.28c-.23 1.26-.95 2.33-2.03 3.05v2.53h3.29c1.92-1.77 3.02-4.38 3.02-7.48 0-.71-.06-1.22-.38-1.9Z" />
+      <path fill="#34A853" d="M12.17 22c2.74 0 5.04-.9 6.72-2.4l-3.29-2.53c-.91.61-2.08.98-3.43.98-2.64 0-4.88-1.78-5.68-4.18H2.98v2.62A10 10 0 0 0 12.17 22Z" />
+      <path fill="#FBBC05" d="M6.49 13.87A6.01 6.01 0 0 1 6.18 12c0-.65.11-1.28.31-1.87V7.51H2.98A10 10 0 0 0 2 12c0 1.61.38 3.14 1.04 4.49l3.45-2.62Z" />
+      <path fill="#EA4335" d="M12.17 5.95c1.49 0 2.82.52 3.87 1.53l2.9-2.9C17.2 2.98 14.9 2 12.17 2 8.5 2 5.22 4.09 3.49 7.51l3.5 2.62c.78-2.4 3.02-4.18 5.18-4.18Z" />
+    </svg>
+  );
+}
+
 import { useToast, ToastContainer } from "../../components/Toast";
 import { useEffect } from "react";
 
 function Login() {
   const navigate = useNavigate();
-  const { login, socialLogin } = useAuth();
+  const { login, socialLogin, refreshUser } = useAuth();
   const { toasts, addToast, removeToast } = useToast();
 
   const [email, setEmail]       = useState("");
@@ -39,7 +50,12 @@ function Login() {
     try {
       setLoading(true);
       const user = await socialLogin("google");
-      if (user?.agreedToTerms) {
+      const freshUser = await refreshUser();
+      const activeUser = freshUser || user;
+      const role = String(activeUser?.role || "").trim().toLowerCase();
+      if (role === "admin" || role === "superadmin") {
+        navigate("/admin", { replace: true });
+      } else if (activeUser?.agreedToTerms) {
         navigate("/dashboard", { replace: true });
       } else {
         navigate("/disclaimer", { replace: true });
@@ -97,15 +113,27 @@ function Login() {
         const loggedInUser = response.data.user;
         login(loggedInUser);
 
-        setTimeout(() => {
-          if (loggedInUser?.role === "admin") {
+        try {
+          const freshUser = await refreshUser();
+          const activeUser = freshUser || loggedInUser;
+          const role = String(activeUser?.role || "").trim().toLowerCase();
+          if (role === "admin" || role === "superadmin") {
+            navigate("/admin", { replace: true });
+          } else if (activeUser?.agreedToTerms) {
+            navigate("/dashboard", { replace: true });
+          } else {
+            navigate("/disclaimer", { replace: true });
+          }
+        } catch {
+          const role = String(loggedInUser?.role || "").trim().toLowerCase();
+          if (role === "admin" || role === "superadmin") {
             navigate("/admin", { replace: true });
           } else if (loggedInUser?.agreedToTerms) {
             navigate("/dashboard", { replace: true });
           } else {
             navigate("/disclaimer", { replace: true });
           }
-        }, 600);
+        }
       }
     } catch (error: any) {
       // error.response exists for real axios errors (login/signup route passthrough)
@@ -185,8 +213,8 @@ function Login() {
               onClick={handleSocialAction}
               disabled={loading}
             >
-              <Chrome size={20} />
-              <span>Google</span>
+              <span className="social-icon-bubble"><GoogleBrandMark /></span>
+              <span>Continue with Google</span>
             </button>
           </div>
 

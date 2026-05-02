@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, AlertCircle } from "lucide-react";
+import { Users, AlertCircle, Shield } from "lucide-react";
 import {
   adminGetStats,
   adminGetUserHistory,

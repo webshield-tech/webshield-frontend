@@ -18,6 +18,13 @@ import nmapAnimation from "../../assets/icons/nmap.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
+import gobusterAnimation from "../../assets/icons/gobuster.json";
+import ffufAnimation from "../../assets/icons/ffuf.json";
+import wapitiAnimation from "../../assets/icons/wapiti.json";
+import nucleiAnimation from "../../assets/icons/nuclie.json";
+import dnsAnimation from "../../assets/icons/dns-recon.json";
+import whoisAnimation from "../../assets/icons/whois.json";
+import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 
 const toolData = [
   {
@@ -84,7 +91,7 @@ const toolData = [
     id: "gobuster",
     title: "Gobuster",
     subtitle: "Hidden File Search",
-    animation: nmapAnimation,
+    animation: gobusterAnimation,
     icon: <Search size={20} />,
     color: "#ff8c00",
     badges: ["Hidden Folders", "Private Files"],
@@ -97,7 +104,7 @@ const toolData = [
     id: "ratelimit",
     title: "RateLimit",
     subtitle: "Traffic Capacity",
-    animation: sslAnimation,
+    animation: rateLimitAnimation,
     icon: <Shield size={20} />,
     color: "#9d00ff",
     badges: ["DDoS Check", "Crash Test"],
@@ -110,7 +117,7 @@ const toolData = [
     id: "ffuf",
     title: "FFUF",
     subtitle: "Advanced File Search",
-    animation: niktoAnimation,
+    animation: ffufAnimation,
     icon: <Search size={20} />,
     color: "#ff00ff",
     badges: ["Deep Discovery", "Fast Search"],
@@ -123,7 +130,7 @@ const toolData = [
     id: "wapiti",
     title: "Wapiti",
     subtitle: "Web Bug Scanner",
-    animation: nmapAnimation,
+    animation: wapitiAnimation,
     icon: <Globe size={20} />,
     color: "#00d4ff",
     badges: ["Full Audit", "Bug Finder"],
@@ -136,7 +143,7 @@ const toolData = [
     id: "nuclei",
     title: "Nuclei",
     subtitle: "Security Bug Check",
-    animation: sqlAnimation,
+    animation: nucleiAnimation,
     icon: <Database size={20} />,
     color: "#ffd54f",
     badges: ["Known Bug Match", "Latest Threats"],
@@ -149,7 +156,7 @@ const toolData = [
     id: "dns",
     title: "DNS Recon",
     subtitle: "Technical Settings",
-    animation: sslAnimation,
+    animation: dnsAnimation,
     icon: <Info size={20} />,
     color: "#69f0ae",
     badges: ["Domain Identity", "Server Connect"],
@@ -162,7 +169,7 @@ const toolData = [
     id: "whois",
     title: "Whois",
     subtitle: "Domain Ownership",
-    animation: sslAnimation,
+    animation: whoisAnimation,
     icon: <User size={20} />,
     color: "#ffffff",
     badges: ["Ownership Check", "Expiry Date"],
@@ -176,9 +183,9 @@ const toolData = [
 const AboutTools: React.FC = () => {
 
   return (
-    <div className="about-page-v2">
+    <div className="about-page-premium">
       <div className="about-content-wrap">
-        <header className="about-header-v2">
+        <header className="about-header-premium">
           <Link to="/dashboard" className="back-btn-v2">
             <ChevronLeft size={20} />
             <span>Dashboard</span>
@@ -200,10 +207,6 @@ const AboutTools: React.FC = () => {
               <div className="tool-visual">
                 <div className="lottie-wrap">
                   <Lottie animationData={tool.animation} loop />
-                </div>
-                <div className="tool-id-tag">
-                  {tool.icon}
-                  <span>{tool.id}</span>
                 </div>
               </div>
               

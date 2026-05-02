@@ -19,6 +19,13 @@ import nmapAnimation from "../../assets/icons/nmap.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
+import gobusterAnimation from "../../assets/icons/gobuster.json";
+import ffufAnimation from "../../assets/icons/ffuf.json";
+import wapitiAnimation from "../../assets/icons/wapiti.json";
+import nucleiAnimation from "../../assets/icons/nuclie.json";
+import dnsAnimation from "../../assets/icons/dns-recon.json";
+import whoisAnimation from "../../assets/icons/whois.json";
+import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 import Lottie from "lottie-react";
 import "../../styles/dashboard.css";
 
@@ -45,9 +52,11 @@ const Dashboard = () => {
   useEffect(() => {
     if (!authChecked || loading || !user?.agreedToTerms) return;
 
-    if (user && !sessionStorage.getItem("dashboard_welcome_shown")) {
+    const pendingWelcome = sessionStorage.getItem("dashboard_welcome_pending");
+    const userKey = String(user?._id || user?.userId || "");
+    if (user && pendingWelcome && pendingWelcome === userKey) {
       addToast("success", "Access Granted", `Welcome back, ${user.username}. System status is nominal.`, 5000);
-      sessionStorage.setItem("dashboard_welcome_shown", "true");
+      sessionStorage.removeItem("dashboard_welcome_pending");
     }
 
     const load = async () => {
@@ -206,7 +215,14 @@ const Dashboard = () => {
               { name: "Nmap", animation: nmapAnimation, val: "nmap", desc: "Network Mapper", color: "cyan" },
               { name: "Nikto", animation: niktoAnimation, val: "nikto", desc: "Web Scanner", color: "magenta" },
               { name: "SQLMap", animation: sqlAnimation, val: "sqlmap", desc: "DB Injection", color: "gold" },
-              { name: "SSLScan", animation: sslAnimation, val: "sslscan", desc: "TLS Auditor", color: "green" }
+              { name: "SSLScan", animation: sslAnimation, val: "sslscan", desc: "TLS Auditor", color: "green" },
+              { name: "Gobuster", animation: gobusterAnimation, val: "gobuster", desc: "Path Discovery", color: "orange" },
+              { name: "FFUF", animation: ffufAnimation, val: "ffuf", desc: "Fuzzing & Discovery", color: "violet" },
+              { name: "Wapiti", animation: wapitiAnimation, val: "wapiti", desc: "Web App Audit", color: "blue" },
+              { name: "Nuclei", animation: nucleiAnimation, val: "nuclei", desc: "Template Checks", color: "gold" },
+              { name: "DNS Recon", animation: dnsAnimation, val: "dns", desc: "Domain Records", color: "green" },
+              { name: "Whois", animation: whoisAnimation, val: "whois", desc: "Ownership Lookup", color: "white" },
+              { name: "RateLimit", animation: rateLimitAnimation, val: "ratelimit", desc: "Traffic Resistance", color: "purple" },
             ].map(t => (
               <div key={t.name} className={`tool-card-v2 ${t.color}`} onClick={() => navigate(`/start-scan?tool=${t.val}`)}>
                 <div className="tool-animation">

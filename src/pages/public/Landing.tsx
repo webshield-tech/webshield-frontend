@@ -65,7 +65,7 @@ const Landing = () => {
         <div className="section-header">
           <h2 className="section-title">
             <span className="title-tag">// Security Suite</span>
-            Advanced Scanning Suite
+            Real Scanners, Real Coverage
           </h2>
         </div>
         <ToolCards />

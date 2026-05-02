@@ -85,7 +85,6 @@
 
 .brand-logo-img {
   width: 120px;
-  height: auto;
   margin-bottom: 28px;
   filter: drop-shadow(0 0 24px rgba(0, 255, 65, 0.5));
   position: relative;
@@ -105,6 +104,7 @@
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 16px;
+  width: 100%;
   position: relative;
   z-index: 2;
   line-height: 1.4;
@@ -119,6 +119,21 @@
   max-width: 85%;
   position: relative;
   z-index: 2;
+}
+
+.social-icon-bubble {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.96);
+  flex-shrink: 0;
+}
+
+.social-btn.google span:last-child {
+  letter-spacing: 0.2px;
 }
 
 /* Feature tags on brand panel */
@@ -444,7 +459,6 @@
     flex: unset;
     padding: 36px 28px 28px;
     border-right: none;
-    border-bottom: 1px solid rgba(0,255,65,0.1);
   }
 
   .auth-brand-panel h2 { font-size: 1.1rem; }
@@ -505,7 +519,7 @@
 
 .social-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-bottom: 8px;
 }
@@ -513,12 +527,14 @@
 .social-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  min-height: 52px;
+  width: 100%;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
+  border-radius: 14px;
   color: rgba(255,255,255,0.8);
   font-family: 'Orbitron', sans-serif;
   font-size: 0.75rem;
@@ -538,6 +554,11 @@
 .social-btn.google:hover:not(:disabled) {
   border-color: #4285F4;
   box-shadow: 0 0 15px rgba(66, 133, 244, 0.2);
+}
+
+.social-grid,
+.social-btn.google {
+  width: 100%;
 }
 
 .social-btn:disabled {

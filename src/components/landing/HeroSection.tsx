@@ -39,8 +39,8 @@ const HeroSection = () => {
           </h1>
           
           <p className="hero-description">
-            Enterprise-grade security infrastructure for the modern web. 
-            Automated scanning, real-time threat intelligence, and comprehensive security audits.
+            Enterprise-grade security infrastructure for the modern web.
+            Automated scanning, real-time threat intelligence, and platform-aware remediation.
           </p>
           
           <div className="hero-stats-premium">
@@ -54,7 +54,7 @@ const HeroSection = () => {
             <div className="stat-card">
               <div className="stat-icon"><Cpu size={20} /></div>
               <div className="stat-info">
-                <div className="stat-value">9+</div>
+                <div className="stat-value">11+</div>
                 <div className="stat-label">TOOLS</div>
               </div>
             </div>
