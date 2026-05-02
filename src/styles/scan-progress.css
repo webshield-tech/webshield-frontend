@@ -1,23 +1,26 @@
 /* scan-progress.css - CYBER UI */
 .progress-page-premium {
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--color-cyber-bg);
-  padding: 40px;
+  padding: 24px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   position: relative;
+  overflow: hidden;
 }
 
 .progress-container-premium {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   background: rgba(10, 10, 10, 0.85);
   border: 1px solid rgba(0, 255, 65, 0.3);
   border-radius: 8px;
-  padding: 40px;
+  padding: 24px;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
 }
@@ -26,8 +29,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-  padding-bottom: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
   border-bottom: 1px solid rgba(0, 255, 65, 0.2);
 }
 
@@ -65,7 +68,16 @@
 .progress-main-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 24px;
+  flex: 1;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .progress-main-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 /* Radar Visualizer */
@@ -73,13 +85,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
-  padding: 40px;
+  gap: 24px;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 .scan-radar-wrap {
-  width: 240px;
-  height: 240px;
+  width: 200px;
+  height: 200px;
   border: 1px solid rgba(0, 255, 65, 0.3);
   border-radius: 50%;
   position: relative;
@@ -91,8 +105,8 @@
 
 .radar-circle {
   position: absolute;
-  width: 160px;
-  height: 160px;
+  width: 130px;
+  height: 130px;
   border: 1px dashed rgba(0, 255, 65, 0.3);
   border-radius: 50%;
 }
@@ -181,8 +195,9 @@
 .progress-details-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 12px;
   width: 100%;
+  margin-top: 8px;
 }
 
 .p-detail {
@@ -370,18 +385,42 @@
 .auto-scan-steps {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  width: 100%;
+  padding-right: 8px;
+}
+
+.auto-scan-steps::-webkit-scrollbar {
+  width: 6px;
+}
+
+.auto-scan-steps::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.auto-scan-steps::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 255, 157, 0.3), rgba(0, 242, 255, 0.3));
+  border-radius: 10px;
+}
+
+.auto-scan-steps::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 255, 157, 0.6), rgba(0, 242, 255, 0.6));
 }
 
 .auto-scan-step {
   display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 10px;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
   border: 1px solid rgba(0, 242, 255, 0.15);
   background: rgba(10, 14, 20, 0.6);
   box-shadow: inset 0 0 0 1px rgba(0, 242, 255, 0.05);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
 .auto-scan-step.running {
@@ -482,4 +521,22 @@
 
 .step-bar-fill.skipped {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15));
+}
+
+/* ── LOTTIE ICON STYLES ── */
+.step-lottie-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-lottie-icon.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

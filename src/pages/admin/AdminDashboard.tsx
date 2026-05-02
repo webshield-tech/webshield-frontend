@@ -71,7 +71,35 @@ export default function AdminDashboard() {
             <span>Synchronizing stats…</span>
           </div>
         ) : error ? (
-          <div className="alert-box error">{error}</div>
+            <div className="admin-grid-layout">
+              <div className="admin-section">
+                <h2 className="admin-section-title">Active Operations</h2>
+                {recentScans && recentScans.slice(0, 8).map((scan, idx) => (
+                  <div key={idx} className="log-entry">
+                    <span className="log-time">{formatDate(scan.createdAt)?.split(',')[1]?.trim() || "—"}</span>
+                    <span className={`log-status ${scan.status}`}>{scan.status}</span>
+                    <span className="log-target">{scan.targetUrl || "—"}</span>
+                    <span className="log-user">{scan.userId?.username || "—"}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="admin-section">
+                <h2 className="admin-section-title">User Activity & IP Tracking</h2>
+                {recentUsers && recentUsers.slice(0, 8).map((user, idx) => (
+                  <div key={idx} className="user-ip-entry">
+                    <div className="user-info">
+                      <span className="user-name">{user.username}</span>
+                      <span className="user-email">{user.email}</span>
+                    </div>
+                    <div className="user-ip">
+                      <span className="ip-label">IP:</span>
+                      <span className={`ip-value ${user.isBlocked ? 'blocked' : ''}`}>{user.lastIp || "Unknown"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
         ) : (
           <>
             <div className="admin-stats-grid">

@@ -1,6 +1,16 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Loader2, AlertCircle, MinusCircle } from "lucide-react";
+import Lottie from "lottie-react";
 import "../styles/scan-progress.css";
+import nmapIcon from "../assets/icons/nmap.json";
+import niktoIcon from "../assets/icons/nikto.json";
+import sslIcon from "../assets/icons/ssl.json";
+import sqlIcon from "../assets/icons/sql.json";
+import wapatiIcon from "../assets/icons/wapiti.json";
+import gobusterIcon from "../assets/icons/gobuster.json";
+import nucleiIcon from "../assets/icons/nuclie.json";
+import dnsIcon from "../assets/icons/dns-recon.json";
+import whoisIcon from "../assets/icons/whois.json";
 
 interface AutoScanProgressProps {
   status: string;
@@ -14,6 +24,18 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
     const key = String(value || "").toLowerCase();
     if (key === "sslscan") return "ssl";
     return key;
+  };
+
+  const toolLottieMap: Record<string, any> = {
+    nmap: nmapIcon,
+    nuclei: nucleiIcon,
+    nikto: niktoIcon,
+    ssl: sslIcon,
+    sqlmap: sqlIcon,
+    wapiti: wapatiIcon,
+    gobuster: gobusterIcon,
+    dns: dnsIcon,
+    whois: whoisIcon,
   };
 
   const TOOL_LABELS: Record<string, string> = {
@@ -123,11 +145,35 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
             className={`auto-scan-step ${step.status}`}
           >
             <div className="step-icon">
-              {step.status === "completed" && <CheckCircle2 size={20} />}
-              {step.status === "running" && <Loader2 size={20} className="animate-spin" />}
-              {step.status === "pending" && <Circle size={20} />}
-              {step.status === "skipped" && <MinusCircle size={20} />}
-              {step.status === "error" && <AlertCircle size={20} />}
+              {step.status === "completed" && toolLottieMap[step.id] ? (
+                <div className="step-lottie-icon" style={{ opacity: 0.6 }}>
+                  <Lottie 
+                    animationData={toolLottieMap[step.id]} 
+                    loop={false} 
+                    autoplay={false}
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                </div>
+              ) : step.status === "completed" ? (
+                <CheckCircle2 size={20} />
+              ) : step.status === "running" && toolLottieMap[step.id] ? (
+                <div className="step-lottie-icon animate-spin">
+                  <Lottie 
+                    animationData={toolLottieMap[step.id]} 
+                    loop 
+                    autoplay
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                </div>
+              ) : step.status === "running" ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : step.status === "pending" ? (
+                <Circle size={20} />
+              ) : step.status === "skipped" ? (
+                <MinusCircle size={20} />
+              ) : step.status === "error" ? (
+                <AlertCircle size={20} />
+              ) : null}
             </div>
 
             <div className="step-meta">

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, History, Edit3, Shield, Clock, ExternalLink, AlertCircle } from "lucide-react";
+import { Users, AlertCircle } from "lucide-react";
 import {
   adminGetStats,
   adminGetUserHistory,
   adminUpdateUserLimit,
   adminToggleUserBlock
 } from "../../api/admin-api";
+import { sendAnnouncement } from "../../api/notification-api";
 import { useToast, ToastContainer } from "../../components/Toast";
 import { addNotification } from "../../utils/notifications";
 import "../../styles/admin.css";
@@ -35,6 +36,10 @@ export default function AdminUsers() {
   const [selectedUserScans, setSelectedUserScans] = useState<Scan[] | null>(null);
   const [selectedUser, setSelectedUser] = useState<RecentUser | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [announcementTitle, setAnnouncementTitle] = useState("");
+  const [announcementMessage, setAnnouncementMessage] = useState("");
+  const [announcementType, setAnnouncementType] = useState<"info" | "success" | "warning" | "error">("info");
+  const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
   const location = useLocation();
   const { toasts, addToast, removeToast } = useToast();
 
@@ -87,9 +92,21 @@ export default function AdminUsers() {
       setUpdating(true);
       const res = await adminUpdateUserLimit(id, val);
       if (res.data?.success) {
+        // Send notification to the user
+        try {
+          await sendAnnouncement(
+            "Your scan quota has been updated",
+            `Your daily scan limit has been changed to ${val} scans per day. Plan your security assessments accordingly.`,
+            "info",
+            [id]
+          );
+        } catch (notifErr) {
+          console.warn("Failed to send notification:", notifErr);
+        }
+
         addNotification({
           type: "info",
-          title: "Scan limit updated",
+          title: "Quota Updated",
           message: `${user.username}'s daily scan limit is now ${val} scans per day.`,
         });
         addToast(
@@ -118,6 +135,27 @@ export default function AdminUsers() {
       setUpdating(true);
       const res = await adminToggleUserBlock(id);
       if (res.data?.success) {
+        // Send notification to the user
+        try {
+          if (user.isBlocked) {
+            await sendAnnouncement(
+              "Your account has been unblocked",
+              "Your account is now active and you can resume scanning.",
+              "success",
+              [id]
+            );
+          } else {
+            await sendAnnouncement(
+              "Your account has been temporarily blocked",
+              "Your account has been suspended. Please contact support for more information.",
+              "warning",
+              [id]
+            );
+          }
+        } catch (notifErr) {
+          console.warn("Failed to send notification:", notifErr);
+        }
+
         setUsers(users.map(u => {
           const uid = u._id || (u as any).userId;
           if (uid === id) {
@@ -133,6 +171,35 @@ export default function AdminUsers() {
       addToast("error", "Action Failed", err?.response?.data?.error || "Action failed.", 5000);
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleSendAnnouncement = async () => {
+    if (!announcementTitle.trim() || !announcementMessage.trim()) {
+      addToast("warning", "Missing Content", "Please fill in both title and message.", 3000);
+      return;
+    }
+
+    try {
+      setSendingAnnouncement(true);
+      // Send announcement to all users
+      const userIds = users.map(u => u._id || (u as any).userId).filter(Boolean);
+      
+      await sendAnnouncement(
+        announcementTitle,
+        announcementMessage,
+        announcementType,
+        userIds
+      );
+
+      addToast("success", "Announcement Sent", "Your announcement has been sent to all operators.", 4000);
+      setAnnouncementTitle("");
+      setAnnouncementMessage("");
+      setAnnouncementType("info");
+    } catch (err: any) {
+      addToast("error", "Failed to Send", err?.response?.data?.error || "Failed to send announcement.", 5000);
+    } finally {
+      setSendingAnnouncement(false);
     }
   };
 
@@ -180,14 +247,14 @@ export default function AdminUsers() {
                       </div>
                     </div>
                     <div className="item-side actions">
-                      <button className="admin-action-btn" onClick={() => viewHistory(u)} title="View Logs"><Clock size={16} strokeWidth={2.5} color="var(--cyber-text)" /></button>
-                      <button className="admin-action-btn" onClick={() => handleUpdateLimit(u)} title="Update Quota"><Edit3 size={16} strokeWidth={2.5} color="var(--cyber-text)" /></button>
+                      <button className="admin-action-btn" onClick={() => viewHistory(u)} title="View Logs">📋</button>
+                      <button className="admin-action-btn" onClick={() => handleUpdateLimit(u)} title="Update Quota">✏️</button>
                       <button 
                         className={`admin-action-btn ${u.isBlocked ? 'blocked' : 'active'}`} 
                         onClick={() => handleToggleBlock(u)}
                         title={u.isBlocked ? 'Unblock Operator' : 'Block Operator'}
                       >
-                        <Shield size={16} strokeWidth={2.5} color={u.isBlocked ? 'var(--cyber-error)' : 'var(--cyber-text)'} />
+                        {u.isBlocked ? '🔒' : '🔓'}
                       </button>
                     </div>
                   </div>
@@ -224,6 +291,55 @@ export default function AdminUsers() {
                     </div>
                   ))
                 )}
+              </div>
+            </section>
+
+            <section className="admin-panel-card glass-panel">
+              <div className="panel-head">
+                <AlertCircle size={18} />
+                <h3>Send Announcement</h3>
+              </div>
+              <div className="announcement-form">
+                <div className="form-group">
+                  <label>Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., System Maintenance Notice"
+                    value={announcementTitle}
+                    onChange={(e) => setAnnouncementTitle(e.target.value)}
+                    disabled={sendingAnnouncement}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Message</label>
+                  <textarea
+                    placeholder="Enter the announcement message here..."
+                    rows={4}
+                    value={announcementMessage}
+                    onChange={(e) => setAnnouncementMessage(e.target.value)}
+                    disabled={sendingAnnouncement}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Type</label>
+                  <select
+                    value={announcementType}
+                    onChange={(e) => setAnnouncementType(e.target.value as any)}
+                    disabled={sendingAnnouncement}
+                  >
+                    <option value="info">Info</option>
+                    <option value="success">Success</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                  </select>
+                </div>
+                <button
+                  onClick={handleSendAnnouncement}
+                  disabled={sendingAnnouncement}
+                  className="btn-primary"
+                >
+                  {sendingAnnouncement ? "Sending..." : "Send to All Operators"}
+                </button>
               </div>
             </section>
           </div>

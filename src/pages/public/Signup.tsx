@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  User, Mail, Lock, Loader2, AlertCircle, CheckCircle2, Github, Chrome
+  User, Mail, Lock, Loader2, AlertCircle, CheckCircle2, Chrome
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signupUser } from "../../api/auth-api.ts";
@@ -69,7 +69,7 @@ function Signup() {
     return errs;
   };
 
-  const handleSocialAction = async (provider: "google" | "github") => {
+  const handleSocialAction = async (provider: "google") => {
     try {
       setLoading(true);
       const user = await socialLogin(provider);
@@ -178,15 +178,6 @@ function Signup() {
             >
               <Chrome size={20} />
               <span>Google</span>
-            </button>
-            <button 
-              type="button" 
-              className="social-btn github" 
-              onClick={() => handleSocialAction("github")}
-              disabled={loading}
-            >
-              <Github size={20} />
-              <span>GitHub</span>
             </button>
           </div>
 

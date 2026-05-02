@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { 
-  Mail, Lock, Loader2, AlertCircle, CheckCircle2, Github, Chrome
+  Mail, Lock, Loader2, AlertCircle, CheckCircle2, Chrome
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { LoginUser } from "../../api/auth-api";
@@ -187,15 +187,6 @@ function Login() {
             >
               <Chrome size={20} />
               <span>Google</span>
-            </button>
-            <button 
-              type="button" 
-              className="social-btn github" 
-              onClick={() => handleSocialAction("github")}
-              disabled={loading}
-            >
-              <Github size={20} />
-              <span>GitHub</span>
             </button>
           </div>
 

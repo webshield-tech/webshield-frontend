@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { Shield, ChevronDown, ChevronUp, ExternalLink, AlertTriangle, Zap, Lock, Code, Globe, Server, Database } from "lucide-react";
+import Lottie from "lottie-react";
 import "../../styles/learn.css";
 import api from "../../api/axios";
+import sqlIcon from "../../assets/icons/sql.json";
+import wapatiIcon from "../../assets/icons/wapiti.json";
+import sslIcon from "../../assets/icons/ssl.json";
+import infoIcon from "../../assets/icons/info.json";
+import nampIcon from "../../assets/icons/nmap.json";
+import niktoIcon from "../../assets/icons/nikto.json";
 
 // ... [Keep CVE_DATA and VULN_TYPES as they are] ...
 const CVE_DATA = [
@@ -163,7 +170,30 @@ export default function Learn() {
     "Low": "#38bdf8"
   };
 
+  const lottieIconMap: Record<string, any> = {
+    sql: sqlIcon,
+    wapiti: wapatiIcon,
+    ssl: sslIcon,
+    info: infoIcon,
+    nmap: nampIcon,
+    nikto: niktoIcon,
+  };
+
   const getIcon = (name: string, size = 20) => {
+    // Try lottie first
+    if (lottieIconMap[name]) {
+      return (
+        <div style={{ width: size, height: size, minWidth: size, minHeight: size }}>
+          <Lottie 
+            animationData={lottieIconMap[name]} 
+            loop 
+            autoplay 
+            style={{ width: '100%', height: '100%' }}
+          />
+        </div>
+      );
+    }
+    
     switch (name) {
       case "server": return <Server size={size} />;
       case "globe": return <Globe size={size} />;

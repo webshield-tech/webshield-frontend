@@ -1,7 +1,8 @@
 export type NotificationType = "success" | "error" | "info" | "warning";
 
 export interface AppNotification {
-  id: string;
+  id?: string;
+  _id?: string;
   type: NotificationType;
   title: string;
   message: string;
@@ -11,26 +12,7 @@ export interface AppNotification {
 
 const STORAGE_KEY = "webshield.notifications";
 const EVENT_NAME = "webshield-notifications-updated";
-const MAX_NOTIFICATIONS = 20;
-
-const DEFAULT_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: "welcome-notification",
-    type: "info",
-    title: "Welcome to Vuln Spectra",
-    message: "Your notification center is ready for scan updates and admin actions.",
-    createdAt: new Date().toISOString(),
-    read: false,
-  },
-  {
-    id: "scan-complete-notification",
-    type: "success",
-    title: "Scan #44A2 completed",
-    message: "The latest scan finished successfully.",
-    createdAt: new Date().toISOString(),
-    read: true,
-  },
-];
+const MAX_NOTIFICATIONS = 50;
 
 function canUseStorage() {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
@@ -43,95 +25,88 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function cloneDefaults() {
-  return DEFAULT_NOTIFICATIONS.map((notification) => ({ ...notification }));
-}
-
 function normalizeNotification(value: any): AppNotification | null {
   if (!value || typeof value !== "object") return null;
-  const type = value.type;
-  if (!["success", "error", "info", "warning"].includes(type)) return null;
-  return {
-    id: String(value.id || createId()),
-    type,
-    title: String(value.title || "Notification"),
-    message: String(value.message || ""),
-    createdAt: String(value.createdAt || new Date().toISOString()),
-    read: Boolean(value.read),
-  };
+  const id = value.id || value._id || createId();
+  const type = (value.type || "info") as NotificationType;
+  const title = String(value.title || "Notification");
+  const message = String(value.message || "");
+  const createdAt = value.createdAt || new Date().toISOString();
+  const read = Boolean(value.read);
+  return { id, type, title, message, createdAt, read };
 }
 
-function emitChange() {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new Event(EVENT_NAME));
-}
-
-function persistNotifications(notifications: AppNotification[]) {
-  if (!canUseStorage()) return notifications;
-  const next = notifications.slice(0, MAX_NOTIFICATIONS);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  emitChange();
-  return next;
-}
-
+/**
+ * Load notifications from localStorage
+ */
 export function loadNotifications(): AppNotification[] {
-  if (!canUseStorage()) return cloneDefaults();
-
+  if (!canUseStorage()) return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      const seeded = cloneDefaults();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-      return seeded;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      const seeded = cloneDefaults();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-      return seeded;
-    }
-
-    const normalized = parsed
-      .map(normalizeNotification)
-      .filter((notification): notification is AppNotification => Boolean(notification));
-
-    if (normalized.length === 0) {
-      const seeded = cloneDefaults();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-      return seeded;
-    }
-
-    return normalized.slice(0, MAX_NOTIFICATIONS);
-  } catch {
-    const seeded = cloneDefaults();
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-    } catch {
-      // Ignore storage write failures in restricted browsers.
-    }
-    return seeded;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed)
+      ? parsed.map(normalizeNotification).filter(Boolean) as AppNotification[]
+      : [];
+  } catch (e) {
+    console.warn("[notifications] Failed to parse localStorage:", e);
+    return [];
   }
 }
 
-export function addNotification(notification: Omit<AppNotification, "id" | "createdAt" | "read"> & Partial<Pick<AppNotification, "id" | "createdAt" | "read">>) {
-  const current = loadNotifications();
-  const nextNotification: AppNotification = {
-    id: notification.id || createId(),
-    type: notification.type,
-    title: notification.title,
-    message: notification.message,
-    createdAt: notification.createdAt || new Date().toISOString(),
-    read: notification.read ?? false,
-  };
-  const next = [nextNotification, ...current.filter((item) => item.id !== nextNotification.id)];
-  persistNotifications(next);
-  return nextNotification;
+/**
+ * Save notifications to localStorage (for local fallback)
+ */
+function saveNotifications(notifications: AppNotification[]) {
+  if (!canUseStorage()) return;
+  try {
+    const toSave = notifications.slice(0, MAX_NOTIFICATIONS);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(EVENT_NAME));
+    }
+  } catch (e) {
+    console.warn("[notifications] Failed to save to localStorage:", e);
+  }
 }
 
-export function markAllNotificationsRead() {
-  const current = loadNotifications();
-  const next = current.map((notification) => ({ ...notification, read: true }));
-  persistNotifications(next);
-  return next;
+/**
+ * Add a notification locally (for real-time updates before server sync)
+ */
+export function addNotification(notification: Partial<AppNotification>) {
+  const normalized = normalizeNotification({
+    ...notification,
+    createdAt: notification.createdAt || new Date().toISOString(),
+  });
+  if (!normalized) return;
+
+  const existing = loadNotifications();
+  const updated = [normalized, ...existing].slice(0, MAX_NOTIFICATIONS);
+  saveNotifications(updated);
+}
+
+/**
+ * Mark all notifications as read locally
+ */
+export function markAllNotificationsReadLocal() {
+  const notifications = loadNotifications();
+  const updated = notifications.map((n) => ({ ...n, read: true }));
+  saveNotifications(updated);
+}
+
+/**
+ * Remove a notification locally
+ */
+export function removeNotificationLocal(notificationId: string) {
+  const notifications = loadNotifications();
+  const updated = notifications.filter((n) => n.id !== notificationId && n._id !== notificationId);
+  saveNotifications(updated);
+}
+
+/**
+ * Get unread notification count
+ */
+export function getUnreadCount(): number {
+  const notifications = loadNotifications();
+  return notifications.filter((n) => !n.read).length;
 }
