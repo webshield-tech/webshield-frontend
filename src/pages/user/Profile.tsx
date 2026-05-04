@@ -36,7 +36,8 @@ const Profile = () => {
       if (response.data.success) {
         setUserData(response.data.user);
       }
-    } catch {
+    } catch (error) {
+      console.warn("Failed to fetch profile:", error);
     } finally {
       setLoading(false);
     }

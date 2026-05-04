@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       sessionStorage.removeItem("dashboard_welcome_pending");
       sessionStorage.clear();
-      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken");
     }
   };
 
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       sessionStorage.setItem("dashboard_welcome_pending", String(userKey));
     }
     if (res.data.token) {
-      localStorage.setItem("authToken", res.data.token);
+      sessionStorage.setItem("authToken", res.data.token);
     }
 
     return res.data.user;
@@ -97,14 +97,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return res.data.user;
       }
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const authError = error as {
+        status?: number;
+        isAuthError?: boolean;
+        response?: { status?: number };
+        message?: string;
+      };
       // ONLY clear user if it's a definitive authentication failure (401/403)
       // Otherwise, keep the current user state to prevent logout on 500/Network errors
-      if (error.status === 401 || error.isAuthError || error.response?.status === 401) {
+      if (authError.status === 401 || authError.isAuthError || authError.response?.status === 401) {
         setUser(null);
       }
       // For other errors (timeouts, network issues), silently continue without clearing user
-      console.warn("[AuthCheck] Profile fetch failed:", error.message || error);
+      console.warn("[AuthCheck] Profile fetch failed:", authError.message || authError);
       return null;
     }
   };
@@ -123,13 +129,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const socialLogin = async (providerName: "google") => {
+    void providerName;
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
       return await finalizeFirebaseLogin(result.user);
-    } catch (error: any) {
-      const message = String(error?.message || "");
-      const code = String(error?.code || "");
+    } catch (error: unknown) {
+      const socialError = error as { message?: string; code?: string };
+      const message = String(socialError?.message || "");
+      const code = String(socialError?.code || "");
 
       // Popup flows can fail under strict COOP policies; fall back to redirect.
       if (
@@ -143,8 +151,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
-      console.error("Social Login Error:", error);
-      throw error;
+      console.error("Social Login Error:", socialError);
+      throw socialError;
     } finally {
       setLoading(false);
     }
@@ -174,7 +182,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.warn("[Auth] Google redirect login failed:", error);
       }
 
-      const token = getCookie("token") || localStorage.getItem("authToken");
+      const token = getCookie("token") || sessionStorage.getItem("authToken");
+
+      if (!getCookie("token") && localStorage.getItem("authToken")) {
+        localStorage.removeItem("authToken");
+      }
 
       if (!token) {
         setUser(null);

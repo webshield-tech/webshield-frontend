@@ -4,7 +4,6 @@ import { Shield, Lock, Zap, FileText, Linkedin, Menu, X, ArrowRight, Globe, Mess
 import HeroSection from "../../components/landing/HeroSection";
 import ToolCards from "../../components/landing/ToolCards";
 import "../../styles/landing.css";
-import Lottie from "lottie-react";
 
 
 const Landing = () => {

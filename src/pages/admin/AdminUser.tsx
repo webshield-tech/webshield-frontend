@@ -20,6 +20,7 @@ type RecentUser = {
   email?: string;
   createdAt?: string;
   isBlocked?: boolean;
+  lastIp?: string;
 };
 type Scan = {
   _id: string;
@@ -35,7 +36,6 @@ export default function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
   const [selectedUserScans, setSelectedUserScans] = useState<Scan[] | null>(null);
   const [selectedUser, setSelectedUser] = useState<RecentUser | null>(null);
-  const [updating, setUpdating] = useState(false);
   const [announcementTitle, setAnnouncementTitle] = useState("");
   const [announcementMessage, setAnnouncementMessage] = useState("");
   const [announcementType, setAnnouncementType] = useState<"info" | "success" | "warning" | "error">("info");
@@ -89,7 +89,6 @@ export default function AdminUsers() {
       return;
     }
     try {
-      setUpdating(true);
       const res = await adminUpdateUserLimit(id, val);
       if (res.data?.success) {
         // Send notification to the user
@@ -120,8 +119,6 @@ export default function AdminUsers() {
       }
     } catch (err: any) {
       addToast("error", "Update Failed", err?.response?.data?.error || "Failed to modify quota.", 5000);
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -132,7 +129,6 @@ export default function AdminUsers() {
     if (!confirm) return;
     
     try {
-      setUpdating(true);
       const res = await adminToggleUserBlock(id);
       if (res.data?.success) {
         // Send notification to the user
@@ -169,8 +165,6 @@ export default function AdminUsers() {
       }
     } catch (err: any) {
       addToast("error", "Action Failed", err?.response?.data?.error || "Action failed.", 5000);
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -207,7 +201,7 @@ export default function AdminUsers() {
 
   return (
     <div className="admin-page-v2">
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div className="admin-content-wrap">
         <header className="admin-header-v2">
           <div className="header-info">

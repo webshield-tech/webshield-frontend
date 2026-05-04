@@ -52,8 +52,12 @@ const ResetPassword = () => {
       } else {
         setError(res.data?.error || "FAILED_TO_RESET_CREDENTIALS");
       }
-    } catch (err: any) {
-      setError(err?.response?.data?.error || "PROTOCOL_FAILURE_RETRY_REQUIRED");
+    } catch (err: unknown) {
+      const message =
+        typeof err === "object" && err && "response" in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : undefined;
+      setError(message || "PROTOCOL_FAILURE_RETRY_REQUIRED");
     } finally {
       setLoading(false);
     }

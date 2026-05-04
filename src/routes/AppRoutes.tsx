@@ -1,12 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import type { ComponentType } from "react";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import { useAuth } from "../context/AuthContext"; 
 import LoadingScreen from "../components/common/LoadingScreen";
 import MainLayout from "../components/layout/MainLayout";
 
 // Helper to handle chunk loading errors (happens when app is updated while user is on it)
-const lazyRetry = (componentImport: () => Promise<any>) => {
+type LazyModule = { default: ComponentType };
+
+const lazyRetry = (componentImport: () => Promise<LazyModule>) => {
   return lazy(async () => {
     try {
       return await componentImport();

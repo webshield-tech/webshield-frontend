@@ -32,25 +32,8 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>(() => loadNotifications());
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isShaking, setIsShaking] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
-  const prevCountRef = useRef(0);
-
-  const hasUnread = notifications.some((notification) => !notification.read);
-
-  // Update unread count
-  useEffect(() => {
-    const count = notifications.filter((n) => !n.read).length;
-    setUnreadCount(count);
-
-    // Trigger shake animation on new unread notification
-    if (count > prevCountRef.current) {
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 600);
-    }
-    prevCountRef.current = count;
-  }, [notifications]);
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -187,8 +170,8 @@ export const Navbar = () => {
         <div className="navbar-actions-group">
           
           <div className="navbar-notifications" ref={notificationRef}>
-            <button 
-              className={`navbar-icon-btn ${isShaking ? 'shake-notification' : ''}`}
+              <button 
+              className="navbar-icon-btn"
               onClick={() => {
                 setNotificationsOpen((previous) => {
                   const next = !previous;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   Terminal, 
@@ -424,6 +424,16 @@ function BatchAnalysisPanel({ analysis, scanPlan }: { analysis: any, scanPlan?: 
                   {f.impact && <p style={{ color: "rgba(255,100,100,0.85)", fontSize: "0.83rem", margin: "0 0 4px 0" }}><strong>Impact:</strong> {f.impact}</p>}
                   {f.evidence && <p style={{ color: "rgba(255,255,255,0.38)", fontSize: "0.78rem", fontFamily: "monospace", margin: "0 0 6px 0" }}>{f.evidence}</p>}
                   {f.recommendation && <p style={{ color: "rgba(0,212,255,0.85)", fontSize: "0.83rem", margin: "0 0 4px 0" }}><strong>Fix:</strong> {f.recommendation}</p>}
+                  {f.patch_steps && f.patch_steps.length > 0 && (
+                    <div style={{ marginTop: 8, marginBottom: 8, background: "rgba(0, 255, 157, 0.05)", padding: 10, borderRadius: 6, border: "1px solid rgba(0, 255, 157, 0.2)" }}>
+                      <p style={{ color: "#00ff9d", fontSize: "0.8rem", margin: "0 0 6px 0", fontWeight: 700, textTransform: "uppercase" }}>Recommended Patch Steps:</p>
+                      <ol style={{ margin: 0, paddingLeft: 18, color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", lineHeight: 1.5 }}>
+                        {f.patch_steps.map((step: string, si: number) => (
+                          <li key={si} style={{ marginBottom: 4 }}>{step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
                   {f.patchTitle && (
                     <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.82rem", margin: "0 0 4px 0" }}><strong>Patch focus:</strong> {f.patchTitle} - {f.patchAdvice}</p>
                   )}
@@ -545,7 +555,7 @@ const ScanResult = () => {
     fetchResult();
   }, [scanId, batchId]);
 
-  const extractVulnerabilities = (res: any, tool?: string) => {
+  const extractVulnerabilities = useCallback((res: any, tool?: string) => {
     if (!res) return [];
 
     const normalizedTool = tool ? tool.toLowerCase() : "";
@@ -591,6 +601,112 @@ const ScanResult = () => {
         recommendation: v.recommendation || "Patch the affected service and restrict access to only what is needed.",
         platform_specific_fix: v.platform_specific_fix || getPlatformFix(platform, v.title || v.name || "Service issue detected", normalizedTool),
       }));
+    }
+
+    // ── Rate-limit checks ─────────────────────────────────────────────────────
+    if (normalizedTool === "ratelimit") {
+      const findings = Array.isArray(res.findings) ? res.findings : [];
+      return findings.map((finding: string) => {
+        const lower = finding.toLowerCase();
+        const isWeak = lower.includes("no rate or request limiting") || lower.includes("vulnerability");
+        return {
+          title: isWeak ? "Request throttling gap" : "Rate limiting check",
+          severity: isWeak ? "High" : "Low",
+          description: finding,
+          recommendation: isWeak
+            ? "Add request throttling, burst protection, and account-aware limits on public endpoints."
+            : "Keep the current throttling controls enabled and review them after application changes.",
+          platform_specific_fix: getPlatformFix(platform, isWeak ? "Request throttling gap" : "Rate limiting check", normalizedTool),
+        };
+      });
+    }
+
+    // ── DNS lookups ───────────────────────────────────────────────────────────
+    if (normalizedTool === "dns" && res.records) {
+      const dnsFindings: Array<any> = [];
+      const recordTypes = ["A", "AAAA", "CNAME", "MX", "TXT", "NS", "SOA"];
+
+      for (const type of recordTypes) {
+        const value = res.records[type] || res.records[type.toLowerCase()];
+        if (!value) continue;
+        const text = Array.isArray(value) ? value.join(", ") : String(value);
+        dnsFindings.push({
+          title: `${type} record`,
+          severity: "Low",
+          description: text,
+          recommendation: type === "TXT"
+            ? "Review public TXT records and remove anything that should stay internal."
+            : "Review the DNS record and keep only the entries that are still needed.",
+          platform_specific_fix: getPlatformFix(platform, `${type} record`, normalizedTool),
+        });
+      }
+
+      if (!dnsFindings.length) {
+        dnsFindings.push({
+          title: "DNS lookup result",
+          severity: "Low",
+          description: JSON.stringify(res.records, null, 2),
+          recommendation: "Review the DNS output and keep only the records that are required.",
+          platform_specific_fix: getPlatformFix(platform, "DNS lookup result", normalizedTool),
+        });
+      }
+
+      return dnsFindings;
+    }
+
+    // ── WHOIS lookups ─────────────────────────────────────────────────────────
+    if (normalizedTool === "whois") {
+      const rawWhois = String(res.data || res.rawOutput || res.summary || "").trim();
+      if (!rawWhois) return [];
+
+      return [{
+        title: "Domain ownership details",
+        severity: "Low",
+        description: rawWhois.slice(0, 1200),
+        recommendation: "Check registrar details, expiry date, and privacy settings for this domain.",
+        platform_specific_fix: getPlatformFix(platform, "Domain ownership details", normalizedTool),
+      }];
+    }
+
+    // ── XSS / CSRF checks ─────────────────────────────────────────────────────
+    if (normalizedTool === "xss") {
+      const xssFindings = Array.isArray(res.xssFindings) ? res.xssFindings : [];
+      const csrfFindings = Array.isArray(res.csrfFindings) ? res.csrfFindings : [];
+
+      if (xssFindings.length || csrfFindings.length) {
+        const cards = [
+          ...xssFindings.map((finding: any) => ({
+            title: "Possible XSS issue",
+            severity: "Critical",
+            description: JSON.stringify(finding, null, 2),
+            recommendation: "Escape user input before rendering it in the browser and re-test the affected form or parameter.",
+            platform_specific_fix: getPlatformFix(platform, "Possible XSS issue", normalizedTool),
+          })),
+          ...csrfFindings.map((finding: any) => ({
+            title: "Missing CSRF protection",
+            severity: "High",
+            description: JSON.stringify(finding, null, 2),
+            recommendation: "Add anti-CSRF tokens to POST forms and verify them on the server.",
+            platform_specific_fix: getPlatformFix(platform, "Missing CSRF protection", normalizedTool),
+          })),
+        ];
+
+        return cards.length ? cards : [{
+          title: "XSS / CSRF scan",
+          severity: "Low",
+          description: String(res.summary || "Scan completed with no issues detected."),
+          recommendation: "Keep validating inputs and protect forms with CSRF tokens.",
+          platform_specific_fix: getPlatformFix(platform, "XSS / CSRF scan", normalizedTool),
+        }];
+      }
+
+      return [{
+        title: "XSS / CSRF scan",
+        severity: "Low",
+        description: String(res.summary || "Scan completed with no issues detected."),
+        recommendation: "Keep validating inputs and protect forms with CSRF tokens.",
+        platform_specific_fix: getPlatformFix(platform, "XSS / CSRF scan", normalizedTool),
+      }];
     }
 
     // ── Generic fallback for other vulnerabilities array ─────────────────────────
@@ -639,7 +755,9 @@ const ScanResult = () => {
         
         let severity = "Medium";
         // It's only truly LOW if it's a security proxy or a standard port WITHOUT exposed version info
-        if (isStandardWeb && !hasVersionInfo) severity = "Low";
+        if (isStandardWeb && !hasVersionInfo) {
+          severity = "Low";
+        }
         if (isCloudflare || isProxy) severity = "Low";
 
         return {
@@ -710,7 +828,7 @@ const ScanResult = () => {
     if (res.vulnerable && Array.isArray(res.vulnerabilities)) return res.vulnerabilities;
     if (Array.isArray(res.vulns)) return res.vulns;
     return [];
-  };
+  }, [data]);
 
   const vulnerabilities = useMemo(() => {
     if (batchId && batchScans.length > 0) {
@@ -718,7 +836,7 @@ const ScanResult = () => {
     }
     if (!data?.results) return [];
     return extractVulnerabilities(data.results, data?.scanType || data?.tool);
-  }, [data, batchId, batchScans]);
+  }, [data, batchId, batchScans, extractVulnerabilities]);
 
   const simpleFindings = useMemo(() => {
     return vulnerabilities.map((v: any) => ({

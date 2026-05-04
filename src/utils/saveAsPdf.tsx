@@ -134,7 +134,7 @@ function saveTextAsPdf(filename: string, content: string) {
   }
 
   // Post-processing: Add Headers, Footers, and Watermarks to all content pages
-  const pageCount = (doc as any).internal.getNumberOfPages();
+  const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     if (i === 1) continue; // Skip cover page

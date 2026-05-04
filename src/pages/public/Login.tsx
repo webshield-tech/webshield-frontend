@@ -128,7 +128,7 @@ function Login() {
         setFormSuccess("Login successful! Redirecting…");
 
         const token = response.data.token;
-        if (token) localStorage.setItem("authToken", token);
+        if (token) sessionStorage.setItem("authToken", token);
 
         const loggedInUser = response.data.user;
         login(loggedInUser);

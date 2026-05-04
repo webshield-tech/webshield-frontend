@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, Shield, Activity, Clock, ExternalLink, ChevronRight, LayoutDashboard } from "lucide-react";
+import { Users, Shield, Activity, Clock } from "lucide-react";
 import api from "../../api/axios";
 import "../../styles/admin.css";
 
-type RecentUser = { username: string; email?: string; createdAt?: string };
+type RecentUser = { username: string; email?: string; createdAt?: string; isBlocked?: boolean; lastIp?: string };
 type RecentScan = {
   targetUrl?: string;
   scanType?: string;

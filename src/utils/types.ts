@@ -1,4 +1,16 @@
-export type ScanTool = "auto" | "nmap" | "nikto" | "sqlmap" | "sslscan";
+export type ScanTool =
+  | "auto"
+  | "nmap"
+  | "nikto"
+  | "sqlmap"
+  | "sslscan"
+  | "gobuster"
+  | "ffuf"
+  | "wapiti"
+  | "nuclei"
+  | "dns"
+  | "whois"
+  | "ratelimit";
 
 export interface User {
   _id: string;

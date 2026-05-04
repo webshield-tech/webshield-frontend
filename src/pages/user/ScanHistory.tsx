@@ -7,7 +7,6 @@ import {
   ChevronLeft, 
   Clock, 
   Shield, 
-  ExternalLink,
   Filter,
   ArrowRight
 } from "lucide-react";

@@ -12,10 +12,43 @@ export const startScan = (data: {
   return api.post("/scan/start", data);
 };
 
-// Ping target
+// Ping target (check availability)
 export const pingTarget = (url: string) => {
   return api.post("/scan/ping", { url });
 };
+
+/**
+ * Website type detection — runs lightweight recon and returns
+ * what kind of site it is + which tools will be used.
+ * Used by the Auto Scan UI before initiating the scan.
+ */
+export const detectWebsite = (url: string) => {
+  return api.post("/scan/detect", { url });
+};
+
+/**
+ * Inline DNS Lookup — returns DNS records immediately, no scan pipeline.
+ * Used by the Manual Scan DNS Lookup tool panel.
+ */
+export const dnsLookupInline = (hostname: string) => {
+  return api.post("/scan/dns-lookup", { hostname });
+};
+
+/**
+ * Inline WHOIS Lookup — returns WHOIS data immediately, no scan pipeline.
+ * Used by the Manual Scan WHOIS tool panel.
+ */
+export const whoisLookupInline = (hostname: string) => {
+  return api.post("/scan/whois-lookup", { hostname });
+};
+
+/**
+ * Tool availability — checks which scanner binaries are installed on the server.
+ */
+export const getToolAvailability = () => {
+  return api.get("/scan/tools/availability");
+};
+
 // Get scan history
 export const getScanHistory = () => {
   return api.get("/scan/history");

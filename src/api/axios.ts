@@ -32,10 +32,9 @@ const BASE_URL = buildBaseUrl(rawBaseUrl);
 
 // Debug: expose and log the computed BASE_URL so deployed frontend logs show it.
 // This helps diagnose mismatches between frontend and backend paths (e.g. /api/v1).
-try {
-  // eslint-disable-next-line no-console
+if (typeof window !== "undefined") {
   console.debug("[API] Computed BASE_URL:", BASE_URL);
-} catch (e) {}
+}
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -54,7 +53,7 @@ api.interceptors.request.use(
       config.params = { ...config.params, _t: Date.now() };
     }
 
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -83,7 +82,7 @@ api.interceptors.response.use(
       }
 
       // All other routes: silently clear credentials
-      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken");
       sessionStorage.clear();
       document.cookie =
         "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

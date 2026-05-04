@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Shield, Trash2, Clock, User, ExternalLink, ChevronLeft, Search } from "lucide-react";
+import { Shield, Trash2, User, ExternalLink } from "lucide-react";
 import { adminGetAllScans, adminDeleteScan } from "../../api/admin-api";
 import "../../styles/admin.css";
 

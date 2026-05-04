@@ -13,14 +13,13 @@ import dnsIcon from "../assets/icons/dns-recon.json";
 import whoisIcon from "../assets/icons/whois.json";
 import rateLimitIcon from "../assets/icons/rate-limit.json";
 import aiSearchingIcon from "../assets/icons/aiSearching.json";
-import infoIcon from "../assets/icons/info.json";
-import profileIcon from "../assets/icons/profile.json";
+import xssIcon from "../assets/icons/Shield.json";
 
 interface AutoScanProgressProps {
   status: string;
   percent: number;
-  batchScans?: any[];
-  scanPlan?: any;
+  batchScans?: Array<{ createdAt?: string; status?: string; scanType?: string; tool?: string }>;
+  scanPlan?: { run?: string[]; skip?: string[] } | null;
 }
 
 export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }: AutoScanProgressProps) => {
@@ -31,7 +30,7 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
     return key;
   };
 
-  const toolLottieMap: Record<string, any> = {
+  const toolLottieMap: Record<string, unknown> = {
     nmap: nmapIcon,
     nuclei: nucleiIcon,
     nikto: niktoIcon,
@@ -41,8 +40,9 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
     gobuster: gobusterIcon,
     ffuf: aiSearchingIcon,
     ratelimit: rateLimitIcon,
-    dns: infoIcon,
-    whois: profileIcon,
+    dns: dnsIcon,
+    whois: whoisIcon,
+    xss: xssIcon,
   };
 
   const TOOL_LABELS: Record<string, string> = {
@@ -58,6 +58,7 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
     ratelimit: "Rate Limiter Check",
     dns: "DNS Reconnaissance",
     whois: "WHOIS Lookup",
+    xss: "XSS & CSRF (Injection)",
     auto: "Auto Scan",
   };
 
@@ -74,24 +75,13 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
     ratelimit: "Verify request throttling and API rate controls.",
     dns: "Inspect DNS records and domain infrastructure.",
     whois: "Collect registration and ownership metadata.",
+    xss: "Crawl and test input forms for Reflected XSS and CSRF token flaws.",
   };
 
-  const FALLBACK_ORDER = [
-    "platform",
-    "nmap",
-    "nikto",
-    "ssl",
-    "sqlmap",
-    "nuclei",
-    "wapiti",
-    "gobuster",
-    "ffuf",
-    "ratelimit",
-    "dns",
-    "whois",
-  ];
-
-  const scansByType = new Map<string, any>();
+  const scansByType = new Map<
+    string,
+    { createdAt?: string; status?: string; scanType?: string; tool?: string }
+  >();
   const sortedScans = [...batchScans].sort((a, b) => {
     const aTime = new Date(a?.createdAt || 0).getTime();
     const bTime = new Date(b?.createdAt || 0).getTime();
@@ -99,7 +89,7 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
   });
   const hasRunningScan = sortedScans.some((scan) => String(scan?.status || "") === "running");
   for (const scan of sortedScans) {
-    const key = normalizeTool(scan?.scanType || scan?.tool);
+    const key = normalizeTool(scan?.scanType || scan?.tool || "");
     if (key && !scansByType.has(key)) scansByType.set(key, scan);
   }
 
@@ -113,6 +103,7 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
         "nikto",
         "ssl",
         "sqlmap",
+        "xss",
         "nuclei",
         "wapiti",
         "gobuster",
@@ -123,8 +114,8 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
       ];
 
   const baseOrder = plannedOrder;
-  const extraScans = Array.from(scansByType.keys()).filter((toolId) => !baseOrder.includes(toolId));
-  const skippedExtra = planSkip.filter((toolId) => !baseOrder.includes(toolId));
+  const extraScans = Array.from(scansByType.keys()).filter((toolId: string) => !baseOrder.includes(toolId));
+  const skippedExtra = planSkip.filter((toolId: string) => !baseOrder.includes(toolId));
   const orderedTools = [...baseOrder, ...extraScans, ...skippedExtra].filter(Boolean);
 
   const steps = orderedTools.map((toolId) => {

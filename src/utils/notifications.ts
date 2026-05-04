@@ -25,14 +25,15 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function normalizeNotification(value: any): AppNotification | null {
+function normalizeNotification(value: unknown): AppNotification | null {
   if (!value || typeof value !== "object") return null;
-  const id = value.id || value._id || createId();
-  const type = (value.type || "info") as NotificationType;
-  const title = String(value.title || "Notification");
-  const message = String(value.message || "");
-  const createdAt = value.createdAt || new Date().toISOString();
-  const read = Boolean(value.read);
+  const candidate = value as Partial<AppNotification>;
+  const id = candidate.id || candidate._id || createId();
+  const type = (candidate.type || "info") as NotificationType;
+  const title = String(candidate.title || "Notification");
+  const message = String(candidate.message || "");
+  const createdAt = candidate.createdAt || new Date().toISOString();
+  const read = Boolean(candidate.read);
   return { id, type, title, message, createdAt, read };
 }
 

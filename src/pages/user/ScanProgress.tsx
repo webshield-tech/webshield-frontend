@@ -1,12 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   Shield, 
-  Activity, 
   Terminal, 
-  AlertCircle, 
   ArrowLeft, 
   Loader2,
   XCircle,
@@ -56,10 +53,14 @@ const ScanProgress = () => {
   const [tool, setTool] = useState<string | undefined>();
   const [batchId, setBatchId] = useState<string>(initialBatchId);
   const [target, setTarget] = useState<string | undefined>();
-  const [startedAt, setStartedAt] = useState<string | undefined>();
   const [logs, setLogs] = useState<string[]>([]);
+  const [technicalLogs, setTechnicalLogs] = useState<string[]>([]);
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
   const [pollErrors, setPollErrors] = useState(0);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [currentToolIndex, setCurrentToolIndex] = useState(0);
+  const [totalTools, setTotalTools] = useState(0);
+  const [statusMessage, setStatusMessage] = useState<string>("");
 
   const tips = [
     "CVE stands for Common Vulnerabilities and Exposures, a list of publicly disclosed cybersecurity vulnerabilities.",
@@ -129,35 +130,39 @@ const ScanProgress = () => {
           const runningScan = scans.find((s: any) => s?.status === "running");
           const pendingScan = scans.find((s: any) => s?.status === "pending");
 
+          const planOrder = Array.isArray(scans[0]?.scanPlan?.run)
+            ? scans[0]?.scanPlan?.run.map(normalizeTool)
+            : scans.map((s: any) => normalizeTool(s?.scanType || s?.tool));
+          
+          setTotalTools(planOrder.length);
           setPollErrors(0);
           setTool("auto");
           setTarget(scans[0]?.targetUrl || scans[0]?.url);
-          setStartedAt(scans[0]?.startedAt || scans[0]?.createdAt);
           setPercent(Math.max(5, Math.min(100, Math.round(((completed + failed + canceled) / total) * 100))));
 
           if (runningScan) {
-            // Show real partial output if available, otherwise tool name
+            const currentTool = normalizeTool(runningScan.scanType || runningScan.tool);
+            const stepIndex = planOrder.indexOf(currentTool);
+            const toolTitle = TOOL_TITLES[currentTool] || String(runningScan.scanType || "unknown").toUpperCase();
+            
+            setCurrentToolIndex(stepIndex >= 0 ? stepIndex + 1 : 1);
+            setStatusMessage(`Step ${stepIndex + 1}/${planOrder.length} - ${toolTitle} in progress…`);
+
             const partial = runningScan.results?.partialOutput;
             if (partial && typeof partial === "string") {
-              const lines = partial.split("\n").map((l: string) => l.trim()).filter(Boolean).slice(-4);
-              if (lines.length) { setLogs(lines.reverse()); }
+              const lines = partial.split("\n").map((l: string) => l.trim()).filter(Boolean).slice(-6);
+              if (lines.length) { 
+                setTechnicalLogs(lines.reverse()); 
+                setLogs([`▶ ${toolTitle}`, `Scanning: ${lines[0].substring(0, 55)}...`]);
+              }
             } else {
-              const planOrder = Array.isArray(scans[0]?.scanPlan?.run)
-                ? scans[0]?.scanPlan?.run.map(normalizeTool)
-                : scans.map((s: any) => normalizeTool(s?.scanType || s?.tool));
-              const currentTool = normalizeTool(runningScan.scanType || runningScan.tool);
-              const stepIndex = planOrder.indexOf(currentTool);
-              const stepLabel = stepIndex >= 0
-                ? `Step ${stepIndex + 1}/${planOrder.length}`
-                : "Step";
-              const toolTitle = TOOL_TITLES[currentTool] || String(runningScan.scanType || "unknown").toUpperCase();
-              setLogs(prev => [`${stepLabel}: ${toolTitle} in progress…`, ...prev].slice(0, 6));
+              setLogs([`▶ ${toolTitle}`, "Collecting reconnaissance data..."]);
             }
-          }
-          if (pendingScan && !runningScan) {
+          } else if (pendingScan && !runningScan) {
             const nextTool = normalizeTool(pendingScan.scanType || pendingScan.tool);
             const nextTitle = TOOL_TITLES[nextTool] || String(pendingScan.scanType || "unknown").toUpperCase();
-            setLogs(prev => [`Queued: ${nextTitle} will start after current tool finishes…`, ...prev].slice(0, 6));
+            setStatusMessage(`[QUEUED] ${nextTitle}`);
+            setLogs([`◌ ${nextTitle}`, "Waiting for previous tool to complete..."]);
           }
 
           const allDone = scans.every((s: any) => terminalStates.includes(String(s?.status || "")));
@@ -193,7 +198,6 @@ const ScanProgress = () => {
         setStatus(st);
         setTool(normalizedToolForUi);
         setTarget(data?.targetUrl || data?.url);
-        setStartedAt(data?.startedAt || data?.createdAt);
         setError(prev => (prev === "Failed to fetch scan status." ? "" : prev));
 
         // Show real partial output when available (scan-runner writes every 2s)
@@ -391,24 +395,122 @@ const ScanProgress = () => {
             </div>
 
             {status === "running" && (
-              <div style={{ marginTop: "20px", padding: "16px", background: "rgba(0, 255, 157, 0.05)", borderLeft: "4px solid var(--cyber-primary)", borderRadius: "4px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", color: "var(--cyber-primary)", fontFamily: "Orbitron, sans-serif", fontSize: "0.85rem", fontWeight: 800 }}>
+              <div style={{ marginTop: "24px", padding: "20px", background: "rgba(59, 130, 246, 0.05)", border: "1px solid var(--uber-border)", borderRadius: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", color: "var(--uber-accent)", fontSize: "0.85rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   <Lightbulb size={16} />
                   <span>Security Tip</span>
                 </div>
-                <p style={{ color: "var(--cyber-text-dim)", fontSize: "0.9rem", lineHeight: 1.5, margin: 0, minHeight: "40px" }}>
+                <p style={{ color: "var(--uber-muted)", fontSize: "0.9rem", lineHeight: 1.6, margin: 0, minHeight: "40px" }}>
                   {tips[currentTipIndex]}
                 </p>
               </div>
             )}
           </section>
 
-          {/* Right Panel: Live Logs */}
+          {/* Right Panel: Live Logs with Dual Output */}
           <section className="progress-logs-panel glass-panel">
             <div className="panel-header-mini">
               <Terminal size={16} />
               <span>Live Output</span>
             </div>
+
+            {/* Simplified Status Layer */}
+            <div style={{ 
+              marginBottom: "24px", 
+              padding: "20px", 
+              borderRadius: "12px", 
+              background: "rgba(255, 255, 255, 0.02)", 
+              border: "1px solid var(--uber-border)",
+              minHeight: "80px"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--uber-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Status
+                </span>
+                {showTechnicalDetails ? (
+                  <button 
+                    onClick={() => setShowTechnicalDetails(false)}
+                    style={{ 
+                      fontSize: "0.75rem",
+                      padding: "6px 12px",
+                      border: "1px solid var(--uber-border)",
+                      background: "transparent",
+                      color: "var(--uber-muted)",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Hide Details
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => setShowTechnicalDetails(true)}
+                    style={{ 
+                      fontSize: "0.75rem",
+                      padding: "6px 12px",
+                      border: "1px solid var(--uber-accent)",
+                      background: "transparent",
+                      color: "var(--uber-accent)",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Show Details
+                  </button>
+                )}
+              </div>
+              <div style={{ fontSize: "0.95rem", color: "var(--uber-text)", fontWeight: 500 }}>
+                {statusMessage || (status === "pending" ? "Initializing scan engine…" : `Status: ${status.toUpperCase()}`)}
+              </div>
+              {totalTools > 0 && currentToolIndex > 0 && (
+                <div style={{ fontSize: "0.8rem", color: "var(--uber-muted)", marginTop: "8px" }}>
+                  Progress: {currentToolIndex} of {totalTools} tools
+                </div>
+              )}
+            </div>
+
+            {/* Technical Details Layer (Expandable) */}
+            {showTechnicalDetails && (
+              <div style={{
+                marginBottom: "24px",
+                padding: "16px",
+                borderRadius: "12px",
+                background: "rgba(0, 0, 0, 0.3)",
+                border: "1px solid var(--uber-border)",
+                maxHeight: "200px",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column"
+              }}>
+                <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--uber-muted)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Raw Terminal Output
+                </div>
+                <div style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  fontSize: "0.8rem",
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  color: "var(--uber-muted)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px"
+                }}>
+                  {technicalLogs.length > 0 ? (
+                    technicalLogs.map((log, i) => (
+                      <div key={i} style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                        {log}
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ color: "rgba(255, 255, 255, 0.3)" }}>No technical output yet…</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Main Log Display */}
             <div className="logs-terminal">
               {status === "pending" && (
                 <div className="log-entry system">
@@ -425,7 +527,7 @@ const ScanProgress = () => {
               {status === "running" && (
                 <div className="log-entry cursor">
                   <span className="timestamp">[{new Date().toLocaleTimeString()}]</span>
-                  <span className="message">Scanning remote assets_</span>
+                  <span className="message">Analyzing…_</span>
                 </div>
               )}
               {error && (
@@ -437,7 +539,7 @@ const ScanProgress = () => {
               {pollErrors > 0 && status === "running" && (
                 <div className="log-entry system">
                   <span className="timestamp">[{new Date().toLocaleTimeString()}]</span>
-                  <span className="message">Network recovered attempts: {pollErrors}</span>
+                  <span className="message">Network recovery attempts: {pollErrors}</span>
                 </div>
               )}
             </div>
@@ -472,10 +574,7 @@ const ScanProgress = () => {
           </section>
         </div>
 
-        <div className="corner-tl"></div>
-        <div className="corner-tr"></div>
-        <div className="corner-bl"></div>
-        <div className="corner-br"></div>
+
       </div>
     </div>
   );

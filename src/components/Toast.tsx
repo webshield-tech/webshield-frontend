@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { motion, AnimatePresence } from "framer-motion";
 import { X, AlertCircle, CheckCircle2, Info, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";

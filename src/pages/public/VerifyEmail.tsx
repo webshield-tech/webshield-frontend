@@ -21,7 +21,8 @@ function VerifyEmail() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const emailParam = params.get("email") || (location.state as any)?.email;
+    const locationState = location.state as { email?: string } | null;
+    const emailParam = params.get("email") || locationState?.email;
     if (emailParam) {
       setEmail(emailParam);
     } else {
@@ -30,7 +31,7 @@ function VerifyEmail() {
   }, [location, navigate]);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (timer > 0) {
       interval = setInterval(() => setTimer(t => t - 1), 1000);
     }
@@ -53,7 +54,7 @@ function VerifyEmail() {
         setSuccess("Email verified successfully! Redirecting...");
         const verifiedUser = res.data.user;
         login(verifiedUser);
-        if (res.data.token) localStorage.setItem("authToken", res.data.token);
+        if (res.data.token) sessionStorage.setItem("authToken", res.data.token);
         
         setTimeout(() => {
           if (verifiedUser.agreedToTerms) {
@@ -63,8 +64,12 @@ function VerifyEmail() {
           }
         }, 2000);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Verification failed. Please check the code.");
+    } catch (err: unknown) {
+      const message =
+        typeof err === "object" && err && "response" in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : undefined;
+      setError(message || "Verification failed. Please check the code.");
     } finally {
       setLoading(false);
     }
@@ -81,8 +86,12 @@ function VerifyEmail() {
         setSuccess("A new code has been sent to your email.");
         setTimer(60); // 1 min cooldown
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to resend code.");
+    } catch (err: unknown) {
+      const message =
+        typeof err === "object" && err && "response" in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : undefined;
+      setError(message || "Failed to resend code.");
     } finally {
       setResending(false);
     }

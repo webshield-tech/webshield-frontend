@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Shield, ChevronDown, ChevronUp, ExternalLink, AlertTriangle, Zap, Lock, Code, Globe, Server, Database } from "lucide-react";
 import Lottie from "lottie-react";
 import "../../styles/learn.css";
@@ -130,7 +130,7 @@ const VULN_TYPES = [
     name: "Command Injection",
     icon: "server",
     color: "#38bdf8",
-    simple: "Command injection happens when user input is passed to a system shell command without sanitization. The attacker adds shell operators like \`;\`, \`&&\`, \`|\` to run their own commands on the server.",
+    simple: "Command injection happens when user input is passed to a system shell command without sanitization. The attacker adds shell operators like `;`, `&&`, `|` to run their own commands on the server.",
     example: `# App runs: ping <user_input>\n# User enters: 8.8.8.8; cat /etc/passwd\n# Server runs: ping 8.8.8.8; cat /etc/passwd\n# Attacker sees the password file!`,
     impact: "Full server takeover, data exfiltration, ransomware deployment, lateral movement.",
     prevention: "Never pass user input to shell commands. Use language APIs with array arguments. Validate and whitelist input."
@@ -148,7 +148,7 @@ const VULN_TYPES = [
     name: "Path Traversal",
     icon: "alert",
     color: "#fb923c",
-    simple: "Path traversal lets attackers access files outside the intended directory by using \`../\` sequences in a filename parameter. If an app reads files based on user input without sanitization, attackers can read sensitive system files.",
+    simple: "Path traversal lets attackers access files outside the intended directory by using `../` sequences in a filename parameter. If an app reads files based on user input without sanitization, attackers can read sensitive system files.",
     example: `# App loads profile picture:\nGET /image?file=profile.jpg\n\n# Attacker requests:\nGET /image?file=../../../../etc/passwd\n\n# Server reads and returns /etc/passwd!`,
     impact: "Source code disclosure, password exposure, config file leakage, potential RCE via log poisoning.",
     prevention: "Canonicalize file paths and validate they start with the expected base directory. Never pass raw user input to file reading functions."
@@ -156,10 +156,18 @@ const VULN_TYPES = [
 ];
 
 export default function Learn() {
+  type ExploitItem = {
+    title?: string;
+    pubDate?: string;
+    cves?: string[];
+    description?: string;
+    link?: string;
+  };
+
   const [openCve, setOpenCve] = useState<string | null>(null);
   const [openVuln, setOpenVuln] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"cve" | "vulns" | "exploitdb">("vulns");
-  const [exploits, setExploits] = useState<any[]>([]);
+  const [exploits, setExploits] = useState<ExploitItem[]>([]);
   const [loadingExploits, setLoadingExploits] = useState(false);
   const [exploitError, setExploitError] = useState<string | null>(null);
 
@@ -170,7 +178,7 @@ export default function Learn() {
     "Low": "#38bdf8"
   };
 
-  const lottieIconMap: Record<string, any> = {
+  const lottieIconMap: Record<string, object> = {
     sql: sqlIcon,
     wapiti: wapatiIcon,
     ssl: sslIcon,
@@ -205,7 +213,7 @@ export default function Learn() {
     }
   };
 
-  const getManualCheckSteps = (exploit: any) => {
+  const getManualCheckSteps = (exploit: ExploitItem) => {
     const title = String(exploit?.title || "").toLowerCase();
     const steps = [
       "Identify the exact product and version mentioned in the advisory.",
@@ -227,25 +235,26 @@ export default function Learn() {
     return steps.slice(0, 5);
   };
 
-  useEffect(() => {
-    if (activeTab === "exploitdb" && exploits.length === 0 && !loadingExploits && !exploitError) {
-      setLoadingExploits(true);
-      api.get("/api/exploit/latest")
-        .then((res) => {
-          if (res.data && res.data.success) {
-            setExploits(res.data.exploits || []);
-          } else {
-            setExploitError("Failed to load exploits.");
-          }
-        })
-        .catch((err) => {
-          setExploitError(err.response?.data?.error || "Error connecting to Exploit-DB feed.");
-        })
-        .finally(() => {
-          setLoadingExploits(false);
-        });
+  const loadExploits = async () => {
+    if (loadingExploits || exploits.length > 0 || exploitError) return;
+    setLoadingExploits(true);
+    try {
+      const res = await api.get("/api/exploit/latest");
+      if (res.data && res.data.success) {
+        setExploits(Array.isArray(res.data.exploits) ? res.data.exploits : []);
+      } else {
+        setExploitError("Failed to load exploits.");
+      }
+    } catch (err: unknown) {
+      const message =
+        typeof err === "object" && err && "response" in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : undefined;
+      setExploitError(message || "Error connecting to Exploit-DB feed.");
+    } finally {
+      setLoadingExploits(false);
     }
-  }, [activeTab, exploits.length, loadingExploits, exploitError]);
+  };
 
   return (
     <div className="learn-page">
@@ -272,7 +281,10 @@ export default function Learn() {
         </button>
         <button
           className={`learn-tab ${activeTab === "exploitdb" ? "active" : ""}`}
-          onClick={() => setActiveTab("exploitdb")}
+          onClick={() => {
+            setActiveTab("exploitdb");
+            void loadExploits();
+          }}
         >
           <Database size={16} /> Exploit-DB (Latest)
         </button>
@@ -391,7 +403,7 @@ export default function Learn() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
                 <h4 style={{ margin: 0, color: "#e6edf3", fontSize: "1rem" }}>{exploit.title}</h4>
                 <span style={{ color: "#8b949e", fontSize: "0.8rem", whiteSpace: "nowrap", marginLeft: "1rem" }}>
-                  {new Date(exploit.pubDate).toLocaleDateString()}
+                  {exploit.pubDate ? new Date(exploit.pubDate).toLocaleDateString() : "Unknown date"}
                 </span>
               </div>
               {Array.isArray(exploit.cves) && exploit.cves.length > 0 && (
