@@ -103,7 +103,6 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
         "nikto",
         "ssl",
         "sqlmap",
-        "xss",
         "nuclei",
         "wapiti",
         "gobuster",

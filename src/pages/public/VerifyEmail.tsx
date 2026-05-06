@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, RefreshCw, ChevronLeft } from "lucide-react";
+import { Shield, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, RefreshCw, ChevronLeft, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
@@ -105,26 +105,39 @@ function VerifyEmail() {
         className="auth-card verification-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
         <div className="auth-info-panel">
           <div className="auth-logo">
-            <Shield size={32} color="var(--cyber-primary)" />
+            <Shield size={28} color="var(--cyber-primary)" />
             <span>VULN SPECTRA</span>
           </div>
-          <div className="verification-visual">
-            <Mail size={80} className="floating-icon" />
+          
+          <div className="verification-icon-container">
+            <motion.div 
+              className="verification-icon-wrapper"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Mail size={64} className="verification-icon" />
+            </motion.div>
           </div>
-          <h2>Security Check</h2>
-          <p>Protecting your infrastructure starts with a verified identity. We've dispatched a code to:</p>
+          
+          <h2>Verify Your Email</h2>
+          <p>We've sent a verification code to protect your account:</p>
           <div className="target-email-badge">
-             {email}
+            {email}
           </div>
+          <p className="verification-info-text">This step ensures only authorized users can access your account.</p>
         </div>
 
         <div className="auth-form-panel">
           <div className="form-header">
-             <h1>IDENTITY VERIFICATION</h1>
-             <p className="auth-subtitle">ENTER THE 6-DIGIT ENCRYPTION KEY</p>
+            <Lock size={20} className="form-header-icon" />
+            <div>
+              <h1>Email Verification</h1>
+              <p className="auth-subtitle">Enter the 6-digit code sent to your email</p>
+            </div>
           </div>
 
           {error && (
@@ -143,19 +156,21 @@ function VerifyEmail() {
 
           <form onSubmit={handleVerify} className="otp-form">
             <div className="auth-field">
+              <label>Verification Code</label>
               <div className="otp-input-container">
                 <input
                   type="text"
                   maxLength={6}
-                  placeholder="· · · · · ·"
+                  placeholder="000000"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                   className="premium-otp-input"
                   autoFocus
+                  disabled={loading}
                 />
                 <div className="otp-input-glitch"></div>
               </div>
-              <p className="field-hint">Enter the code from your inbox to proceed</p>
+              <p className="field-hint">Check your inbox for the verification code</p>
             </div>
 
             <motion.button
@@ -165,29 +180,29 @@ function VerifyEmail() {
               whileTap={{ scale: 0.98 }}
             >
               {loading ? (
-                <><Loader2 size={20} className="animate-spin" /><span>VERIFYING SYSTEM...</span></>
+                <><Loader2 size={20} className="animate-spin" /><span>Verifying...</span></>
               ) : (
-                <><span>COMPLETE ACTIVATION</span> <ArrowRight size={20} /></>
+                <><span>Verify Email</span> <ArrowRight size={20} /></>
               )}
             </motion.button>
           </form>
 
           <div className="auth-footer verification-footer">
             <div className="resend-section">
-               <span>Didn't receive the transmission?</span>
-               <button 
-                 className="resend-link-btn" 
-                 onClick={handleResend} 
-                 disabled={resending || timer > 0}
-               >
-                 {resending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                 {timer > 0 ? `Retry in ${timer}s` : "Resend Protocol"}
-               </button>
+              <span>Didn't receive the code?</span>
+              <button 
+                className="resend-link-btn" 
+                onClick={handleResend} 
+                disabled={resending || timer > 0}
+              >
+                {resending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                {timer > 0 ? `Retry in ${timer}s` : "Resend Code"}
+              </button>
             </div>
             
             <button onClick={() => navigate("/login")} className="back-to-login-btn">
-               <ChevronLeft size={16} />
-               Back to Login
+              <ChevronLeft size={16} />
+              Back to Login
             </button>
           </div>
         </div>

@@ -668,46 +668,6 @@ const ScanResult = () => {
       }];
     }
 
-    // ── XSS / CSRF checks ─────────────────────────────────────────────────────
-    if (normalizedTool === "xss") {
-      const xssFindings = Array.isArray(res.xssFindings) ? res.xssFindings : [];
-      const csrfFindings = Array.isArray(res.csrfFindings) ? res.csrfFindings : [];
-
-      if (xssFindings.length || csrfFindings.length) {
-        const cards = [
-          ...xssFindings.map((finding: any) => ({
-            title: "Possible XSS issue",
-            severity: "Critical",
-            description: JSON.stringify(finding, null, 2),
-            recommendation: "Escape user input before rendering it in the browser and re-test the affected form or parameter.",
-            platform_specific_fix: getPlatformFix(platform, "Possible XSS issue", normalizedTool),
-          })),
-          ...csrfFindings.map((finding: any) => ({
-            title: "Missing CSRF protection",
-            severity: "High",
-            description: JSON.stringify(finding, null, 2),
-            recommendation: "Add anti-CSRF tokens to POST forms and verify them on the server.",
-            platform_specific_fix: getPlatformFix(platform, "Missing CSRF protection", normalizedTool),
-          })),
-        ];
-
-        return cards.length ? cards : [{
-          title: "XSS / CSRF scan",
-          severity: "Low",
-          description: String(res.summary || "Scan completed with no issues detected."),
-          recommendation: "Keep validating inputs and protect forms with CSRF tokens.",
-          platform_specific_fix: getPlatformFix(platform, "XSS / CSRF scan", normalizedTool),
-        }];
-      }
-
-      return [{
-        title: "XSS / CSRF scan",
-        severity: "Low",
-        description: String(res.summary || "Scan completed with no issues detected."),
-        recommendation: "Keep validating inputs and protect forms with CSRF tokens.",
-        platform_specific_fix: getPlatformFix(platform, "XSS / CSRF scan", normalizedTool),
-      }];
-    }
 
     // ── Generic fallback for other vulnerabilities array ─────────────────────────
     if (Array.isArray(res.vulnerabilities) && res.vulnerabilities.length > 0 && normalizedTool !== "sqlmap" && normalizedTool !== "nmap") {

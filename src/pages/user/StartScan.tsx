@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Shield, Globe, Info, AlertCircle, ArrowRight, Loader2,
-  X, Rocket, Clock, Search
+  X, Rocket, Clock, Search, CheckCircle2, Database, Zap
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { startScan, pingTarget, detectWebsite, dnsLookupInline, whoisLookupInline, getToolAvailability } from "../../api/scan-api";
 import type { ScanTool } from "../../utils/types";
@@ -23,7 +24,7 @@ import nucleiAnimation from "../../assets/icons/nuclie.json";
 import dnsAnimation from "../../assets/icons/dns-recon.json";
 import whoisAnimation from "../../assets/icons/whois.json";
 import rateLimitAnimation from "../../assets/icons/rate-limit.json";
-import xssAnimation from "../../assets/icons/Shield.json";
+
 
 import { useToast, ToastContainer } from "../../components/Toast";
 
@@ -36,9 +37,8 @@ const SCAN_MODE_DESCRIPTIONS: Record<string, any> = {
   gobuster: { color: "#ff8c00", quick: { title: "Quick Enumeration", detail: "Rapid directory sweep.", bullets: ["Common 50 directories", "Fast response detection", "~1–2 mins"] }, full: { title: "Deep Discovery", detail: "Exhaustive directory and file brute-forcing.", bullets: ["Full wordlist enumeration", "Hidden file detection", "~5–10 mins"] } },
   ratelimit: { color: "#9d00ff", quick: { title: "Rate Limit Probe", detail: "Checks if the website has active rate limiters.", bullets: ["100 concurrent request burst", "API endpoint activity", "~30 secs"] }, full: { title: "DDoS Resistance Audit", detail: "Intense stress test for WAF/Firewall.", bullets: ["Sustained 200+ requests", "API health check", "~2 mins"] } },
   ffuf: { color: "#ff00ff", quick: { title: "Fast Fuzz", detail: "High-speed directory discovery.", bullets: ["200/301 status filtering", "Multi-threaded", "~1 min"] }, full: { title: "Recursive Audit", detail: "Exhaustive recursive fuzzing.", bullets: ["Full status code analysis", "Recursive depth", "~5 mins"] } },
-  wapiti: { color: "#00d4ff", quick: { title: "Baseline Audit", detail: "Quick web vulnerability assessment.", bullets: ["Common script vulnerabilities", "Misconfiguration check", "~3 mins"] }, full: { title: "Deep Crawler", detail: "Complete web application security audit.", bullets: ["Level 1 exhaustive crawling", "Injection audits", "~10 mins"] } },
+  wapiti: { color: "#00d4ff", quick: { title: "Baseline Audit", detail: "Quick web vulnerability assessment (XSS, SSRF, Injection).", bullets: ["XSS and SSRF detection", "SQL injection checks", "Misconfiguration audit", "~3 mins"] }, full: { title: "Deep Crawler", detail: "Complete web app security audit with XSS and SSRF coverage.", bullets: ["Level 1 exhaustive crawling", "Cross-Site Scripting detection", "Server-Side Request Forgery (SSRF) detection", "All injection types", "~10 mins"] } },
   nuclei: { color: "#ffd54f", quick: { title: "CVE Exposure", detail: "Fast scan for known CVEs.", bullets: ["CVE template matching", "Exposure detection", "~2 mins"] }, full: { title: "Full Tech Audit", detail: "Complete Nuclei template suite.", bullets: ["Thousands of templates", "Critical vulnerability check", "~15 mins"] } },
-  xss: { color: "#00ff9d", quick: { title: "Basic XSS Audit", detail: "Checks URL parameters for reflected XSS.", bullets: ["URL param reflection", "Basic CSRF checks", "~1 min"] }, full: { title: "Deep XSS & Form Audit", detail: "Crawls forms and inputs for injection flaws.", bullets: ["Form submission testing", "Deep reflection checks", "Strict CSRF validation", "~3 mins"] } },
 };
 
 const INLINE_TOOLS = ["dns", "whois"];
@@ -53,7 +53,6 @@ const TOOL_DAILY_LIMITS = [
   { id: "ffuf", label: "FFUF", limit: 10, color: "#ff00ff" },
   { id: "wapiti", label: "Wapiti", limit: 10, color: "#00d4ff" },
   { id: "nuclei", label: "Nuclei", limit: 10, color: "#ffd54f" },
-  { id: "xss", label: "XSS/CSRF", limit: 10, color: "#00ff9d" },
 ];
 
 const StartScan = () => {
@@ -77,6 +76,7 @@ const StartScan = () => {
   const [inlineResult, setInlineResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [showModeModal, setShowModeModal] = useState(false);
+  const [showDetectionModal, setShowDetectionModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [toolStats, setToolStats] = useState<Record<string, number>>({});
   const [toolAvailability, setToolAvailability] = useState<{ byTool: Record<string, boolean>; available: string[]; missing: string[] } | null>(null);
@@ -125,11 +125,10 @@ const StartScan = () => {
     { id: "nikto",    name: "Nikto",         desc: "Web Server Scanner",          anim: niktoAnimation,    color: "#ff0055", tag: "CONFIG" },
     { id: "sqlmap",   name: "SQLMap",        desc: "SQL Injection Tool",          anim: sqlmapAnimation,   color: "#ffd54f", tag: "DATABASE" },
     { id: "sslscan",  name: "SSLScan",       desc: "TLS/SSL Auditor",             anim: sslscanAnimation,  color: "#00ff9d", tag: "HTTPS" },
-    { id: "xss",      name: "XSS & CSRF",    desc: "Cross-Site Scripting",        anim: xssAnimation,      color: "#00ff9d", tag: "INJECTION" },
     { id: "gobuster", name: "Gobuster",      desc: "Directory Discovery",         anim: gobusterAnimation, color: "#ff8c00", tag: "HIDDEN" },
     { id: "ratelimit",name: "RateLimit",     desc: "Request Throttle Check",      anim: rateLimitAnimation,color: "#9d00ff", tag: "DDoS" },
     { id: "ffuf",     name: "FFUF",          desc: "Fast Web Fuzzer",             anim: ffufAnimation,     color: "#ff00ff", tag: "EXPERT" },
-    { id: "wapiti",   name: "Wapiti",        desc: "Web App Auditor",             anim: wapitiAnimation,   color: "#00d4ff", tag: "SCANNER" },
+    { id: "wapiti",   name: "Wapiti",        desc: "Web App Auditor (XSS, SSRF)", anim: wapitiAnimation,   color: "#00d4ff", tag: "SCANNER" },
     { id: "nuclei",   name: "Nuclei",        desc: "Template Scanner",            anim: nucleiAnimation,   color: "#ffd54f", tag: "TEMPLATES" },
     { id: "dns",      name: "DNS Lookup",    desc: "Domain Inspector (Inline)",   anim: dnsAnimation,      color: "#69f0ae", tag: "INFO" },
     { id: "whois",    name: "Whois Lookup",  desc: "Domain Owner (Inline)",       anim: whoisAnimation,    color: "#ffffff", tag: "INFO" },
@@ -145,7 +144,7 @@ const StartScan = () => {
 
   const scannerTools = tools.filter(t => !INLINE_TOOLS.includes(t.id));
   const inlineTools = tools.filter(t => INLINE_TOOLS.includes(t.id));
-  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "xss", "nuclei"].includes(t.id));
+  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "wapiti", "nuclei", "dns", "whois"].includes(t.id));
 
   if (!authChecked || authLoading) return null;
 
@@ -282,7 +281,8 @@ const StartScan = () => {
           addToast("info", "Limited Tooling", `Some scanners are missing: ${missingToolNames.join(", ")}`, 5000);
         }
 
-        await launchScan("full", autoDetection); // Auto scan is managed by decision engine
+        // Show detection modal before launching scan
+        setShowDetectionModal(true);
       } catch (autoDetectError: any) {
         const msg = autoDetectError?.response?.data?.error || autoDetectError?.message || "Website detection failed.";
         setError(msg);
@@ -395,7 +395,7 @@ const StartScan = () => {
                     disabled={scanLoading || detectLoading}
                   />
                   <button type="button" className="ping-verify-btn" onClick={handleDetectWebsite} disabled={detectLoading || !url.trim()}>
-                    {detectLoading ? <Loader2 className="animate-spin" size={16} /> : <><Search size={16} /> Check Availability & Detect</>}
+                    {detectLoading ? <Loader2 className="animate-spin" size={16} /> : <><Search size={16} /> Check & Detect</>}
                   </button>
                 </div>
               </div>
@@ -404,7 +404,7 @@ const StartScan = () => {
               <div className="quota-summary" style={{ marginTop: 20, display: "flex", justifyContent: "center" }}>
                 <span className="quota-pill" style={{ color: "#00ff9d", fontSize: "1rem", padding: "12px 24px", background: "rgba(0, 255, 157, 0.1)", border: "1px solid rgba(0, 255, 157, 0.3)" }}>
                   <strong>Auto Scans Remaining Today:</strong>
-                  <span style={{ marginLeft: 8, fontSize: "1.2rem", fontWeight: "bold" }}>{5 - (toolStats.auto || 0)} / 5</span>
+                  <span style={{ marginLeft: 8, fontSize: "1.2rem", fontWeight: "bold" }}>{Math.max(0, 5 - (toolStats.auto || 0))} / 5</span>
                 </span>
               </div>
             </div>
@@ -430,23 +430,27 @@ const StartScan = () => {
               </div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "center", margin: "40px 0" }}>
-              <button onClick={handleInitialize} className="launch-btn" style={{ padding: "24px 60px", fontSize: "1.3rem", borderRadius: 30 }} disabled={scanLoading || !url.trim()}>
-                {scanLoading ? <Loader2 className="animate-spin" size={24} /> : <Rocket size={24} />}
-                <span>Initialize Auto Scan</span>
+            <div style={{ display: "flex", justifyContent: "center", margin: "32px 0 16px 0", gap: 12, flexWrap: "wrap" }}>
+              <button onClick={handleInitialize} className="launch-btn" style={{ padding: "18px 48px", fontSize: "1.1rem", borderRadius: 24 }} disabled={scanLoading || !url.trim()}>
+                {scanLoading ? <Loader2 className="animate-spin" size={20} /> : <Rocket size={20} />}
+                <span>Start Auto Scan</span>
               </button>
+              {!isMobile && (
+                <p style={{ fontSize: "0.85rem", color: "#88f", margin: "auto 0", maxWidth: "300px" }}>
+                  ✓ Smart detection runs optimal tools based on website type
+                </p>
+              )}
             </div>
 
             <div className="auto-tools-info glass-panel">
               <div className="auto-tools-header">
                 <Info size={18} className="text-primary" />
-                <span>What does Auto Scan do?</span>
+                <span>Included Tools</span>
               </div>
               <p className="auto-tools-copy">
-                Auto scan is a smart sequence that automatically detects whether your target is a static frontend or a full-stack backend.
-                It intelligently selects and runs the right combination of tools, skipping irrelevant ones (like SQLMap on static sites) to save time.
+                Auto scan intelligently detects whether your target is a static frontend or full-stack backend, then runs the optimal security tools for that type.
               </p>
-              <div className="auto-tools-grid">
+              <div className="auto-tools-grid" style={{ gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 12 }}>
                 {autoTools.map((t) => (
                   <div key={t.id} className="auto-tool-card" style={{ "--accent-color": t.color } as any}>
                     <Lottie animationData={t.anim} loop className="auto-tool-icon" />
@@ -524,8 +528,8 @@ const StartScan = () => {
               </div>
 
               <div className="module-group inline-group">
-                <label>Inline Intelligence</label>
-                <p className="module-helper-text">Instant lookups that return results on this page (no progress screen).</p>
+                <label>Domain Intelligence (Inline Lookups)</label>
+                <p className="module-helper-text">Instant DNS & WHOIS lookups that return results on this page (no progress screen).</p>
                 <div className={`module-selector inline-selector ${isMobile ? "mobile-grid" : ""}`}>
                   {inlineTools.map((t) => {
                     const available = isToolAvailable(t.id);
@@ -554,7 +558,7 @@ const StartScan = () => {
               <div className="inline-results-card glass-panel">
                 <div className="card-header">
                   <Info size={18} className="text-primary" />
-                  <span>Inline Results</span>
+                  <span>Domain Lookup Results</span>
                 </div>
                 {INLINE_TOOLS.includes(tool) ? (
                   inlineResult ? (
@@ -569,12 +573,12 @@ const StartScan = () => {
                     </div>
                   ) : (
                     <div className="inline-results-empty">
-                      Run DNS or WHOIS to see results here.
+                      Run a DNS or WHOIS lookup to see results here.
                     </div>
                   )
                 ) : (
                   <div className="inline-results-empty">
-                    Select DNS or WHOIS to run an inline lookup.
+                    Select DNS or WHOIS above to run an instant domain lookup.
                   </div>
                 )}
               </div>
@@ -688,6 +692,89 @@ const StartScan = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Detection Modal */}
+      {showDetectionModal && detectionData && (
+        <motion.div 
+          className="detection-modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setShowDetectionModal(false)}
+        >
+          <motion.div 
+            className="detection-modal-content"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="detection-modal-header">
+              <div className="detection-modal-icon">
+                <Zap size={40} />
+              </div>
+              <h2>Website Analysis Complete</h2>
+              <p>Preparing optimal scan tools for your target</p>
+            </div>
+
+            <div className="detection-modal-body">
+              <div className="detection-item">
+                <div className="detection-item-icon">
+                  {detectionData.siteType === "Frontend Only" ? (
+                    <Globe size={24} />
+                  ) : (
+                    <Database size={24} />
+                  )}
+                </div>
+                <div className="detection-item-content">
+                  <h3>Website Type</h3>
+                  <p>{detectionData.siteType}</p>
+                </div>
+              </div>
+
+              <div className="detection-item">
+                <div className="detection-item-icon">
+                  <CheckCircle2 size={24} />
+                </div>
+                <div className="detection-item-content">
+                  <h3>Server Status</h3>
+                  <p>{detectionData.isAlive ? "✓ Online & Reachable" : "✗ Unreachable"}</p>
+                </div>
+              </div>
+
+              <div className="detection-item">
+                <div className="detection-item-icon" style={{ background: detectionData.hasSSL ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", color: detectionData.hasSSL ? "var(--uber-success)" : "var(--uber-danger)" }}>
+                  <Shield size={24} />
+                </div>
+                <div className="detection-item-content">
+                  <h3>HTTPS/TLS</h3>
+                  <p>{detectionData.hasSSL ? "✓ Enabled" : "✗ Not Detected"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="detection-modal-footer">
+              <button 
+                className="detection-modal-btn secondary"
+                onClick={() => setShowDetectionModal(false)}
+              >
+                <X size={18} />
+                Cancel
+              </button>
+              <button 
+                className="detection-modal-btn primary"
+                onClick={() => {
+                  setShowDetectionModal(false);
+                  launchScan("full", detectionData);
+                }}
+              >
+                <Rocket size={18} />
+                Start Auto Scan
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
