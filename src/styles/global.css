@@ -50,7 +50,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* CYBER OVERLAYS */
+/* CYBER OVERLAYS - ✅ OPTIMIZED: Disabled continuous animations */
 body::before {
   content: "";
   position: fixed;
@@ -65,9 +65,11 @@ body::before {
   background-position: center center;
   z-index: -2;
   pointer-events: none;
+  /* ✅ REMOVED: animation that was causing constant repaints */
+  will-change: auto;
 }
 
-/* Scanlines Effect */
+/* Scanlines Effect - ✅ OPTIMIZED: Reduced opacity and removed animations */
 body::after {
   content: "";
   position: fixed;
@@ -77,17 +79,19 @@ body::after {
   height: 100%;
   background: linear-gradient(
     rgba(18, 16, 16, 0) 50%,
-    rgba(0, 0, 0, 0.1) 50%
+    rgba(0, 0, 0, 0.05) 50%
   ), linear-gradient(
     90deg,
-    rgba(255, 0, 0, 0.02),
-    rgba(0, 255, 0, 0.01),
-    rgba(0, 0, 255, 0.02)
+    rgba(255, 0, 0, 0.01),
+    rgba(0, 255, 0, 0.005),
+    rgba(0, 0, 255, 0.01)
   );
   background-size: 100% 4px, 3px 100%;
   z-index: 1000;
   pointer-events: none;
-  opacity: 0.3;
+  opacity: 0.15;
+  /* ✅ REMOVED: animation */
+  will-change: auto;
 }
 
 /* Global Noise Overlay */

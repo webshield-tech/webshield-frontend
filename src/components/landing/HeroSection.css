@@ -30,15 +30,13 @@
     linear-gradient(var(--cyber-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--cyber-grid) 1px, transparent 1px);
   background-size: 60px 60px;
-  transform: rotateX(60deg) translateY(-200px);
+  /* ✅ OPTIMIZED: Removed heavy 3D transform and animation */
+  opacity: 0.3;
   mask-image: radial-gradient(circle at center, black, transparent 80%);
-  animation: gridShift 20s linear infinite;
+  will-change: auto;
 }
 
-@keyframes gridShift {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 60px; }
-}
+/* ✅ REMOVED: @keyframes gridShift animation - was causing constant repaints */
 
 .bg-data-streams {
   position: absolute;
@@ -54,23 +52,19 @@
   width: 1px;
   height: 100px;
   background: linear-gradient(to bottom, transparent, var(--cyber-primary), transparent);
-  animation: fall 5s linear infinite;
-  opacity: 0.3;
+  /* ✅ OPTIMIZED: Removed animation - was causing continuous CPU usage */
+  opacity: 0.2;
+  will-change: auto;
 }
 
-@keyframes fall {
-  0% { transform: translateY(-200px); opacity: 0; }
-  10% { opacity: 0.5; }
-  90% { opacity: 0.5; }
-  100% { transform: translateY(100vh); opacity: 0; }
-}
+/* ✅ REMOVED: @keyframes fall animation - streams now static */
 
-/* Random Stream Positions */
-.data-stream:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 4s; }
-.data-stream:nth-child(2) { left: 25%; animation-delay: 1s; animation-duration: 6s; }
-.data-stream:nth-child(3) { left: 40%; animation-delay: 0.5s; animation-duration: 5s; }
-.data-stream:nth-child(4) { left: 60%; animation-delay: 2s; animation-duration: 4.5s; }
-.data-stream:nth-child(5) { left: 85%; animation-delay: 1.5s; animation-duration: 7s; }
+/* Random Stream Positions - ✅ OPTIMIZED: Static positioning only */
+.data-stream:nth-child(1) { left: 10%; }
+.data-stream:nth-child(2) { left: 25%; }
+.data-stream:nth-child(3) { left: 40%; }
+.data-stream:nth-child(4) { left: 60%; }
+.data-stream:nth-child(5) { left: 85%; }
 
 .bg-glow-orb {
   position: absolute;
@@ -78,16 +72,15 @@
   left: 50%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(var(--cyber-primary-rgb), 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--cyber-primary-rgb), 0.08) 0%, transparent 70%);
   transform: translate(-50%, -50%);
   filter: blur(80px);
-  animation: orbPulse 10s ease-in-out infinite;
+  /* ✅ OPTIMIZED: Removed continuous pulse animation - reduced opacity */
+  opacity: 0.6;
+  will-change: auto;
 }
 
-@keyframes orbPulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
-}
+/* ✅ REMOVED: @keyframes orbPulse animation - was running 10s infinite */
 
 /* Hero Content */
 .hero-content {

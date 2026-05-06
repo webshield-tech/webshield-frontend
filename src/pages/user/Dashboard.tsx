@@ -225,7 +225,7 @@ const Dashboard = () => {
             ].map(t => (
               <div key={t.name} className={`tool-card-v2 ${t.color}`} onClick={() => navigate(`/start-scan?tool=${t.val}`)}>
                 <div className="tool-animation">
-                  <Lottie animationData={t.animation} loop={true} />
+                  <Lottie animationData={t.animation} loop={false} />
                 </div>
                 <div className="tool-info">
                   <h4>{t.name}</h4>

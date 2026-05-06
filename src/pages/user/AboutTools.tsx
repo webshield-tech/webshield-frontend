@@ -206,7 +206,7 @@ const AboutTools: React.FC = () => {
               <div className="card-accent-line"></div>
               <div className="tool-visual">
                 <div className="lottie-wrap">
-                  <Lottie animationData={tool.animation} loop />
+                  <Lottie animationData={tool.animation} loop={false} />
                 </div>
               </div>
               

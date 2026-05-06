@@ -2,14 +2,24 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
+// ✅ SECURITY FIX: Use environment variables for Firebase config
+// Create .env.local file with these variables:
+// VITE_FIREBASE_API_KEY=...
+// VITE_FIREBASE_AUTH_DOMAIN=...
+// VITE_FIREBASE_PROJECT_ID=...
+// VITE_FIREBASE_STORAGE_BUCKET=...
+// VITE_FIREBASE_MESSAGING_SENDER_ID=...
+// VITE_FIREBASE_APP_ID=...
+// VITE_FIREBASE_MEASUREMENT_ID=...
+
 const firebaseConfig = {
-  apiKey: "AIzaSyD_8gplelZCfeDrr03K9pna4iIph0iKBd0",
-  authDomain: "vuln-spectra.firebaseapp.com",
-  projectId: "vuln-spectra",
-  storageBucket: "vuln-spectra.firebasestorage.app",
-  messagingSenderId: "1083623884393",
-  appId: "1:1083623884393:web:0680134b5411004ac144f8",
-  measurementId: "G-PJ082B5J9F"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
 const app = initializeApp(firebaseConfig);

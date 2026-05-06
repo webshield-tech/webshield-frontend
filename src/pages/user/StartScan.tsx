@@ -41,7 +41,9 @@ const SCAN_MODE_DESCRIPTIONS: Record<string, any> = {
   nuclei: { color: "#ffd54f", quick: { title: "CVE Exposure", detail: "Fast scan for known CVEs.", bullets: ["CVE template matching", "Exposure detection", "~2 mins"] }, full: { title: "Full Tech Audit", detail: "Complete Nuclei template suite.", bullets: ["Thousands of templates", "Critical vulnerability check", "~15 mins"] } },
 };
 
-const INLINE_TOOLS = ["dns", "whois"];
+// ✅ UPDATED: Separated DNS/WHOIS into their own category for Domain Reconnaissance
+const RECON_TOOLS = ["dns", "whois"];
+const INLINE_TOOLS: string[] = []; // Keep for backward compat but empty
 
 const TOOL_DAILY_LIMITS = [
   { id: "nmap", label: "Nmap", limit: 10, color: "#00f2ff" },
@@ -64,16 +66,16 @@ const StartScan = () => {
   const [url, setUrl] = useState("");
   const [scanFlow, setScanFlow] = useState<"auto" | "manual">(searchParams.get("mode") === "manual" ? "manual" : "auto");
   const [tool, setTool] = useState<ScanTool>("nmap");
+  const [reconTool, setReconTool] = useState<"dns" | "whois">("dns");
   const [scanMode, setScanMode] = useState<"quick" | "full">("quick");
 
   const [scanLoading, setScanLoading] = useState(false);
   const [pingLoading, setPingLoading] = useState(false);
   const [detectLoading, setDetectLoading] = useState(false);
-  const [inlineLoading, setInlineLoading] = useState(false);
-
+  const [reconLoading, setReconLoading] = useState(false);
 
   const [detectionData, setDetectionData] = useState<any>(null);
-  const [inlineResult, setInlineResult] = useState<any>(null);
+  const [reconResult, setReconResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [showModeModal, setShowModeModal] = useState(false);
   const [showDetectionModal, setShowDetectionModal] = useState(false);
@@ -142,9 +144,10 @@ const StartScan = () => {
   const showAvailabilityWarning = missingToolNames.length > 0;
   const showAvailabilityLoading = availabilityLoading && !toolAvailability;
 
-  const scannerTools = tools.filter(t => !INLINE_TOOLS.includes(t.id));
-  const inlineTools = tools.filter(t => INLINE_TOOLS.includes(t.id));
-  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "wapiti", "nuclei", "dns", "whois"].includes(t.id));
+  // ✅ UPDATED: Separated recon tools (DNS/WHOIS) from scanner tools
+  const scannerTools = tools.filter(t => !RECON_TOOLS.includes(t.id));
+  const reconTools = tools.filter(t => RECON_TOOLS.includes(t.id));
+  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "wapiti", "nuclei"].includes(t.id));
 
   if (!authChecked || authLoading) return null;
 
@@ -198,22 +201,22 @@ const StartScan = () => {
     }
   };
 
-  const handleInlineLookup = async () => {
+  const handleReconLookup = async () => {
     const normalizedUrl = url.trim();
     if (!normalizedUrl) {
       setError("Please enter a domain or URL.");
       return;
     }
     try {
-      setInlineLoading(true);
+      setReconLoading(true);
       setError("");
-      setInlineResult(null);
+      setReconResult(null);
       let res;
-      if (tool === "dns") res = await dnsLookupInline(normalizedUrl);
-      else if (tool === "whois") res = await whoisLookupInline(normalizedUrl);
+      if (reconTool === "dns") res = await dnsLookupInline(normalizedUrl);
+      else if (reconTool === "whois") res = await whoisLookupInline(normalizedUrl);
 
       if (res && res.data.success) {
-        setInlineResult(res.data);
+        setReconResult(res.data);
         addToast("success", "Lookup Complete", "Data retrieved successfully.", 3000);
       } else {
         setError(res?.data?.error || "Lookup failed.");
@@ -221,7 +224,7 @@ const StartScan = () => {
     } catch (err: any) {
       setError(err?.response?.data?.error || "Connection Error.");
     } finally {
-      setInlineLoading(false);
+      setReconLoading(false);
     }
   };
 
@@ -242,8 +245,9 @@ const StartScan = () => {
     e.preventDefault();
     setError("");
 
-    if (scanFlow === "manual" && INLINE_TOOLS.includes(tool)) {
-      handleInlineLookup();
+    // ✅ UPDATED: Separated recon tools handling
+    if (scanFlow === "manual" && RECON_TOOLS.includes(tool)) {
+      handleReconLookup();
       return;
     }
 
@@ -453,7 +457,7 @@ const StartScan = () => {
               <div className="auto-tools-grid" style={{ gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 12 }}>
                 {autoTools.map((t) => (
                   <div key={t.id} className="auto-tool-card" style={{ "--accent-color": t.color } as any}>
-                    <Lottie animationData={t.anim} loop className="auto-tool-icon" />
+                    <Lottie animationData={t.anim} loop={false} className="auto-tool-icon" />
                     <div>
                       <h3>{t.name}</h3>
                       <p>{t.desc}</p>
@@ -515,7 +519,7 @@ const StartScan = () => {
                         <div className="module-tag">{t.tag}</div>
                         {!available && <div className="module-unavailable">Unavailable</div>}
                         <div className="module-icon">
-                          <Lottie animationData={t.anim} loop className="lottie-mini" />
+                          <Lottie animationData={t.anim} loop={false} className="lottie-mini" />
                         </div>
                         <div className="module-info">
                           <h3>{t.name}</h3>
@@ -527,23 +531,23 @@ const StartScan = () => {
                 </div>
               </div>
 
-              <div className="module-group inline-group">
-                <label>Domain Intelligence (Inline Lookups)</label>
-                <p className="module-helper-text">Instant DNS & WHOIS lookups that return results on this page (no progress screen).</p>
-                <div className={`module-selector inline-selector ${isMobile ? "mobile-grid" : ""}`}>
-                  {inlineTools.map((t) => {
+              <div className="module-group recon-group">
+                <label>Domain Reconnaissance</label>
+                <p className="module-helper-text">Quick DNS & WHOIS lookups that return results instantly on this page.</p>
+                <div className={`module-selector recon-selector ${isMobile ? "mobile-grid" : ""}`}>
+                  {reconTools.map((t) => {
                     const available = isToolAvailable(t.id);
                     return (
                       <div
                         key={t.id}
-                        className={`module-card ${tool === t.id ? "selected" : ""} ${!available ? "unavailable" : ""}`}
-                        onClick={() => { if (!available) return; setTool(t.id as ScanTool); setInlineResult(null); }}
+                        className={`module-card ${reconTool === t.id ? "selected" : ""} ${!available ? "unavailable" : ""}`}
+                        onClick={() => { if (!available) return; setReconTool(t.id as "dns" | "whois"); setReconResult(null); }}
                         style={{ "--accent-color": t.color } as any}
                       >
                         <div className="module-tag">{t.tag}</div>
                         {!available && <div className="module-unavailable">Unavailable</div>}
                         <div className="module-icon">
-                          <Lottie animationData={t.anim} loop className="lottie-mini" />
+                          <Lottie animationData={t.anim} loop={false} className="lottie-mini" />
                         </div>
                         <div className="module-info">
                           <h3>{t.name}</h3>
@@ -555,30 +559,24 @@ const StartScan = () => {
                 </div>
               </div>
 
-              <div className="inline-results-card glass-panel">
+              <div className="recon-results-card glass-panel">
                 <div className="card-header">
                   <Info size={18} className="text-primary" />
-                  <span>Domain Lookup Results</span>
+                  <span>Domain Reconnaissance Results</span>
                 </div>
-                {INLINE_TOOLS.includes(tool) ? (
-                  inlineResult ? (
-                    <div className="inline-results-body">
-                      <div className="inline-results-meta">
-                        <strong>{tools.find(t => t.id === tool)?.name}</strong>
-                        <span>{inlineResult.hostname}</span>
-                      </div>
-                      <pre className="inline-results-pre">
-                        {tool === "whois" ? inlineResult.data : JSON.stringify(inlineResult.records, null, 2)}
-                      </pre>
+                {reconResult ? (
+                  <div className="recon-results-body">
+                    <div className="recon-results-meta">
+                      <strong>{tools.find(t => t.id === reconTool)?.name}</strong>
+                      <span>{reconResult.hostname}</span>
                     </div>
-                  ) : (
-                    <div className="inline-results-empty">
-                      Run a DNS or WHOIS lookup to see results here.
-                    </div>
-                  )
+                    <pre className="recon-results-pre">
+                      {reconTool === "whois" ? reconResult.data : JSON.stringify(reconResult.records, null, 2)}
+                    </pre>
+                  </div>
                 ) : (
-                  <div className="inline-results-empty">
-                    Select DNS or WHOIS above to run an instant domain lookup.
+                  <div className="recon-results-empty">
+                    Click "Run Reconnaissance" below to fetch DNS or WHOIS data.
                   </div>
                 )}
               </div>
@@ -587,10 +585,10 @@ const StartScan = () => {
                 onClick={handleInitialize}
                 className="launch-btn"
                 style={{ marginTop: 30 }}
-                disabled={scanLoading || inlineLoading || !url.trim() || (scanFlow === "manual" && !isToolAvailable(tool))}
+                disabled={scanLoading || reconLoading || !url.trim() || (scanFlow === "manual" && !RECON_TOOLS.includes(tool) && !isToolAvailable(tool))}
               >
-                {scanLoading || inlineLoading ? <Loader2 className="animate-spin" size={22} /> : <Shield size={22} />}
-                <span>{INLINE_TOOLS.includes(tool) ? "Run Inline Lookup" : "Initialize Tool Scan"}</span>
+                {scanLoading || reconLoading ? <Loader2 className="animate-spin" size={22} /> : <Shield size={22} />}
+                <span>{RECON_TOOLS.includes(tool) ? "Run Reconnaissance" : "Initialize Tool Scan"}</span>
                 <ArrowRight size={22} />
               </button>
             </div>
@@ -607,13 +605,13 @@ const StartScan = () => {
                   </h2>
                   <p className="desc-text" style={{ marginBottom: 20 }}>
                     {tools.find(t => t.id === tool)?.desc} — {
-                      INLINE_TOOLS.includes(tool)
+                      RECON_TOOLS.includes(tool)
                         ? "This tool runs instantly on this page without initiating a full scan sequence."
                         : "Select Quick or Deep mode after clicking Initialize."
                     }
                   </p>
 
-                  {!INLINE_TOOLS.includes(tool) && SCAN_MODE_DESCRIPTIONS[tool] && (
+                  {!RECON_TOOLS.includes(tool) && SCAN_MODE_DESCRIPTIONS[tool] && (
                     <div className="stat-grid">
                       <div className="stat-item" style={{ border: `1px solid ${SCAN_MODE_DESCRIPTIONS[tool].color}` }}>
                         <label>Quick Mode</label>
