@@ -133,8 +133,6 @@ const StartScan = () => {
     { id: "ffuf",     name: "FFUF",          desc: "Fast Web Fuzzer",             anim: ffufAnimation,     color: "#ff00ff", tag: "EXPERT" },
     { id: "wapiti",   name: "Wapiti",        desc: "Web App Auditor (XSS, SSRF)", anim: wapitiAnimation,   color: "#00d4ff", tag: "SCANNER" },
     { id: "nuclei",   name: "Nuclei",        desc: "Template Scanner",            anim: nucleiAnimation,   color: "#ffd54f", tag: "TEMPLATES" },
-    { id: "dns",      name: "DNS Lookup",    desc: "Domain Inspector (Inline)",   anim: dnsAnimation,      color: "#69f0ae", tag: "INFO" },
-    { id: "whois",    name: "Whois Lookup",  desc: "Domain Owner (Inline)",       anim: whoisAnimation,    color: "#ffffff", tag: "INFO" },
   ] as const;
 
   const availabilityMap = toolAvailability?.byTool || {};
