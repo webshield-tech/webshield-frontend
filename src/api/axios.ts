@@ -3,10 +3,17 @@ import axios from "axios";
 const rawBaseUrl =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:4000";
+  (typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:4000"
+    : `/api/v1`); // Use relative path for production (works with reverse proxy)
 
 const buildBaseUrl = (value: string) => {
   const normalized = value.replace(/\/+$/, "");
+
+  // If it's a relative path like /api/v1, return as-is
+  if (normalized.startsWith("/")) {
+    return normalized;
+  }
 
   try {
     const parsed = new URL(normalized);
@@ -34,6 +41,7 @@ const BASE_URL = buildBaseUrl(rawBaseUrl);
 // This helps diagnose mismatches between frontend and backend paths (e.g. /api/v1).
 if (typeof window !== "undefined") {
   console.debug("[API] Computed BASE_URL:", BASE_URL);
+  console.debug("[API] Raw env VITE_API_URL:", import.meta.env.VITE_API_URL);
 }
 
 const api = axios.create({

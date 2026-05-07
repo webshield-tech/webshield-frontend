@@ -64,7 +64,7 @@ const StartScan = () => {
   const { toasts, addToast, removeToast } = useToast();
 
   const [url, setUrl] = useState("");
-  const [scanFlow, setScanFlow] = useState<"auto" | "manual">(searchParams.get("mode") === "manual" ? "manual" : "auto");
+  const [scanFlow, setScanFlow] = useState<"auto" | "manual" | "domain-intel">(searchParams.get("mode") === "manual" ? "manual" : searchParams.get("mode") === "domain-intel" ? "domain-intel" : "auto");
   const [tool, setTool] = useState<ScanTool>("nmap");
   const [reconTool, setReconTool] = useState<"dns" | "whois">("dns");
   const [scanMode, setScanMode] = useState<"quick" | "full">("quick");
@@ -83,6 +83,7 @@ const StartScan = () => {
   const [toolStats, setToolStats] = useState<Record<string, number>>({});
   const [toolAvailability, setToolAvailability] = useState<{ byTool: Record<string, boolean>; available: string[]; missing: string[] } | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [domainIntelDomain, setDomainIntelDomain] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -349,7 +350,7 @@ const StartScan = () => {
           <div className="scan-flow-toggle">
             <button
               className={`flow-toggle-btn ${scanFlow === "auto" ? "active" : ""}`}
-              onClick={() => { setScanFlow("auto"); setError(""); setInlineResult(null); }}
+              onClick={() => { setScanFlow("auto"); setError(""); }}
             >
               Auto Scan (Smart)
             </button>
@@ -358,6 +359,12 @@ const StartScan = () => {
               onClick={() => { setScanFlow("manual"); setTool("nmap"); setError(""); }}
             >
               Manual Tool Scan
+            </button>
+            <button
+              className={`flow-toggle-btn ${scanFlow === "domain-intel" ? "active" : ""}`}
+              onClick={() => { setScanFlow("domain-intel"); setError(""); }}
+            >
+              Domain Intelligence
             </button>
           </div>
         </header>
@@ -475,21 +482,19 @@ const StartScan = () => {
             <div className="form-panel glass-panel">
               <div className="target-panel glass-panel" style={{ marginBottom: 24 }}>
                 <div className="input-group">
-                  <label>{INLINE_TOOLS.includes(tool) ? "Target Domain" : "Target URL"}</label>
+                  <label>Target URL</label>
                   <div className="url-input-wrap">
                     <Globe className="input-icon" size={20} />
                     <input
                       type="text"
-                      placeholder={INLINE_TOOLS.includes(tool) ? "example.com" : "https://example.com"}
+                      placeholder="https://example.com"
                       value={url}
                       onChange={(e) => { setUrl(e.target.value); }}
-                      disabled={scanLoading || inlineLoading}
+                      disabled={scanLoading}
                     />
-                    {!INLINE_TOOLS.includes(tool) && (
-                      <button type="button" className="ping-verify-btn" onClick={handlePingCheck} disabled={pingLoading || !url.trim()}>
-                        {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Check Availability</span>}
-                      </button>
-                    )}
+                    <button type="button" className="ping-verify-btn" onClick={handlePingCheck} disabled={pingLoading || !url.trim()}>
+                      {pingLoading ? <Loader2 className="animate-spin" size={16} /> : <span>Check Availability</span>}
+                    </button>
                   </div>
                 </div>
 
@@ -513,7 +518,7 @@ const StartScan = () => {
                       <div
                         key={t.id}
                         className={`module-card ${tool === t.id ? "selected" : ""} ${!available ? "unavailable" : ""}`}
-                        onClick={() => { if (!available) return; setTool(t.id as ScanTool); setInlineResult(null); }}
+                        onClick={() => { if (!available) return; setTool(t.id as ScanTool); }}
                         style={{ "--accent-color": t.color } as any}
                       >
                         <div className="module-tag">{t.tag}</div>
@@ -625,15 +630,117 @@ const StartScan = () => {
                       </div>
                     </div>
                   )}
-
-                  {INLINE_TOOLS.includes(tool) && (
-                    <div className="inline-hint">
-                      Inline results appear below in the Inline Intelligence panel.
-                    </div>
-                  )}
                 </div>
               </div>
             </aside>
+          </div>
+        )}
+
+        {/* ── DOMAIN INTELLIGENCE SECTION ── */}
+        {scanFlow === "domain-intel" && (
+          <div className="domain-intel-container glass-panel">
+            <div className="domain-intel-header">
+              <div>
+                <h2>Domain Intelligence & OSINT</h2>
+                <p>Gather intelligence on any domain without running a full security scan.</p>
+              </div>
+              <Database size={32} style={{ color: "#00f2ff", opacity: 0.7 }} />
+            </div>
+
+            <div className="domain-intel-input-group">
+              <label>Domain or Hostname</label>
+              <div className="domain-intel-input-wrap">
+                <Globe className="input-icon" size={20} />
+                <input
+                  type="text"
+                  placeholder="example.com or api.example.com"
+                  value={domainIntelDomain}
+                  onChange={(e) => setDomainIntelDomain(e.target.value)}
+                  disabled={reconLoading}
+                />
+              </div>
+            </div>
+
+            <div className="domain-intel-tools">
+              <button
+                onClick={async () => {
+                  if (!domainIntelDomain.trim()) {
+                    addToast("warning", "Input Required", "Please enter a domain", 3000);
+                    return;
+                  }
+                  setReconLoading(true);
+                  try {
+                    const res = await dnsLookupInline(domainIntelDomain);
+                    setReconResult({ type: "dns", data: res.data, domain: domainIntelDomain });
+                    addToast("success", "DNS Lookup Complete", `Retrieved DNS records for ${domainIntelDomain}`, 4000);
+                  } catch (e: any) {
+                    addToast("error", "DNS Lookup Failed", e?.response?.data?.error || "Failed to retrieve DNS records", 4000);
+                  } finally {
+                    setReconLoading(false);
+                  }
+                }}
+                className="domain-intel-btn dns-btn"
+                disabled={reconLoading || !domainIntelDomain.trim()}
+              >
+                {reconLoading ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
+                DNS Lookup
+              </button>
+              <button
+                onClick={async () => {
+                  if (!domainIntelDomain.trim()) {
+                    addToast("warning", "Input Required", "Please enter a domain", 3000);
+                    return;
+                  }
+                  setReconLoading(true);
+                  try {
+                    const res = await whoisLookupInline(domainIntelDomain);
+                    setReconResult({ type: "whois", data: res.data, domain: domainIntelDomain });
+                    addToast("success", "WHOIS Lookup Complete", `Retrieved WHOIS data for ${domainIntelDomain}`, 4000);
+                  } catch (e: any) {
+                    addToast("error", "WHOIS Lookup Failed", e?.response?.data?.error || "Failed to retrieve WHOIS data", 4000);
+                  } finally {
+                    setReconLoading(false);
+                  }
+                }}
+                className="domain-intel-btn whois-btn"
+                disabled={reconLoading || !domainIntelDomain.trim()}
+              >
+                {reconLoading ? <Loader2 className="animate-spin" size={18} /> : <Database size={18} />}
+                WHOIS Lookup
+              </button>
+            </div>
+
+            {reconResult && (
+              <div className="domain-intel-results">
+                <div className="results-header">
+                  <h3>{reconResult.type === "dns" ? "DNS Records" : "WHOIS Information"} — {reconResult.domain}</h3>
+                  <button
+                    onClick={() => {
+                      const text = reconResult.type === "dns"
+                        ? JSON.stringify(reconResult.data, null, 2)
+                        : reconResult.data;
+                      navigator.clipboard.writeText(text);
+                      addToast("success", "Copied", "Results copied to clipboard", 2000);
+                    }}
+                    className="copy-btn"
+                  >
+                    📋 Copy Results
+                  </button>
+                </div>
+                <pre className="results-content">
+                  {reconResult.type === "dns"
+                    ? JSON.stringify(reconResult.data, null, 2)
+                    : reconResult.data}
+                </pre>
+              </div>
+            )}
+
+            {error && (
+              <div className="domain-intel-error">
+                <AlertCircle size={20} />
+                <span>{error}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
