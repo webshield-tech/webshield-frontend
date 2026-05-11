@@ -81,6 +81,7 @@ const StartScan = () => {
   const [showDetectionModal, setShowDetectionModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [toolStats, setToolStats] = useState<Record<string, number>>({});
+  const [scanQuota, setScanQuota] = useState<any>(null);
   const [toolAvailability, setToolAvailability] = useState<{ byTool: Record<string, boolean>; available: string[]; missing: string[] } | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [domainIntelDomain, setDomainIntelDomain] = useState("");
@@ -92,6 +93,7 @@ const StartScan = () => {
         const res = await getTodayStats();
         if (res.data?.success) {
           setToolStats({ ...res.data.stats.byTool, auto: res.data.stats.autoUsed });
+          setScanQuota(res.data.stats);
         }
       } catch (e) {
         console.warn("Failed to fetch tool stats", e);
@@ -142,6 +144,22 @@ const StartScan = () => {
     .map((id) => tools.find(t => t.id === id)?.name || (id === "ssl" ? "SSLScan" : id.toUpperCase()))));
   const showAvailabilityWarning = missingToolNames.length > 0;
   const showAvailabilityLoading = availabilityLoading && !toolAvailability;
+
+  const formatResetCountdown = (resetInMs?: number | null) => {
+    if (!resetInMs || resetInMs <= 0) return "Resets soon";
+    const totalMinutes = Math.ceil(resetInMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `Resets in ${hours} hour${hours === 1 ? "" : "s"} ${minutes} minute${minutes === 1 ? "" : "s"}`;
+  };
+
+  const autoLimit = 5;
+  const manualLimit = 10;
+  const autoUsed = Number(toolStats.auto || 0);
+  const manualUsed = Number(toolStats[tool] || 0);
+  const autoLimitReached = autoUsed >= autoLimit;
+  const manualLimitReached = manualUsed >= manualLimit || (user?.scanLimit ? Number(scanQuota?.totalUsed || 0) >= Number(user.scanLimit) : false);
+  const limitTooltip = formatResetCountdown(scanQuota?.resetInMs);
 
   // ✅ UPDATED: Separated recon tools (DNS/WHOIS) from scanner tools
   const scannerTools = tools.filter(t => !RECON_TOOLS.includes(t.id));
@@ -440,7 +458,13 @@ const StartScan = () => {
             )}
 
             <div style={{ display: "flex", justifyContent: "center", margin: "32px 0 16px 0", gap: 12, flexWrap: "wrap" }}>
-              <button onClick={handleInitialize} className="launch-btn" style={{ padding: "18px 48px", fontSize: "1.1rem", borderRadius: 24 }} disabled={scanLoading || !url.trim()}>
+              <button
+                onClick={handleInitialize}
+                className="launch-btn"
+                style={{ padding: "18px 48px", fontSize: "1.1rem", borderRadius: 24 }}
+                disabled={scanLoading || !url.trim() || autoLimitReached}
+                title={autoLimitReached ? limitTooltip : undefined}
+              >
                 {scanLoading ? <Loader2 className="animate-spin" size={20} /> : <Rocket size={20} />}
                 <span>Start Auto Scan</span>
               </button>
@@ -588,7 +612,8 @@ const StartScan = () => {
                 onClick={handleInitialize}
                 className="launch-btn"
                 style={{ marginTop: 30 }}
-                disabled={scanLoading || reconLoading || !url.trim() || (scanFlow === "manual" && !RECON_TOOLS.includes(tool) && !isToolAvailable(tool))}
+                disabled={scanLoading || reconLoading || !url.trim() || manualLimitReached || (scanFlow === "manual" && !RECON_TOOLS.includes(tool) && !isToolAvailable(tool))}
+                title={manualLimitReached ? limitTooltip : undefined}
               >
                 {scanLoading || reconLoading ? <Loader2 className="animate-spin" size={22} /> : <Shield size={22} />}
                 <span>{RECON_TOOLS.includes(tool) ? "Run Reconnaissance" : "Initialize Tool Scan"}</span>

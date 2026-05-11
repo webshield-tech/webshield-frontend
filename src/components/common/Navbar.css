@@ -164,6 +164,25 @@
   stroke: var(--accent-green) !important;
 }
 
+/* Shake animation used for important incoming notifications (e.g., quota reset) */
+@keyframes bell-shake {
+  0% { transform: translateX(0); }
+  10% { transform: translateX(-6px) rotate(-6deg); }
+  20% { transform: translateX(6px) rotate(6deg); }
+  30% { transform: translateX(-6px) rotate(-4deg); }
+  40% { transform: translateX(6px) rotate(4deg); }
+  50% { transform: translateX(-4px) rotate(-2deg); }
+  60% { transform: translateX(4px) rotate(2deg); }
+  70% { transform: translateX(-2px) rotate(-1deg); }
+  80% { transform: translateX(2px) rotate(1deg); }
+  90% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+.navbar-icon-btn.shake {
+  animation: bell-shake 0.9s ease-in-out 1;
+}
+
 /* ── NOTIFICATIONS ── */
 .navbar-notifications {
   position: relative;

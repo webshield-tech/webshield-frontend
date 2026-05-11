@@ -24,6 +24,7 @@ import {
   markAllNotificationsRead,
   type AppNotification,
 } from "../../utils/notifications";
+import { getNotifications } from "../../api/notification-api";
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>(() => loadNotifications());
+  const [shake, setShake] = useState(false);
+  const prevUnreadRef = useRef<number>(notifications.filter((n) => !n.read).length);
   const notificationRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -50,6 +53,33 @@ export const Navbar = () => {
     const syncNotifications = () => setNotifications(loadNotifications());
 
     syncNotifications();
+
+    // Fetch server notifications and merge with local storage cache
+    (async () => {
+      try {
+        const resp = await getNotifications();
+        if (resp?.data?.success) {
+          const serverList: AppNotification[] = resp.data.notifications || [];
+          // prefer server list (most recent) but allow local fallback
+          setNotifications((prev) => {
+            const prevUnread = prev.filter((p) => !p.read).length;
+            const serverUnread = serverList.filter((s) => !s.read).length;
+            // trigger shake if unread increased and includes a reset message
+            if (serverUnread > prevUnread) {
+              const newest = serverList[0];
+              if (newest && /reset/i.test(String(newest.title || ''))) {
+                setShake(true);
+                setTimeout(() => setShake(false), 1200);
+              }
+            }
+            prevUnreadRef.current = serverList.filter((s) => !s.read).length;
+            return serverList.length ? serverList : prev;
+          });
+        }
+      } catch (e) {
+        // ignore fetch errors and rely on local cache
+      }
+    })();
 
     const handleStorage = (event: StorageEvent) => {
       if (!event.key || event.key === "webshield.notifications") {
@@ -70,6 +100,7 @@ export const Navbar = () => {
 
   const markAllAsRead = () => {
     setNotifications(markAllNotificationsRead());
+    setShake(false);
   };
 
   const getNotificationIcon = (type: AppNotification["type"]) => {
@@ -171,11 +202,13 @@ export const Navbar = () => {
           
           <div className="navbar-notifications" ref={notificationRef}>
               <button 
-              className="navbar-icon-btn"
+              className={`navbar-icon-btn ${shake ? 'shake' : ''}`}
               onClick={() => {
                 setNotificationsOpen((previous) => {
                   const next = !previous;
                   if (next) markAllAsRead();
+                  // clicking clears the shake state
+                  if (shake) setShake(false);
                   return next;
                 });
               }}

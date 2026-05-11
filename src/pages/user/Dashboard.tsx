@@ -53,7 +53,8 @@ const Dashboard = () => {
 
     const pendingWelcome = sessionStorage.getItem("dashboard_welcome_pending");
     const userKey = String(user?._id || user?.userId || "");
-    if (user && pendingWelcome && pendingWelcome === userKey) {
+    // Only show welcome toast when we have a valid logged-in user and a matching pending key
+    if (user && userKey && pendingWelcome && pendingWelcome === userKey) {
       addToast("success", "Access Granted", `Welcome back, ${user.username}. System status is nominal.`, 5000);
       sessionStorage.removeItem("dashboard_welcome_pending");
     }
@@ -65,10 +66,10 @@ const Dashboard = () => {
         setScans(Array.isArray(arr) ? arr : []);
       } catch (e: any) {
         console.error("[Dashboard] Load failed:", e);
-        if (e?.status === 401 || e?.isAuthError) {
+        if (e?.status === 401 || e?.isAuthError || e?.response?.status === 401) {
           setError("Session expired. Please log in again.");
-          // Optional: redirect to login
-          // navigate("/login?session=expired");
+          addToast("info", "Session Expired", "Your session has expired. Please log in again to continue.", 6000);
+          setTimeout(() => navigate("/login?session=expired"), 800);
         } else {
           setError(e?.response?.data?.error || "Connection error. Please refresh the page.");
         }

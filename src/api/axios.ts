@@ -89,13 +89,25 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      // All other routes: silently clear credentials
-      sessionStorage.removeItem("authToken");
-      sessionStorage.clear();
-      document.cookie =
-        "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      // All other routes: clear credentials and redirect to login with a session expired flag
+      try {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.clear();
+        document.cookie =
+          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      } catch (e) {
+        // ignore
+      }
 
-      // Return a plain rejected promise — no console noise, AuthContext will catch this
+      // Redirect user to login page; Login component shows a friendly toast when ?session=expired
+      if (typeof window !== "undefined") {
+        try {
+          window.location.href = "/login?session=expired";
+        } catch (e) {
+          // fallback: reject with auth error
+          return Promise.reject({ isAuthError: true, status: 401 });
+        }
+      }
       return Promise.reject({ isAuthError: true, status: 401 });
     }
 
