@@ -20,6 +20,179 @@
   overflow: hidden;
 }
 
+/* Forgot password / recovery wrapper */
+.auth-page-premium {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0, 255, 65, 0.08), transparent 28%),
+    radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.06), transparent 26%),
+    linear-gradient(180deg, #020403 0%, #050807 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page-premium .noise-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(0, 255, 65, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.04) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.auth-content-wrap {
+  position: relative;
+  z-index: 1;
+  width: min(880px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(0, 255, 65, 0.88);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: #ffffff;
+}
+
+.auth-logo-premium {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin-top: 4px;
+}
+
+.logo-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: radial-gradient(circle, rgba(0, 255, 65, 0.16), transparent 65%);
+  filter: blur(4px);
+}
+
+.logo-icon {
+  position: relative;
+  z-index: 1;
+  color: #00ff41;
+  filter: drop-shadow(0 0 16px rgba(0, 255, 65, 0.35));
+}
+
+.text-gradient {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.35rem, 2.8vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #5dff8b 0%, #00ff41 50%, #b6ffcf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.auth-header p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: 1.2px;
+  font-size: 0.78rem;
+}
+
+.auth-form-premium {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 255, 65, 0.14);
+  background: linear-gradient(180deg, rgba(10, 15, 12, 0.96), rgba(6, 9, 7, 0.98));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 255, 65, 0.04);
+  backdrop-filter: blur(10px);
+}
+
+.auth-input-group {
+  margin-bottom: 20px;
+}
+
+.auth-input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.auth-form-premium .input-wrap {
+  min-height: 54px;
+}
+
+.auth-form-premium input {
+  font-size: 0.95rem;
+}
+
+.auth-form-premium .auth-alert {
+  margin-bottom: 18px;
+}
+
+.auth-form-premium .auth-submit-btn {
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .auth-page-premium {
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .auth-content-wrap {
+    gap: 18px;
+  }
+
+  .auth-header {
+    padding: 0 2px;
+  }
+
+  .auth-logo-premium {
+    width: 70px;
+    height: 70px;
+  }
+
+  .auth-form-premium {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+
+  .text-gradient {
+    letter-spacing: 1.2px;
+  }
+}
+
 /* Verification page wrapper used by VerifyEmail.tsx */
 .auth-container {
   min-height: 100vh;
