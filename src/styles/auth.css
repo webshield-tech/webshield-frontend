@@ -20,6 +20,245 @@
   overflow: hidden;
 }
 
+/* Verification page wrapper used by VerifyEmail.tsx */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(0, 255, 65, 0.08), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(0, 180, 255, 0.05), transparent 28%),
+    #030508;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-container .cyber-grid-overlay {
+  z-index: 0;
+}
+
+.auth-container .auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(1120px, 100%);
+  min-height: 640px;
+  display: grid;
+  grid-template-columns: minmax(320px, 42%) minmax(0, 1fr);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 255, 65, 0.12);
+  border: 1px solid rgba(0, 255, 65, 0.15);
+}
+
+.auth-info-panel {
+  background:
+    linear-gradient(160deg, rgba(6, 11, 8, 0.96), rgba(3, 6, 5, 0.98)),
+    radial-gradient(circle at center, rgba(0, 255, 65, 0.08), transparent 55%);
+  padding: 42px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  border-right: 1px solid rgba(0, 255, 65, 0.12);
+}
+
+.auth-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.auth-logo span {
+  transform: translateY(1px);
+}
+
+.verification-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0 2px;
+}
+
+.verification-icon-wrapper {
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.02));
+  border: 1px solid rgba(0, 255, 65, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(0, 255, 65, 0.06), 0 0 28px rgba(0, 255, 65, 0.08);
+}
+
+.verification-icon {
+  color: #00ff41;
+  filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.25));
+}
+
+.auth-info-panel h2 {
+  margin: 0;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.auth-info-panel > p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.7;
+  font-size: 0.96rem;
+}
+
+.target-email-badge {
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-all;
+  align-self: flex-start;
+}
+
+.verification-info-text {
+  max-width: 440px;
+}
+
+.auth-form-panel {
+  background: linear-gradient(180deg, #0a0f0c 0%, #070b09 100%);
+  padding: 46px 42px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.form-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.form-header-icon {
+  color: #00ff41;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.form-header h1 {
+  margin: 0;
+  text-align: left;
+}
+
+.form-header .auth-subtitle {
+  text-align: left;
+  margin-bottom: 0;
+  max-width: 360px;
+}
+
+.otp-form {
+  width: 100%;
+}
+
+.auth-field label {
+  margin-bottom: 2px;
+}
+
+.premium-otp-input {
+  min-height: 92px;
+}
+
+.verification-footer {
+  margin-top: 34px;
+}
+
+@media (max-width: 980px) {
+  .auth-container {
+    padding: 16px;
+    align-items: stretch;
+  }
+
+  .auth-container .auth-card {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    border-radius: 20px;
+  }
+
+  .auth-info-panel {
+    padding: 28px 24px;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.12);
+    text-align: center;
+    align-items: center;
+  }
+
+  .auth-info-panel > p,
+  .verification-info-text {
+    max-width: 100%;
+  }
+
+  .target-email-badge {
+    align-self: center;
+  }
+
+  .auth-form-panel {
+    padding: 30px 24px 34px;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-container {
+    padding: 0;
+  }
+
+  .auth-container .auth-card {
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+
+  .auth-info-panel {
+    padding: 24px 18px 20px;
+    gap: 14px;
+  }
+
+  .auth-logo {
+    font-size: 0.72rem;
+  }
+
+  .verification-icon-wrapper {
+    width: 88px;
+    height: 88px;
+    border-radius: 22px;
+  }
+
+  .auth-form-panel {
+    padding: 26px 18px 32px;
+  }
+
+  .form-header {
+    margin-bottom: 22px;
+  }
+
+  .premium-otp-input {
+    min-height: 78px;
+    font-size: 2rem;
+    letter-spacing: 0.55rem;
+    padding: 16px 14px;
+  }
+
+  .verification-footer {
+    margin-top: 28px;
+  }
+}
+
 /* Animated grid background */
 .auth-page::before {
   content: '';

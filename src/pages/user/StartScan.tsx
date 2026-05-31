@@ -86,6 +86,15 @@ const StartScan = () => {
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [domainIntelDomain, setDomainIntelDomain] = useState("");
 
+  const formatReconData = (value: any) => {
+    if (value == null) return "No data returned.";
+    if (typeof value === "string") return value;
+    if (typeof value.data === "string") return value.data;
+    if (typeof value.rawOutput === "string") return value.rawOutput;
+    if (typeof value.summary === "string") return value.summary;
+    return JSON.stringify(value, null, 2);
+  };
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -717,7 +726,11 @@ const StartScan = () => {
                   setReconLoading(true);
                   try {
                     const res = await whoisLookupInline(domainIntelDomain);
-                    setReconResult({ type: "whois", data: res.data, domain: domainIntelDomain });
+                    setReconResult({
+                      type: "whois",
+                      data: res.data?.data || res.data?.rawOutput || res.data?.summary || res.data,
+                      domain: domainIntelDomain,
+                    });
                     addToast("success", "WHOIS Lookup Complete", `Retrieved WHOIS data for ${domainIntelDomain}`, 4000);
                   } catch (e: any) {
                     addToast("error", "WHOIS Lookup Failed", e?.response?.data?.error || "Failed to retrieve WHOIS data", 4000);
@@ -741,7 +754,7 @@ const StartScan = () => {
                     onClick={() => {
                       const text = reconResult.type === "dns"
                         ? JSON.stringify(reconResult.data, null, 2)
-                        : reconResult.data;
+                        : formatReconData(reconResult.data);
                       navigator.clipboard.writeText(text);
                       addToast("success", "Copied", "Results copied to clipboard", 2000);
                     }}
@@ -753,7 +766,7 @@ const StartScan = () => {
                 <pre className="results-content">
                   {reconResult.type === "dns"
                     ? JSON.stringify(reconResult.data, null, 2)
-                    : reconResult.data}
+                    : formatReconData(reconResult.data)}
                 </pre>
               </div>
             )}
