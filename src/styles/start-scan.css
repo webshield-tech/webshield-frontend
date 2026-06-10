@@ -723,6 +723,36 @@
   font-weight: 600;
 }
 
+/* Technology / WhatWeb evidence styles */
+.detection-item.detection-tech .detection-item-icon {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--uber-accent);
+}
+.detection-item.detection-tech .detection-item-content p {
+  color: var(--uber-text);
+  font-weight: 600;
+}
+.detection-evidence {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--uber-muted);
+}
+.detection-evidence ul {
+  margin: 8px 0 0 18px;
+}
+.detection-evidence li { margin-bottom: 6px; }
+
+/* DB indicator badge style */
+.db-indicator-badge {
+  background: linear-gradient(90deg, rgba(255,77,77,0.12), rgba(255,162,0,0.06));
+  color: var(--uber-danger);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  border: 1px solid rgba(255,77,77,0.15);
+}
+
 .detection-modal-footer {
   display: flex;
   gap: 12px;

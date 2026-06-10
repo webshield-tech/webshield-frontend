@@ -832,6 +832,41 @@ const StartScan = () => {
                   <p>{detectionData.hasSSL ? "✓ Enabled" : "✗ Not Detected"}</p>
                 </div>
               </div>
+
+              {/* New: WhatWeb / Technology signals */}
+              <div className="detection-item detection-tech">
+                <div className="detection-item-icon">
+                  <Info size={24} />
+                </div>
+                <div className="detection-item-content">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3>Technology Signals</h3>
+                    {/* DB indicator badge */}
+                    { (detectionData.hasDatabase || (detectionData.dbIndicators && detectionData.dbIndicators.length>0)) && (
+                      <div className="db-indicator-badge">DB indicators detected — SQLMap likely</div>
+                    )}
+                  </div>
+
+                  <p style={{ marginBottom: 8 }}>
+                    {Array.isArray(detectionData.technologies) && detectionData.technologies.length > 0
+                      ? detectionData.technologies.join(', ')
+                      : (typeof detectionData.technologies === 'string' ? detectionData.technologies : 'No technologies detected')}
+                  </p>
+
+                  {detectionData.evidence?.htmlIndicators && detectionData.evidence.htmlIndicators.length > 0 && (
+                    <div className="detection-evidence">
+                      <strong>Evidence:</strong>
+                      <ul>
+                        {detectionData.evidence.htmlIndicators.slice(0,5).map((line: any, idx: number) => (
+                          <li key={idx}>{String(line)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+
             </div>
 
             <div className="detection-modal-footer">
