@@ -30,15 +30,15 @@ import { useToast, ToastContainer } from "../../components/Toast";
 
 /* ── Per-tool scan mode descriptions ─────────────────────────────────────── */
 const SCAN_MODE_DESCRIPTIONS: Record<string, any> = {
-  nmap: { color: "#00f2ff", quick: { title: "Quick Scan", detail: "Fast sweep of the 100 most common TCP ports.", bullets: ["Top 100 ports only", "Service & version detection", "~1–2 mins"] }, full: { title: "Deep Scan", detail: "Exhaustive scan covering every port.", bullets: ["All 65,535 TCP ports", "OS fingerprinting + NSE scripts", "CVE & vulnerability checks", "~5–15 mins"] } },
-  nikto: { color: "#ff0055", quick: { title: "Quick Scan", detail: "Targets the most dangerous web misconfigurations.", bullets: ["Outdated server headers", "Common dangerous files", "~1–2 mins"] }, full: { title: "Deep Scan", detail: "Comprehensive web vulnerability audit.", bullets: ["All 6,700+ Nikto checks", "Directory traversal, XSS", "Injection point discovery", "~3–5 mins"] } },
-  sqlmap: { color: "#ffd54f", quick: { title: "Quick Scan", detail: "Rapid SQL injection probe.", bullets: ["Level 2 / Risk 1 payloads", "HTML form auto-detection", "~2–4 mins"] }, full: { title: "Deep Scan", detail: "Advanced multi-technique SQLi probe.", bullets: ["Level 5 / Risk 3", "Time-based blind queries", "Site crawl up to 3 levels", "~5–10 mins"] } },
-  sslscan: { color: "#00ff9d", quick: { title: "Quick Scan", detail: "Audits SSL/TLS protocols.", bullets: ["Deprecated protocols", "Weak ciphers", "Certificate expiry", "~30 secs"] }, full: { title: "Deep Scan", detail: "Same thorough audit.", bullets: ["All cipher suites", "Full certificate chain", "Heartbleed check", "~30 secs"] } },
-  gobuster: { color: "#ff8c00", quick: { title: "Quick Enumeration", detail: "Rapid directory sweep.", bullets: ["Common 50 directories", "Fast response detection", "~1–2 mins"] }, full: { title: "Deep Discovery", detail: "Exhaustive directory and file brute-forcing.", bullets: ["Full wordlist enumeration", "Hidden file detection", "~5–10 mins"] } },
-  ratelimit: { color: "#9d00ff", quick: { title: "Rate Limit Probe", detail: "Checks if the website has active rate limiters.", bullets: ["100 concurrent request burst", "API endpoint activity", "~30 secs"] }, full: { title: "DDoS Resistance Audit", detail: "Intense stress test for WAF/Firewall.", bullets: ["Sustained 200+ requests", "API health check", "~2 mins"] } },
-  ffuf: { color: "#ff00ff", quick: { title: "Fast Fuzz", detail: "High-speed directory discovery.", bullets: ["200/301 status filtering", "Multi-threaded", "~1 min"] }, full: { title: "Recursive Audit", detail: "Exhaustive recursive fuzzing.", bullets: ["Full status code analysis", "Recursive depth", "~5 mins"] } },
-  wapiti: { color: "#00d4ff", quick: { title: "Baseline Audit", detail: "Quick web vulnerability assessment (XSS, SSRF, Injection).", bullets: ["XSS and SSRF detection", "SQL injection checks", "Misconfiguration audit", "~3 mins"] }, full: { title: "Deep Crawler", detail: "Complete web app security audit with XSS and SSRF coverage.", bullets: ["Level 1 exhaustive crawling", "Cross-Site Scripting detection", "Server-Side Request Forgery (SSRF) detection", "All injection types", "~10 mins"] } },
-  nuclei: { color: "#ffd54f", quick: { title: "CVE Exposure", detail: "Fast scan for known CVEs.", bullets: ["CVE template matching", "Exposure detection", "~2 mins"] }, full: { title: "Full Tech Audit", detail: "Complete Nuclei template suite.", bullets: ["Thousands of templates", "Critical vulnerability check", "~15 mins"] } },
+  nmap: { color: "#00f2ff", medium: { title: "Standard Scan", detail: "Fast sweep of the 100 most common TCP ports.", bullets: ["Top 100 ports only", "Service & version detection", "~1–2 mins"] }, full: { title: "Full Scan", detail: "Exhaustive scan covering every port.", bullets: ["All 65,535 TCP ports", "OS fingerprinting + NSE scripts", "CVE & vulnerability checks", "~5–15 mins"] } },
+  nikto: { color: "#ff0055", medium: { title: "Standard Scan", detail: "Targets the most dangerous web misconfigurations.", bullets: ["Outdated server headers", "Common dangerous files", "~1–2 mins"] }, full: { title: "Full Scan", detail: "Comprehensive web vulnerability audit.", bullets: ["All 6,700+ Nikto checks", "Directory traversal, XSS", "Injection point discovery", "~3–5 mins"] } },
+  sqlmap: { color: "#ffd54f", medium: { title: "Standard Scan", detail: "Rapid SQL injection probe.", bullets: ["Level 2 / Risk 1 payloads", "HTML form auto-detection", "~2–4 mins"] }, full: { title: "Full Scan", detail: "Advanced multi-technique SQLi probe.", bullets: ["Level 5 / Risk 3", "Time-based blind queries", "Site crawl up to 3 levels", "~5–10 mins"] } },
+  sslscan: { color: "#00ff9d", medium: { title: "Standard Scan", detail: "Audits SSL/TLS protocols.", bullets: ["Deprecated protocols", "Weak ciphers", "Certificate expiry", "~30 secs"] }, full: { title: "Full Scan", detail: "Same thorough audit.", bullets: ["All cipher suites", "Full certificate chain", "Heartbleed check", "~30 secs"] } },
+  gobuster: { color: "#ff8c00", medium: { title: "Standard Enumeration", detail: "Rapid directory sweep.", bullets: ["Common 50 directories", "Fast response detection", "~1–2 mins"] }, full: { title: "Full Discovery", detail: "Exhaustive directory and file brute-forcing.", bullets: ["Full wordlist enumeration", "Hidden file detection", "~5–10 mins"] } },
+  ratelimit: { color: "#9d00ff", medium: { title: "Rate Limit Probe", detail: "Checks if the website has active rate limiters.", bullets: ["20 concurrent request burst", "API endpoint activity", "~30 secs"] }, full: { title: "DDoS Resistance Audit", detail: "Intense stress test for WAF/Firewall.", bullets: ["Sustained 200+ requests", "API health check", "~2 mins"] } },
+  ffuf: { color: "#ff00ff", medium: { title: "Fast Fuzz", detail: "High-speed directory discovery.", bullets: ["200/301 status filtering", "Multi-threaded", "~1 min"] }, full: { title: "Full Recursive Audit", detail: "Exhaustive recursive fuzzing.", bullets: ["Full status code analysis", "Recursive depth", "~5 mins"] } },
+  wapiti: { color: "#00d4ff", medium: { title: "Standard Audit", detail: "Standard web vulnerability assessment (XSS, SSRF, Injection).", bullets: ["XSS and SSRF detection", "SQL injection checks", "Misconfiguration audit", "~3 mins"] }, full: { title: "Full Crawler", detail: "Complete web app security audit with XSS and SSRF coverage.", bullets: ["Level 1 exhaustive crawling", "Cross-Site Scripting detection", "Server-Side Request Forgery (SSRF) detection", "All injection types", "~10 mins"] } },
+  nuclei: { color: "#ffd54f", medium: { title: "CVE Exposure", detail: "Fast scan for known CVEs.", bullets: ["CVE template matching", "Exposure detection", "~2 mins"] }, full: { title: "Full Tech Audit", detail: "Complete Nuclei template suite.", bullets: ["Thousands of templates", "Critical vulnerability check", "~15 mins"] } },
 };
 
 // ✅ UPDATED: Separated DNS/WHOIS into their own category for Domain Reconnaissance
@@ -67,7 +67,7 @@ const StartScan = () => {
   const [scanFlow, setScanFlow] = useState<"auto" | "manual" | "domain-intel">(searchParams.get("mode") === "manual" ? "manual" : searchParams.get("mode") === "domain-intel" ? "domain-intel" : "auto");
   const [tool, setTool] = useState<ScanTool>("nmap");
   const [reconTool, setReconTool] = useState<"dns" | "whois">("dns");
-  const [scanMode, setScanMode] = useState<"quick" | "full">("quick");
+  const [scanMode, setScanMode] = useState<"medium" | "full">("medium");
 
   const [scanLoading, setScanLoading] = useState(false);
   const [pingLoading, setPingLoading] = useState(false);
@@ -77,7 +77,6 @@ const StartScan = () => {
   const [detectionData, setDetectionData] = useState<any>(null);
   const [reconResult, setReconResult] = useState<any>(null);
   const [error, setError] = useState("");
-  const [showModeModal, setShowModeModal] = useState(false);
   const [showDetectionModal, setShowDetectionModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [toolStats, setToolStats] = useState<Record<string, number>>({});
@@ -319,21 +318,21 @@ const StartScan = () => {
         addToast("error", "Detection Failed", msg, 4000);
       }
     } else {
-      setScanMode("quick");
-      setShowModeModal(true);
+      // For manual launches, do not show a mode selector. Launch a medium-intensity scan directly.
+      launchScan();
     }
   };
 
-  const launchScan = async (chosenMode: "quick" | "full", autoDetection?: any) => {
-    setScanMode(chosenMode);
-    setShowModeModal(false);
+  const launchScan = async (chosenMode?: "medium" | "full", autoDetection?: any) => {
+    const mode = chosenMode || "medium";
+    setScanMode(mode);
 
     try {
       setScanLoading(true);
       const scanData: any = {
         targetUrl: url.trim().replace(/\/+$/, ""),
         scanType:  scanFlow === "auto" ? "all" : (tool === "sslscan" ? "ssl" : tool),
-        scanMode:  chosenMode,
+        scanMode:  mode,
         ...(scanFlow === "auto" && autoDetection ? { options: { detectionData: autoDetection } } : {}),
       };
 
@@ -541,7 +540,7 @@ const StartScan = () => {
 
               <div className="module-group">
                 <label>Scanner Tools (One at a time)</label>
-                <p className="module-helper-text">Deep and quick scans run one scanner at a time and show progress.</p>
+                <p className="module-helper-text">Quick scans run one scanner at a time and show progress.</p>
                 <div className={`module-selector ${isMobile ? "mobile-grid" : ""}`}>
                   {scannerTools.map((t) => {
                     const available = isToolAvailable(t.id);
@@ -644,21 +643,16 @@ const StartScan = () => {
                     {tools.find(t => t.id === tool)?.desc} — {
                       RECON_TOOLS.includes(tool)
                         ? "This tool runs instantly on this page without initiating a full scan sequence."
-                        : "Select Quick or Deep mode after clicking Initialize."
+                        : "A medium-intensity scan will be launched when you click Initialize."
                     }
                   </p>
 
                   {!RECON_TOOLS.includes(tool) && SCAN_MODE_DESCRIPTIONS[tool] && (
                     <div className="stat-grid">
                       <div className="stat-item" style={{ border: `1px solid ${SCAN_MODE_DESCRIPTIONS[tool].color}` }}>
-                        <label>Quick Mode</label>
-                        <strong style={{ fontSize: "0.85rem" }}>{SCAN_MODE_DESCRIPTIONS[tool].quick.title}</strong>
-                        <span style={{ fontSize: "0.75rem", color: "var(--cyber-text-dim)" }}>{SCAN_MODE_DESCRIPTIONS[tool].quick.bullets[2]}</span>
-                      </div>
-                      <div className="stat-item" style={{ border: "1px solid #ff4d4d" }}>
-                        <label>Deep Mode</label>
-                        <strong style={{ fontSize: "0.85rem" }}>{SCAN_MODE_DESCRIPTIONS[tool].full.title}</strong>
-                        <span style={{ fontSize: "0.75rem", color: "var(--cyber-text-dim)" }}>{SCAN_MODE_DESCRIPTIONS[tool].full.bullets[3] || SCAN_MODE_DESCRIPTIONS[tool].full.bullets[2]}</span>
+                        <label>Standard Scan</label>
+                        <strong style={{ fontSize: "0.85rem" }}>{SCAN_MODE_DESCRIPTIONS[tool].medium.title}</strong>
+                        <span style={{ fontSize: "0.75rem", color: "var(--cyber-text-dim)" }}>{SCAN_MODE_DESCRIPTIONS[tool].medium.bullets[2]}</span>
                       </div>
                     </div>
                   )}
@@ -781,61 +775,6 @@ const StartScan = () => {
         )}
       </div>
 
-      {/* ── MANUAL SCAN MODE MODAL ── */}
-      {showModeModal && SCAN_MODE_DESCRIPTIONS[tool] && (
-        <div className="modal-overlay-premium scan-mode-overlay" onClick={() => setShowModeModal(false)}>
-          <div className="scan-mode-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="scan-mode-modal-header">
-              <div className="scan-mode-modal-title">
-                <div className="scan-mode-tool-dot" style={{ background: SCAN_MODE_DESCRIPTIONS[tool].color, boxShadow: `0 0 12px ${SCAN_MODE_DESCRIPTIONS[tool].color}` }} />
-                <div>
-                  <p className="scan-mode-label">SCAN MODE — {tools.find(t => t.id === tool)?.name?.toUpperCase()}</p>
-                  <h2 className="scan-mode-heading">Choose scan intensity</h2>
-                </div>
-              </div>
-              <button className="close-modal-btn" onClick={() => setShowModeModal(false)}>
-                <X size={22} />
-              </button>
-            </div>
-
-            <div className="scan-mode-cards">
-              <div className={`scan-mode-card quick-card ${scanMode === "quick" ? "active" : ""}`} onClick={() => setScanMode("quick")}>
-                <div className="smc-badge quick-badge">QUICK</div>
-                <div className="smc-icon-wrap"><Rocket size={28} /></div>
-                <h3 className="smc-title">{SCAN_MODE_DESCRIPTIONS[tool].quick.title}</h3>
-                <p className="smc-detail">{SCAN_MODE_DESCRIPTIONS[tool].quick.detail}</p>
-                <ul className="smc-bullets">
-                  {SCAN_MODE_DESCRIPTIONS[tool].quick.bullets.map((b: string, i: number) => (
-                    <li key={i}><span className="bullet-dot quick-dot" />{b}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className={`scan-mode-card deep-card ${scanMode === "full" ? "active" : ""}`} onClick={() => setScanMode("full")}>
-                <div className="smc-badge deep-badge">DEEP</div>
-                <div className="smc-icon-wrap"><Clock size={28} /></div>
-                <h3 className="smc-title">{SCAN_MODE_DESCRIPTIONS[tool].full.title}</h3>
-                <p className="smc-detail">{SCAN_MODE_DESCRIPTIONS[tool].full.detail}</p>
-                <ul className="smc-bullets">
-                  {SCAN_MODE_DESCRIPTIONS[tool].full.bullets.map((b: string, i: number) => (
-                    <li key={i}><span className="bullet-dot deep-dot" />{b}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="scan-mode-footer">
-              <button className="action-btn secondary" onClick={() => setShowModeModal(false)}>Cancel</button>
-              <button className="launch-scan-confirm-btn" style={{ background: SCAN_MODE_DESCRIPTIONS[tool].color, color: "#000" }} onClick={() => launchScan(scanMode)}>
-                <Rocket size={18} />
-                <span>Launch {scanMode === "quick" ? "Quick" : "Deep"} Scan</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Detection Modal */}
       {showDetectionModal && detectionData && (
         <motion.div 
           className="detection-modal-overlay"
@@ -907,11 +846,12 @@ const StartScan = () => {
                 className="detection-modal-btn primary"
                 onClick={() => {
                   setShowDetectionModal(false);
-                  launchScan("full", detectionData);
+                  // Auto-scan should be conservative on low-memory hosts — use medium profile
+                  launchScan(undefined, detectionData);
                 }}
               >
-                <Rocket size={18} />
-                Start Auto Scan
+              <Rocket size={18} />
+              Start Auto Scan
               </button>
             </div>
           </motion.div>

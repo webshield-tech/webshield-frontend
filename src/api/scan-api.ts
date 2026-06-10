@@ -5,7 +5,7 @@ import api from "./axios";
 export const startScan = (data: {
   targetUrl: string;
   scanType: string;
-  scanMode?: "quick" | "full";
+  scanMode?: "medium" | "full";
   sqlmapUrl?: string;
   options?: any;
 }) => {
