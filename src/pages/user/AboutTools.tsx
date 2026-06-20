@@ -1,250 +1,254 @@
-import React from "react";
+import React, { useState } from "react";
 import Lottie from "lottie-react";
 import { Link } from "react-router-dom";
-import { 
-  Shield, 
-  ChevronLeft, 
-  Info, 
-  AlertTriangle, 
-  Cpu, 
-  Globe, 
-  Database, 
+import {
+  ChevronLeft,
+  ChevronDown,
+  Info,
+  AlertTriangle,
+  Cpu,
+  Globe,
+  Database,
   Lock,
   Search,
-  User
+  User,
+  Play
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "../../styles/about-tools.css";
 import nmapAnimation from "../../assets/icons/nmap.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
-import gobusterAnimation from "../../assets/icons/gobuster.json";
 import ffufAnimation from "../../assets/icons/ffuf.json";
-import wapitiAnimation from "../../assets/icons/wapiti.json";
-import nucleiAnimation from "../../assets/icons/nuclie.json";
 import dnsAnimation from "../../assets/icons/dns-recon.json";
 import whoisAnimation from "../../assets/icons/whois.json";
-import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 
 const toolData = [
   {
     id: "nmap",
     title: "Nmap",
-    subtitle: "Network Scanner",
+    subtitle: "Network & Port Scanner",
     animation: nmapAnimation,
-    icon: <Globe size={20} />,
+    icon: <Globe size={18} />,
     color: "#00d4ff",
-    badges: ["Finds Open Ports", "Server Check"],
+    colorRgb: "0, 212, 255",
+    tag: "RECON",
+    badges: ["Open Ports", "Service Detection"],
     description:
-      "Nmap scans your server to find which 'doors' (ports) are open. If a port is open that shouldn't be, it's a security risk.",
-    whenToUse:
-      "Use this to see what parts of your server are visible to the public.",
-    features: ["Port Scanning", "Service Detection"],
-    delay: "0.1s",
+      "Nmap discovers which ports and services are exposed on your server. Open ports that shouldn't be public are a direct security risk.",
+    whenToUse: "Run this first to get a complete picture of what your server is exposing to the internet.",
+    features: ["Port Scanning", "Service & Version Detection"],
   },
   {
     id: "nikto",
     title: "Nikto",
-    subtitle: "Web Server Scanner",
+    subtitle: "Web Server Auditor",
     animation: niktoAnimation,
-    icon: <Cpu size={20} />,
+    icon: <Cpu size={18} />,
     color: "#ff6b6b",
-    badges: ["Old Software", "Server Errors"],
+    colorRgb: "255, 107, 107",
+    tag: "CONFIG",
+    badges: ["Outdated Software", "Misconfigurations"],
     description:
-      "Nikto checks if your web server software is outdated or has common setup mistakes that could be exploited.",
-    whenToUse:
-      "Use this to find common server vulnerabilities and dangerous files.",
-    features: ["Server Auditing", "Software Check"],
-    delay: "0.3s",
+      "Nikto audits your web server for outdated software, dangerous default files, and common configuration mistakes that attackers exploit.",
+    whenToUse: "Use after Nmap to audit the web server layer for known misconfigurations and vulnerable software.",
+    features: ["Software Identification", "Dangerous File Detection"],
   },
   {
     id: "sqlmap",
     title: "SQLMap",
-    subtitle: "Database Security",
+    subtitle: "SQL Injection Tester",
     animation: sqlAnimation,
-    icon: <Database size={20} />,
+    icon: <Database size={18} />,
     color: "#ffd54f",
-    badges: ["Data Leak Check", "Auto Test"],
+    colorRgb: "255, 213, 79",
+    tag: "DATABASE",
+    badges: ["Database Security", "Form Testing"],
     description:
-      "SQLMap tests your website's forms to see if a hacker can steal your database information, like passwords or user data.",
-    whenToUse:
-      "Use this to make sure your login and search forms are secure.",
-    features: ["Injection Test", "Data Protection"],
-    delay: "0.5s",
+      "SQLMap automatically tests your website's input forms for SQL injection vulnerabilities that could allow an attacker to steal or destroy your database.",
+    whenToUse: "Use on any site with login forms, search boxes, or any user input that touches a database.",
+    features: ["Injection Detection", "Form Crawling"],
   },
   {
     id: "sslscan",
     title: "SSLScan",
-    subtitle: "Encryption Checker",
+    subtitle: "TLS/SSL Auditor",
     animation: sslAnimation,
-    icon: <Lock size={20} />,
+    icon: <Lock size={18} />,
     color: "#69f0ae",
-    badges: ["Green Lock Audit", "Privacy"],
+    colorRgb: "105, 240, 174",
+    tag: "ENCRYPTION",
+    badges: ["Encryption Audit", "Certificate Check"],
     description:
-      "SSLScan checks your website's 'green lock' (HTTPS) to make sure your users' data is encrypted and safe from hackers.",
-    whenToUse:
-      "Use this to ensure your website's encryption is strong and up-to-date.",
-    features: ["SSL/TLS Audit", "Certificate Check"],
-    delay: "0.7s",
-  },
-  {
-    id: "gobuster",
-    title: "Gobuster",
-    subtitle: "Hidden File Search",
-    animation: gobusterAnimation,
-    icon: <Search size={20} />,
-    color: "#ff8c00",
-    badges: ["Hidden Folders", "Private Files"],
-    description: "Gobuster searches for hidden pages, folders, or admin panels on your website that should not be public.",
-    whenToUse: "To find forgotten admin pages or private folders.",
-    features: ["Path Discovery", "Fast Search"],
-    delay: "0.9s",
-  },
-  {
-    id: "ratelimit",
-    title: "RateLimit",
-    subtitle: "Traffic Capacity",
-    animation: rateLimitAnimation,
-    icon: <Shield size={20} />,
-    color: "#9d00ff",
-    badges: ["DDoS Check", "Crash Test"],
-    description: "This tool checks if your website can handle too much traffic at once without crashing.",
-    whenToUse: "To see if your website can handle many requests or a DDoS attack.",
-    features: ["Traffic Test", "Limit Check"],
-    delay: "1.1s",
+      "SSLScan audits your HTTPS configuration — it checks for weak ciphers, outdated protocols (SSLv3, TLS 1.0), and certificate validity issues.",
+    whenToUse: "Use on any HTTPS site to ensure data in transit is properly encrypted.",
+    features: ["TLS Protocol Audit", "Certificate Expiry Check"],
   },
   {
     id: "ffuf",
     title: "FFUF",
-    subtitle: "Advanced File Search",
+    subtitle: "Directory & Endpoint Fuzzer",
     animation: ffufAnimation,
-    icon: <Search size={20} />,
+    icon: <Search size={18} />,
     color: "#ff00ff",
-    badges: ["Deep Discovery", "Fast Search"],
-    description: "FFUF is a very fast tool used to find hidden parts and secret settings of a website.",
-    whenToUse: "For a deeper and faster search of hidden technical parts of your site.",
-    features: ["Fast Discovery", "Technical Audit"],
-    delay: "1.3s",
-  },
-  {
-    id: "wapiti",
-    title: "Wapiti",
-    subtitle: "Web Bug Scanner",
-    animation: wapitiAnimation,
-    icon: <Globe size={20} />,
-    color: "#00d4ff",
-    badges: ["Full Audit", "Bug Finder"],
-    description: "Wapiti is like a general health checkup that looks for many common security bugs all in one go.",
-    whenToUse: "When you want a comprehensive check for common website vulnerabilities.",
-    features: ["General Audit", "Bug Detection"],
-    delay: "1.5s",
-  },
-  {
-    id: "nuclei",
-    title: "Nuclei",
-    subtitle: "Security Bug Check",
-    animation: nucleiAnimation,
-    icon: <Database size={20} />,
-    color: "#ffd54f",
-    badges: ["Known Bug Match", "Latest Threats"],
-    description: "Nuclei checks your website against a huge list of known security bugs to see if you are at risk.",
-    whenToUse: "To quickly check if your website has any famous security vulnerabilities.",
-    features: ["Template Matching", "Vulnerability Check"],
-    delay: "1.7s",
+    colorRgb: "255, 0, 255",
+    tag: "EXPERT",
+    badges: ["Hidden Paths", "Fast Discovery"],
+    description:
+      "FFUF rapidly discovers hidden directories, admin panels, backup files, and API endpoints that are not publicly linked but still accessible.",
+    whenToUse: "Use on backend/full-stack sites to uncover exposed paths that should not be publicly reachable.",
+    features: ["Directory Discovery", "Multi-status Filtering"],
   },
   {
     id: "dns",
-    title: "DNS Recon",
-    subtitle: "Technical Settings",
+    title: "DNS Lookup",
+    subtitle: "Domain Intelligence",
     animation: dnsAnimation,
-    icon: <Info size={20} />,
+    icon: <Info size={18} />,
     color: "#69f0ae",
-    badges: ["Domain Identity", "Server Connect"],
-    description: "This tool checks if your website is correctly connected to the right servers and looks for domain issues.",
-    whenToUse: "To verify that your website's domain settings are correct.",
-    features: ["Record Check", "Technical Audit"],
-    delay: "1.9s",
+    colorRgb: "105, 240, 174",
+    tag: "DOMAIN",
+    badges: ["A / MX / TXT Records", "Instant Results"],
+    description:
+      "Instantly retrieves DNS records for any domain — A, AAAA, MX, TXT, NS, CNAME and more. Useful for verifying domain configuration and spotting misconfigurations.",
+    whenToUse: "Use to verify domain records, check email security (SPF/DKIM), or investigate a domain's infrastructure.",
+    features: ["Full Record Lookup", "Instant Inline Results"],
   },
   {
     id: "whois",
-    title: "Whois",
-    subtitle: "Domain Ownership",
+    title: "WHOIS",
+    subtitle: "Domain Ownership Lookup",
     animation: whoisAnimation,
-    icon: <User size={20} />,
-    color: "#ffffff",
-    badges: ["Ownership Check", "Expiry Date"],
-    description: "Whois finds out who owns your domain and when it expires to help prevent your domain from being stolen.",
-    whenToUse: "To check who owns a domain and when it needs to be renewed.",
-    features: ["Ownership Verify", "Expiry Check"],
-    delay: "2.1s",
+    icon: <User size={18} />,
+    color: "#c084fc",
+    colorRgb: "192, 132, 252",
+    tag: "IDENTITY",
+    badges: ["Ownership Info", "Expiry Date"],
+    description:
+      "WHOIS retrieves registration details for any domain — owner info, registrar, creation and expiry dates. Helps verify legitimacy and avoid squatted domains.",
+    whenToUse: "Use to check who owns a domain, when it expires, or to investigate a suspicious site.",
+    features: ["Registrar Info", "Expiry & Creation Dates"],
   },
 ];
 
 const AboutTools: React.FC = () => {
+  const navigate = useNavigate();
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const toggle = (id: string) => setOpenId(prev => prev === id ? null : id);
 
   return (
     <div className="about-page-premium">
       <div className="about-content-wrap">
         <header className="about-header-premium">
           <Link to="/dashboard" className="back-btn-v2">
-            <ChevronLeft size={20} />
+            <ChevronLeft size={18} />
             <span>Dashboard</span>
           </Link>
           <div className="about-title-group">
             <h1 className="text-gradient">Security Toolkit</h1>
-            <p>Professional-grade assessment engines integrated into the Vuln Spectra platform.</p>
+            <p>Professional-grade assessment engines. Tap any tool to learn more.</p>
           </div>
         </header>
 
-        <div className="about-tools-grid">
-          {toolData.map((tool) => (
-            <article 
-              className="tool-info-card glass-panel" 
-              key={tool.id}
-              style={{ "--tool-accent": tool.color } as React.CSSProperties}
-            >
-              <div className="card-accent-line"></div>
-              <div className="tool-visual">
-                <div className="lottie-wrap">
-                  <Lottie animationData={tool.animation} loop={false} />
-                </div>
-              </div>
-              
-              <div className="tool-details">
-                <div className="tool-head">
-                  <h2>{tool.title}</h2>
-                  <span className="tool-subtitle">{tool.subtitle}</span>
-                </div>
-                
-                <p className="tool-desc-text">{tool.description}</p>
-                
-                <div className="tool-features-row">
-                  {tool.features.map((f, i) => (
-                    <span key={i} className="f-tag">{f}</span>
-                  ))}
-                </div>
-
-                <div className="tool-usage-box">
-                  <div className="usage-label">
-                    <Info size={16} className="text-primary" />
-                    <span>Operational Context</span>
+        {/* Accordion Tool List */}
+        <div className="tools-accordion">
+          {toolData.map((tool) => {
+            const isOpen = openId === tool.id;
+            return (
+              <div
+                key={tool.id}
+                className={`accordion-item ${isOpen ? "open" : ""}`}
+                style={{ "--tool-accent": tool.color, "--tool-accent-rgb": tool.colorRgb } as React.CSSProperties}
+              >
+                {/* Collapsed Header Row — always visible */}
+                <button
+                  className="accordion-trigger"
+                  onClick={() => toggle(tool.id)}
+                  aria-expanded={isOpen}
+                >
+                  <div className="accordion-left">
+                    <div className="accordion-lottie">
+                      <Lottie
+                        animationData={tool.animation}
+                        loop
+                        autoplay
+                        style={{ width: "100%", height: "100%" }}
+                      />
+                    </div>
+                    <div className="accordion-name">
+                      <span className="tool-acc-title">{tool.title}</span>
+                      <span className="tool-acc-sub">{tool.subtitle}</span>
+                    </div>
                   </div>
-                  <p>{tool.whenToUse}</p>
+
+                  <div className="accordion-right">
+                    <span className="tool-acc-tag">{tool.tag}</span>
+                    <div className={`accordion-chevron ${isOpen ? "rotated" : ""}`}>
+                      <ChevronDown size={18} />
+                    </div>
+                  </div>
+                </button>
+
+                {/* Expandable Body */}
+                <div className={`accordion-body ${isOpen ? "expanded" : ""}`}>
+                  <div className="accordion-body-inner">
+                    <div className="acc-detail-grid">
+                      {/* Large Lottie Preview */}
+                      <div className="acc-lottie-large">
+                        <Lottie
+                          animationData={tool.animation}
+                          loop
+                          autoplay
+                          style={{ width: "100%", height: "100%" }}
+                        />
+                      </div>
+
+                      {/* Details */}
+                      <div className="acc-details">
+                        <p className="acc-description">{tool.description}</p>
+
+                        <div className="acc-features">
+                          {tool.features.map((f, i) => (
+                            <span key={i} className="f-tag">{f}</span>
+                          ))}
+                        </div>
+
+                        <div className="acc-usage">
+                          <div className="usage-label">
+                            <Info size={14} />
+                            <span>When to use</span>
+                          </div>
+                          <p>{tool.whenToUse}</p>
+                        </div>
+
+                        <button
+                          className="acc-scan-btn"
+                          onClick={() => navigate(`/start-scan?tool=${tool.id}`)}
+                        >
+                          <Play size={14} fill="currentColor" />
+                          <span>Scan with {tool.title}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </article>
-          ))}
+            );
+          })}
         </div>
 
         <section className="about-notice-panel glass-panel">
           <div className="notice-header">
-            <AlertTriangle className="text-accent" size={24} />
+            <AlertTriangle className="text-accent" size={22} />
             <h3>Legal & Ethical Compliance</h3>
           </div>
           <p>
-            The tools provided in this suite are powerful security assessment instruments. Unauthorized use against systems without explicit, 
-            documented permission is strictly prohibited. Operators must ensure full compliance with regional laws and 
-            responsible disclosure practices. <strong>Vuln Spectra enforces a strict policy against any malicious or unauthorized activity.</strong>
+            The tools provided in this suite are powerful security assessment instruments. Unauthorized use against
+            systems without explicit, documented permission is strictly prohibited. Operators must ensure full compliance
+            with regional laws and responsible disclosure practices.{" "}
+            <strong>Vuln Spectra enforces a strict policy against any malicious or unauthorized activity.</strong>
           </p>
         </section>
       </div>

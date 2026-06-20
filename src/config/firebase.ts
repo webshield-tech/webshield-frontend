@@ -1,19 +1,12 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
-// ✅ SECURITY FIX: Use environment variables for Firebase config
-// Create .env.local file with these variables:
-// VITE_FIREBASE_API_KEY=...
-// VITE_FIREBASE_AUTH_DOMAIN=...
-// VITE_FIREBASE_PROJECT_ID=...
-// VITE_FIREBASE_STORAGE_BUCKET=...
-// VITE_FIREBASE_MESSAGING_SENDER_ID=...
-// VITE_FIREBASE_APP_ID=...
-// VITE_FIREBASE_MEASUREMENT_ID=...
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+const hasFirebaseConfig = !!apiKey && apiKey !== "undefined" && apiKey.trim() !== "";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  apiKey: apiKey || "",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
@@ -22,15 +15,26 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+let app: any = null;
+let auth: any = null;
+let googleProvider: any = null;
 
-// Initialize analytics
-try {
-  const analytics = getAnalytics(app);
-  console.log("Firebase Analytics initialized successfully");
-} catch (error) {
-  console.warn("Firebase Analytics initialization warning:", error);
-  // Analytics is not critical, so we continue even if it fails
+if (hasFirebaseConfig) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    
+    // Initialize analytics if supported
+    if (firebaseConfig.measurementId) {
+      getAnalytics(app);
+    }
+  } catch (error) {
+    console.error("Failed to initialize Firebase:", error);
+  }
+} else {
+  console.warn("Firebase API key missing. Firebase features are disabled.");
 }
+
+export { auth, googleProvider };
+

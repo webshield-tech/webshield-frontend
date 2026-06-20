@@ -1,8 +1,9 @@
-/* about-tools.css - PREMIUM CYBER UI */
+/* about-tools.css — Accordion Tool Cards */
+
 .about-page-premium {
   min-height: 100vh;
   background-color: var(--cyber-bg);
-  padding: 80px 24px 40px;
+  padding: 80px 24px 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,78 +13,292 @@
 
 .about-content-wrap {
   width: 100%;
-  max-width: 1000px;
+  max-width: 860px;
   margin: 0 auto;
   position: relative;
   z-index: 10;
 }
 
+/* Header */
 .about-header-premium {
-  margin-bottom: 60px;
+  margin-bottom: 48px;
   text-align: center;
 }
 
 .back-btn-v2 {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid var(--cyber-border);
   background: rgba(255, 255, 255, 0.03);
-  color: var(--cyber-text);
+  color: var(--cyber-text-dim);
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 1px;
   text-transform: uppercase;
+  text-decoration: none;
   transition: all 0.25s ease;
+  margin-bottom: 28px;
 }
 
 .back-btn-v2:hover {
   background: rgba(0, 242, 255, 0.08);
   border-color: rgba(0, 242, 255, 0.35);
   color: #fff;
-  transform: translateY(-1px);
-}
-
-.about-title-group {
-  margin-top: 32px;
 }
 
 .about-title-group h1 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 3rem;
+  font-size: 2.4rem;
   font-weight: 900;
-  letter-spacing: 4px;
-  margin-bottom: 12px;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
 }
 
 .about-title-group p {
-  font-family: 'Fira Code', monospace;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 1rem;
-  color: var(--cyber-primary);
-  opacity: 0.8;
+  color: var(--cyber-text-dim);
+  letter-spacing: 0.5px;
 }
 
-/* Tools Grid */
-.about-tools-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-  margin-bottom: 60px;
+/* ==========================================
+   ACCORDION
+   ========================================== */
+.tools-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 48px;
 }
 
-.tool-info-card {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 48px;
-  padding: 48px;
-  border-radius: 4px;
-  position: relative;
+.accordion-item {
+  border: 1px solid var(--cyber-border);
+  border-radius: 10px;
+  background: rgba(10, 14, 22, 0.85);
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
+.accordion-item.open {
+  border-color: var(--tool-accent);
+  box-shadow: 0 0 20px rgba(var(--tool-accent-rgb), 0.12);
+}
+
+/* Trigger Row */
+.accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--cyber-text);
+  gap: 16px;
+  transition: background 0.2s ease;
+}
+
+.accordion-trigger:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.accordion-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Small Lottie in collapsed row */
+.accordion-lottie {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: rgba(var(--tool-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--tool-accent-rgb), 0.2);
+  padding: 4px;
+  overflow: hidden;
+}
+
+.accordion-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.tool-acc-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.accordion-item.open .tool-acc-title {
+  color: var(--tool-accent);
+}
+
+.tool-acc-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.82rem;
+  color: var(--cyber-text-dim);
+  margin-top: 2px;
+}
+
+.accordion-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.tool-acc-tag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: rgba(var(--tool-accent-rgb), 0.1);
+  border: 1px solid rgba(var(--tool-accent-rgb), 0.3);
+  color: var(--tool-accent);
+}
+
+.accordion-chevron {
+  color: var(--cyber-text-dim);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+}
+
+.accordion-chevron.rotated {
+  transform: rotate(180deg);
+  color: var(--tool-accent);
+}
+
+/* Expandable Body */
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accordion-body.expanded {
+  max-height: 600px;
+}
+
+.accordion-body-inner {
+  padding: 0 20px 24px;
+  border-top: 1px solid rgba(var(--tool-accent-rgb), 0.15);
+}
+
+.acc-detail-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 24px;
+  padding-top: 20px;
+}
+
+.acc-lottie-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  background: rgba(var(--tool-accent-rgb), 0.06);
+  border: 1px solid rgba(var(--tool-accent-rgb), 0.2);
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.acc-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acc-description {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--cyber-text-dim);
+  margin: 0;
+}
+
+.acc-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.f-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.68rem;
+  background: rgba(var(--tool-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--tool-accent-rgb), 0.25);
+  padding: 4px 12px;
+  border-radius: 100px;
+  color: var(--tool-accent);
+  letter-spacing: 0.3px;
+}
+
+.acc-usage {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--cyber-border);
+  padding: 14px 16px;
+  border-radius: 6px;
+}
+
+.usage-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--cyber-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.acc-usage p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.92rem;
+  color: var(--cyber-text-dim);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.acc-scan-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: rgba(var(--tool-accent-rgb), 0.1);
+  border: 1px solid rgba(var(--tool-accent-rgb), 0.4);
+  color: var(--tool-accent);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  align-self: flex-start;
+}
+
+.acc-scan-btn:hover {
+  background: var(--tool-accent);
+  color: #030508;
+  box-shadow: 0 0 16px rgba(var(--tool-accent-rgb), 0.4);
+}
+
+/* Card accent line at top */
 .card-accent-line {
   position: absolute;
   top: 0;
@@ -91,140 +306,36 @@
   width: 4px;
   height: 100%;
   background: var(--tool-accent);
-  box-shadow: 0 0 15px var(--tool-accent);
-}
-
-.tool-visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 32px;
-}
-
-.tool-id-tag {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--tool-accent);
-  letter-spacing: 2px;
-}
-
-.lottie-wrap {
-  width: 240px;
-  height: 240px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--cyber-border);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.tool-id-tag {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--tool-accent);
-  letter-spacing: 2px;
-}
-
-.tool-details {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.tool-head h2 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
-  font-weight: 900;
-  margin-bottom: 8px;
-  color: var(--tool-accent);
-}
-
-.tool-subtitle {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.85rem;
-  color: var(--cyber-text-dim);
-}
-
-.tool-desc-text {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: #fff;
-  opacity: 0.9;
-}
-
-.tool-features-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.f-tag {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.7rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--cyber-border);
-  padding: 6px 16px;
-  border-radius: 100px;
-  color: var(--cyber-text-dim);
-}
-
-.tool-usage-box {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--cyber-border);
-  padding: 24px;
-  border-radius: 4px;
-}
-
-.usage-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--cyber-primary);
-  margin-bottom: 12px;
-}
-
-.tool-usage-box p {
-  font-size: 0.95rem;
-  color: var(--cyber-text-dim);
-  line-height: 1.6;
+  box-shadow: 0 0 10px var(--tool-accent);
 }
 
 /* Notice Panel */
 .about-notice-panel {
-  padding: 48px;
-  border: 1px solid rgba(var(--cyber-accent-rgb), 0.3);
-  background: rgba(var(--cyber-accent-rgb), 0.05);
+  padding: 28px;
+  border: 1px solid rgba(255, 0, 85, 0.25);
+  background: rgba(255, 0, 85, 0.04);
+  border-radius: 10px;
 }
 
 .notice-header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .notice-header h3 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 900;
   color: var(--cyber-accent);
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
 }
 
 .about-notice-panel p {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 1.1rem;
-  line-height: 1.8;
+  font-size: 1rem;
+  line-height: 1.7;
   color: var(--cyber-text-dim);
 }
 
@@ -232,94 +343,45 @@
   color: var(--cyber-accent);
 }
 
-@media (max-width: 1024px) {
-  .tool-info-card {
-    grid-template-columns: 1fr;
-    gap: 32px;
-    padding: 32px;
-  }
-  .lottie-wrap {
-    width: 200px;
-    height: 200px;
-  }
-}
-
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
 @media (max-width: 768px) {
-  .about-title-group h1 {
-    font-size: 2rem;
-  }
-
   .about-page-premium {
-    padding-top: 64px;
+    padding: 64px 16px 40px;
   }
 
-  .tool-info-card {
-    padding: 24px;
+  .about-title-group h1 {
+    font-size: 1.8rem;
+    letter-spacing: 2px;
   }
 
-  .lottie-wrap {
-    width: 160px;
-    height: 160px;
+  .acc-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .acc-lottie-large {
+    width: 80px;
+    height: 80px;
+  }
+
+  .accordion-trigger {
+    padding: 14px 16px;
+  }
+
+  .tool-acc-tag {
+    display: none;
   }
 }
 
-.auto-tools-info {
-  margin-bottom: 16px;
-  padding: 22px;
-  border: 1px solid var(--cyber-border);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-}
+@media (max-width: 480px) {
+  .accordion-lottie {
+    width: 36px;
+    height: 36px;
+  }
 
-.auto-tools-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.82rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.auto-tools-copy {
-  color: var(--cyber-text-dim);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-
-.auto-tools-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.auto-tool-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.auto-tool-icon {
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-}
-
-.auto-tool-card h3 {
-  font-size: 0.82rem;
-  margin-bottom: 4px;
-  color: var(--tool-accent);
-}
-
-.auto-tool-card p {
-  font-size: 0.78rem;
-  color: var(--cyber-text-dim);
-  line-height: 1.45;
+  .tool-acc-title {
+    font-size: 0.8rem;
+  }
 }

@@ -430,9 +430,27 @@
 
 .current-step-meter-fill {
   height: 100%;
-  background: var(--uber-accent);
+  background: linear-gradient(90deg, var(--uber-accent), rgba(59, 130, 246, 0.7));
   border-radius: 6px;
-  transition: width 0.3s ease;
+  transition: width 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.current-step-meter-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: barShimmer 2s infinite;
+}
+
+@keyframes barShimmer {
+  0% { left: -60%; }
+  100% { left: 120%; }
 }
 
 /* Decorative Corners removed */
@@ -619,19 +637,37 @@
 }
 
 .current-step-meter-pulse {
-  position: absolute;
-  top: 0;
-  right: -12px;
-  width: 32px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
-  filter: blur(4px);
-  opacity: 0.8;
-  animation: glowPulse 1.5s infinite;
+  display: none;
 }
 
 @keyframes glowPulse {
   0% { opacity: 0.1; }
   50% { opacity: 0.6; }
   100% { opacity: 0.1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .progress-container-premium {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  .progress-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .progress-visual-panel,
+  .progress-logs-panel {
+    padding: 20px;
+  }
+  .progress-details-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .auto-scan-step {
+    grid-template-columns: 20px 28px 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  .step-title {
+    font-size: 0.85rem;
+  }
 }

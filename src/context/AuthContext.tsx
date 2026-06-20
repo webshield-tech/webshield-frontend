@@ -54,6 +54,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (userKey) {
       sessionStorage.setItem("dashboard_welcome_pending", String(userKey));
     }
+    // Soft hint: mark that user has a session (works even with httpOnly cookies)
+    localStorage.setItem("ws_has_session", "1");
   };
 
   const logout = async () => {
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await LogoutUser();
     } finally {
       setUser(null);
+      localStorage.removeItem("ws_has_session");
       sessionStorage.removeItem("dashboard_welcome_pending");
       sessionStorage.clear();
       sessionStorage.removeItem("authToken");
@@ -85,6 +88,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (res.data.token) {
       sessionStorage.setItem("authToken", res.data.token);
     }
+    // Mark session hint for refresh persistence
+    localStorage.setItem("ws_has_session", "1");
 
     return res.data.user;
   };
@@ -130,6 +135,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const socialLogin = async (providerName: "google") => {
     void providerName;
+    if (!auth) {
+      throw new Error("Social login is not configured on this environment.");
+    }
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
@@ -159,42 +167,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-      return null;
-    };
-
     const init = async () => {
       setLoading(true);
 
-      try {
-        const redirectResult = await getRedirectResult(auth);
-        if (redirectResult?.user) {
-          await finalizeFirebaseLogin(redirectResult.user);
-          await checkAuth();
-          setAuthChecked(true);
-          setLoading(false);
-          return;
+      // Handle Google redirect flow
+      if (auth) {
+        try {
+          const redirectResult = await getRedirectResult(auth);
+          if (redirectResult?.user) {
+            await finalizeFirebaseLogin(redirectResult.user);
+            await checkAuth();
+            setAuthChecked(true);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.warn("[Auth] Google redirect login failed:", error);
         }
-      } catch (error) {
-        console.warn("[Auth] Google redirect login failed:", error);
       }
 
-      const token = getCookie("token") || sessionStorage.getItem("authToken");
+      // NOTE: httpOnly cookies cannot be read via document.cookie.
+      // We rely on a soft localStorage hint OR always attempt a /profile
+      // call and let the backend confirm if the session cookie is valid.
+      // This prevents logout-on-refresh when the httpOnly token cookie exists.
+      const sessionToken = sessionStorage.getItem("authToken");
+      const hasSessionHint = !!localStorage.getItem("ws_has_session") || !!sessionToken;
 
-      if (!getCookie("token") && localStorage.getItem("authToken")) {
-        localStorage.removeItem("authToken");
-      }
-
-      if (!token) {
+      if (!hasSessionHint) {
+        // No hint at all — definitely not logged in
         setUser(null);
         setAuthChecked(true);
         setLoading(false);
         return;
       }
 
+      // Session hint present: verify with backend (httpOnly cookie is sent automatically)
       await checkAuth();
       setAuthChecked(true);
       setLoading(false);

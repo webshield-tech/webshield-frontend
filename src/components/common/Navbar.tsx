@@ -14,7 +14,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Bell,
-  LogOut
+  LogOut,
+  Shield
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -185,6 +186,10 @@ export const Navbar = () => {
             <Info size={18} />
             <span>About Tools</span>
           </Link>
+          <Link to="/remediation" className="nav-link">
+            <Shield size={18} />
+            <span>Secure Coding</span>
+          </Link>
           <Link to="/learn" className="nav-link">
             <BookOpen size={18} />
             <span>Learn</span>
@@ -330,6 +335,10 @@ export const Navbar = () => {
           <Link to="/about-tools" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
             <Info size={20} />
             <span>About Tools</span>
+          </Link>
+          <Link to="/remediation" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
+            <Shield size={20} />
+            <span>Secure Coding</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>

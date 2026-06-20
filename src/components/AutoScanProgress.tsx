@@ -6,14 +6,9 @@ import nmapIcon from "../assets/icons/nmap.json";
 import niktoIcon from "../assets/icons/nikto.json";
 import sslIcon from "../assets/icons/ssl.json";
 import sqlIcon from "../assets/icons/sql.json";
-import wapatiIcon from "../assets/icons/wapiti.json";
-import gobusterIcon from "../assets/icons/gobuster.json";
-import nucleiIcon from "../assets/icons/nuclie.json";
 import dnsIcon from "../assets/icons/dns-recon.json";
 import whoisIcon from "../assets/icons/whois.json";
-import rateLimitIcon from "../assets/icons/rate-limit.json";
 import aiSearchingIcon from "../assets/icons/aiSearching.json";
-import xssIcon from "../assets/icons/Shield.json";
 
 interface AutoScanProgressProps {
   status: string;
@@ -32,50 +27,35 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
 
   const toolLottieMap: Record<string, unknown> = {
     nmap: nmapIcon,
-    nuclei: nucleiIcon,
     nikto: niktoIcon,
     ssl: sslIcon,
     sqlmap: sqlIcon,
-    wapiti: wapatiIcon,
-    gobuster: gobusterIcon,
     ffuf: aiSearchingIcon,
-    ratelimit: rateLimitIcon,
     dns: dnsIcon,
     whois: whoisIcon,
-    xss: xssIcon,
   };
 
   const TOOL_LABELS: Record<string, string> = {
     platform: "Platform Detection",
     nmap: "Network Reconnaissance (Nmap)",
-    nuclei: "Template Scan (Nuclei)",
     nikto: "Web Server Audit (Nikto)",
     ssl: "Encryption Analysis (SSLScan)",
     sqlmap: "Injection Testing (SQLMap)",
-    wapiti: "Web App Audit (Wapiti)",
-    gobuster: "Directory Discovery (Gobuster)",
     ffuf: "Fuzzing & Enumeration (FFUF)",
-    ratelimit: "Rate Limiter Check",
     dns: "DNS Reconnaissance",
     whois: "WHOIS Lookup",
-    xss: "XSS & CSRF (Injection)",
     auto: "Auto Scan",
   };
 
   const TOOL_DETAILS: Record<string, string> = {
     platform: "Identify stack, hosting, and framework signals before the scan branches.",
     nmap: "Map live ports and services to determine the target surface.",
-    nuclei: "Run known exposure and CVE templates against the discovered stack.",
     nikto: "Check for web server misconfigurations and common file leaks.",
     ssl: "Audit TLS versions, certificate health, and cipher strength.",
     sqlmap: "Probe input points only when parameters or forms are detected.",
-    wapiti: "Crawl the application and test for XSS, CSRF, and input flaws.",
-    gobuster: "Brute-force hidden directories and files with a curated wordlist.",
     ffuf: "Fuzz parameters and routes to reveal hidden application behavior.",
-    ratelimit: "Verify request throttling and API rate controls.",
     dns: "Inspect DNS records and domain infrastructure.",
     whois: "Collect registration and ownership metadata.",
-    xss: "Crawl and test input forms for Reflected XSS and CSRF token flaws.",
   };
 
   const scansByType = new Map<
@@ -103,13 +83,9 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
         "nikto",
         "ssl",
         "sqlmap",
-        "nuclei",
-        "wapiti",
-        "gobuster",
         "ffuf",
         "dns",
         "whois",
-        "ratelimit",
       ];
 
   const baseOrder = plannedOrder;
@@ -238,18 +214,18 @@ export const AutoScanProgress = ({ status, percent, batchScans = [], scanPlan }:
 
             <div className="step-icon">
               {step.status === "completed" && toolLottieMap[step.id] ? (
-                <div className="step-lottie-icon" style={{ opacity: 0.6 }}>
+                <div className="step-lottie-icon">
                   <Lottie 
                     animationData={toolLottieMap[step.id]} 
-                    loop={false} 
-                    autoplay={false}
+                    loop
+                    autoplay
                     style={{ width: '100%', height: '100%' }}
                   />
                 </div>
               ) : step.status === "completed" ? (
                 <CheckCircle2 size={20} />
               ) : step.status === "running" && toolLottieMap[step.id] ? (
-                <div className="step-lottie-icon animate-spin">
+                <div className="step-lottie-icon">
                   <Lottie 
                     animationData={toolLottieMap[step.id]} 
                     loop 

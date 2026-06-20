@@ -5,13 +5,9 @@ import nmapAnimation from "../../assets/icons/nmap.json";
 import sqlAnimation from "../../assets/icons/sql.json";
 import sslAnimation from "../../assets/icons/ssl.json";
 import niktoAnimation from "../../assets/icons/nikto.json";
-import gobusterAnimation from "../../assets/icons/gobuster.json";
 import ffufAnimation from "../../assets/icons/ffuf.json";
-import wapitiAnimation from "../../assets/icons/wapiti.json";
-import nucleiAnimation from "../../assets/icons/nuclie.json";
 import dnsAnimation from "../../assets/icons/dns-recon.json";
 import whoisAnimation from "../../assets/icons/whois.json";
-import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 
 const ToolCards = () => {
   const tools = [
@@ -56,44 +52,14 @@ const ToolCards = () => {
       tag: "ENCRYPTION"
     },
     {
-      name: "Gobuster",
-      animation: gobusterAnimation,
-      color: "#ff8c00",
-      description: "Discovers hidden paths, folders, and forgotten endpoints.",
-      features: ["Hidden Paths", "Private Files", "Asset Discovery"],
-      delay: "0.5s",
-      toolId: "gobuster",
-      tag: "HIDDEN"
-    },
-    {
       name: "FFUF",
       animation: ffufAnimation,
       color: "#ff00ff",
       description: "Fast fuzzing for hidden files, routes, and parameter space.",
       features: ["Header Fuzzing", "Rapid Discovery", "Deep Search"],
-      delay: "0.6s",
+      delay: "0.5s",
       toolId: "ffuf",
       tag: "EXPERT"
-    },
-    {
-      name: "Wapiti",
-      animation: wapitiAnimation,
-      color: "#00d4ff",
-      description: "Crawls web apps to find input and session weaknesses.",
-      features: ["Crawl Audit", "XSS/CSRF Checks", "Input Review"],
-      delay: "0.7s",
-      toolId: "wapiti",
-      tag: "CRAWLER"
-    },
-    {
-      name: "Nuclei",
-      animation: nucleiAnimation,
-      color: "#ffd54f",
-      description: "Runs template-based checks for known exposures and CVEs.",
-      features: ["CVE Matching", "Cloud Exposure", "Template Checks"],
-      delay: "0.8s",
-      toolId: "nuclei",
-      tag: "TEMPLATES"
     },
     {
       name: "DNS Recon",
@@ -101,7 +67,7 @@ const ToolCards = () => {
       color: "#69f0ae",
       description: "Inspects DNS records to map the target's infrastructure.",
       features: ["A/MX/NS Records", "Infrastructure Map", "Host Discovery"],
-      delay: "0.9s",
+      delay: "0.6s",
       toolId: "dns",
       tag: "DOMAIN"
     },
@@ -111,19 +77,9 @@ const ToolCards = () => {
       color: "#ffffff",
       description: "Shows ownership, registrar, and expiry details for a domain.",
       features: ["Ownership Lookup", "Expiry Dates", "Registrar Data"],
-      delay: "1.0s",
+      delay: "0.7s",
       toolId: "whois",
       tag: "IDENTITY"
-    },
-    {
-      name: "RateLimit",
-      animation: rateLimitAnimation,
-      color: "#9d00ff",
-      description: "Checks request throttling and API abuse resistance.",
-      features: ["Burst Test", "API Limits", "Abuse Detection"],
-      delay: "1.1s",
-      toolId: "ratelimit",
-      tag: "THROTTLE"
     },
   ];
 
@@ -140,7 +96,6 @@ const ToolCards = () => {
                 "--tool-color-rgb": tool.color === "#00f2ff" ? "0, 242, 255" : 
                                    tool.color === "#ff0055" ? "255, 0, 85" :
                                    tool.color === "#ffd54f" ? "255, 213, 79" : 
-                                   tool.color === "#ff8c00" ? "255, 140, 0" :
                                    tool.color === "#ff00ff" ? "255, 0, 255" : "0, 255, 157",
                 animationDelay: tool.delay
               } as React.CSSProperties

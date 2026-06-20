@@ -16,45 +16,31 @@ import nmapAnimation    from "../../assets/icons/nmap.json";
 import niktoAnimation   from "../../assets/icons/nikto.json";
 import sqlmapAnimation  from "../../assets/icons/sql.json";
 import sslscanAnimation from "../../assets/icons/ssl.json";
-
-import gobusterAnimation from "../../assets/icons/gobuster.json";
-import ffufAnimation from "../../assets/icons/ffuf.json";
-import wapitiAnimation from "../../assets/icons/wapiti.json";
-import nucleiAnimation from "../../assets/icons/nuclie.json";
-import dnsAnimation from "../../assets/icons/dns-recon.json";
-import whoisAnimation from "../../assets/icons/whois.json";
-import rateLimitAnimation from "../../assets/icons/rate-limit.json";
+import ffufAnimation    from "../../assets/icons/ffuf.json";
+import dnsAnimation     from "../../assets/icons/dns-recon.json";
+import whoisAnimation   from "../../assets/icons/whois.json";
 
 
 import { useToast, ToastContainer } from "../../components/Toast";
 
 /* ── Per-tool scan mode descriptions ─────────────────────────────────────── */
 const SCAN_MODE_DESCRIPTIONS: Record<string, any> = {
-  nmap: { color: "#00f2ff", medium: { title: "Standard Scan", detail: "Fast sweep of the 100 most common TCP ports.", bullets: ["Top 100 ports only", "Service & version detection", "~1–2 mins"] }, full: { title: "Full Scan", detail: "Exhaustive scan covering every port.", bullets: ["All 65,535 TCP ports", "OS fingerprinting + NSE scripts", "CVE & vulnerability checks", "~5–15 mins"] } },
-  nikto: { color: "#ff0055", medium: { title: "Standard Scan", detail: "Targets the most dangerous web misconfigurations.", bullets: ["Outdated server headers", "Common dangerous files", "~1–2 mins"] }, full: { title: "Full Scan", detail: "Comprehensive web vulnerability audit.", bullets: ["All 6,700+ Nikto checks", "Directory traversal, XSS", "Injection point discovery", "~3–5 mins"] } },
-  sqlmap: { color: "#ffd54f", medium: { title: "Standard Scan", detail: "Rapid SQL injection probe.", bullets: ["Level 2 / Risk 1 payloads", "HTML form auto-detection", "~2–4 mins"] }, full: { title: "Full Scan", detail: "Advanced multi-technique SQLi probe.", bullets: ["Level 5 / Risk 3", "Time-based blind queries", "Site crawl up to 3 levels", "~5–10 mins"] } },
-  sslscan: { color: "#00ff9d", medium: { title: "Standard Scan", detail: "Audits SSL/TLS protocols.", bullets: ["Deprecated protocols", "Weak ciphers", "Certificate expiry", "~30 secs"] }, full: { title: "Full Scan", detail: "Same thorough audit.", bullets: ["All cipher suites", "Full certificate chain", "Heartbleed check", "~30 secs"] } },
-  gobuster: { color: "#ff8c00", medium: { title: "Standard Enumeration", detail: "Rapid directory sweep.", bullets: ["Common 50 directories", "Fast response detection", "~1–2 mins"] }, full: { title: "Full Discovery", detail: "Exhaustive directory and file brute-forcing.", bullets: ["Full wordlist enumeration", "Hidden file detection", "~5–10 mins"] } },
-  ratelimit: { color: "#9d00ff", medium: { title: "Rate Limit Probe", detail: "Checks if the website has active rate limiters.", bullets: ["20 concurrent request burst", "API endpoint activity", "~30 secs"] }, full: { title: "DDoS Resistance Audit", detail: "Intense stress test for WAF/Firewall.", bullets: ["Sustained 200+ requests", "API health check", "~2 mins"] } },
-  ffuf: { color: "#ff00ff", medium: { title: "Fast Fuzz", detail: "High-speed directory discovery.", bullets: ["200/301 status filtering", "Multi-threaded", "~1 min"] }, full: { title: "Full Recursive Audit", detail: "Exhaustive recursive fuzzing.", bullets: ["Full status code analysis", "Recursive depth", "~5 mins"] } },
-  wapiti: { color: "#00d4ff", medium: { title: "Standard Audit", detail: "Standard web vulnerability assessment (XSS, SSRF, Injection).", bullets: ["XSS and SSRF detection", "SQL injection checks", "Misconfiguration audit", "~3 mins"] }, full: { title: "Full Crawler", detail: "Complete web app security audit with XSS and SSRF coverage.", bullets: ["Level 1 exhaustive crawling", "Cross-Site Scripting detection", "Server-Side Request Forgery (SSRF) detection", "All injection types", "~10 mins"] } },
-  nuclei: { color: "#ffd54f", medium: { title: "CVE Exposure", detail: "Fast scan for known CVEs.", bullets: ["CVE template matching", "Exposure detection", "~2 mins"] }, full: { title: "Full Tech Audit", detail: "Complete Nuclei template suite.", bullets: ["Thousands of templates", "Critical vulnerability check", "~15 mins"] } },
+  nmap:    { color: "#00f2ff", medium: { title: "Standard Scan",    detail: "Scans top 1,024 TCP ports with service detection.",    bullets: ["Ports 1–1024", "Service & version detection", "~1–2 mins"] }, full: { title: "Full Scan",   detail: "Scans 10,000 ports with vuln scripts.",            bullets: ["Ports 1–10000", "Vulnerability NSE scripts", "~5–6 mins"] } },
+  nikto:   { color: "#ff0055", medium: { title: "Standard Scan",    detail: "Web server misconfiguration and software audit.",      bullets: ["Software identification", "Interesting files", "~2 mins"] }, full: { title: "Full Scan",   detail: "Comprehensive web vulnerability audit.",           bullets: ["Outdated software", "Dangerous files", "Injection points", "~4 mins"] } },
+  sqlmap:  { color: "#ffd54f", medium: { title: "Standard Scan",    detail: "SQL injection probe — Level 2 / Risk 1.",            bullets: ["Boolean & error-based", "Form auto-detection", "~2–4 mins"] }, full: { title: "Full Scan",   detail: "Advanced SQL injection — Level 3 / Risk 2.",      bullets: ["Union & blind queries", "Form crawling", "~5–8 mins"] } },
+  sslscan: { color: "#00ff9d", medium: { title: "Standard Scan",    detail: "Audits TLS protocols and certificate validity.",     bullets: ["Protocol versions", "Weak ciphers", "Certificate expiry", "~30 secs"] }, full: { title: "Full Scan",   detail: "Full TLS audit with Heartbleed check.",          bullets: ["All cipher suites", "Certificate chain", "Heartbleed", "~30 secs"] } },
+  ffuf:    { color: "#ff00ff", medium: { title: "Directory Fuzzing", detail: "Fast hidden directory and endpoint discovery.",     bullets: ["200/204/301/302/403 codes", "5 threads", "~2 mins"] }, full: { title: "Full Fuzzing", detail: "Broader discovery with extended status codes.", bullets: ["All common status codes", "JSON output", "~3 mins"] } },
 };
 
-// ✅ UPDATED: Separated DNS/WHOIS into their own category for Domain Reconnaissance
+// DNS/WHOIS are inline tools only (not scan pipeline tools)
 const RECON_TOOLS = ["dns", "whois"];
-const INLINE_TOOLS: string[] = []; // Keep for backward compat but empty
 
 const TOOL_DAILY_LIMITS = [
-  { id: "nmap", label: "Nmap", limit: 10, color: "#00f2ff" },
-  { id: "nikto", label: "Nikto", limit: 10, color: "#ff0055" },
-  { id: "sqlmap", label: "SQLMap", limit: 10, color: "#ffd54f" },
+  { id: "nmap",    label: "Nmap",    limit: 10, color: "#00f2ff" },
+  { id: "nikto",   label: "Nikto",   limit: 10, color: "#ff0055" },
+  { id: "sqlmap",  label: "SQLMap",  limit: 10, color: "#ffd54f" },
   { id: "sslscan", label: "SSLScan", limit: 10, color: "#00ff9d" },
-  { id: "gobuster", label: "Gobuster", limit: 10, color: "#ff8c00" },
-  { id: "ratelimit", label: "RateLimit", limit: 10, color: "#9d00ff" },
-  { id: "ffuf", label: "FFUF", limit: 10, color: "#ff00ff" },
-  { id: "wapiti", label: "Wapiti", limit: 10, color: "#00d4ff" },
-  { id: "nuclei", label: "Nuclei", limit: 10, color: "#ffd54f" },
+  { id: "ffuf",    label: "FFUF",    limit: 10, color: "#ff00ff" },
 ];
 
 const StartScan = () => {
@@ -133,16 +119,15 @@ const StartScan = () => {
     if (user) fetchAvailability();
   }, [user]);
 
+  // Essential scanner tools — 5 tools matched to backend ALLOWED_SCANS
   const tools = [
-    { id: "nmap",     name: "Nmap",          desc: "Network Mapper",              anim: nmapAnimation,     color: "#00f2ff", tag: "RECON" },
-    { id: "nikto",    name: "Nikto",         desc: "Web Server Scanner",          anim: niktoAnimation,    color: "#ff0055", tag: "CONFIG" },
-    { id: "sqlmap",   name: "SQLMap",        desc: "SQL Injection Tool",          anim: sqlmapAnimation,   color: "#ffd54f", tag: "DATABASE" },
-    { id: "sslscan",  name: "SSLScan",       desc: "TLS/SSL Auditor",             anim: sslscanAnimation,  color: "#00ff9d", tag: "HTTPS" },
-    { id: "gobuster", name: "Gobuster",      desc: "Directory Discovery",         anim: gobusterAnimation, color: "#ff8c00", tag: "HIDDEN" },
-    { id: "ratelimit",name: "RateLimit",     desc: "Request Throttle Check",      anim: rateLimitAnimation,color: "#9d00ff", tag: "DDoS" },
-    { id: "ffuf",     name: "FFUF",          desc: "Fast Web Fuzzer",             anim: ffufAnimation,     color: "#ff00ff", tag: "EXPERT" },
-    { id: "wapiti",   name: "Wapiti",        desc: "Web App Auditor (XSS, SSRF)", anim: wapitiAnimation,   color: "#00d4ff", tag: "SCANNER" },
-    { id: "nuclei",   name: "Nuclei",        desc: "Template Scanner",            anim: nucleiAnimation,   color: "#ffd54f", tag: "TEMPLATES" },
+    { id: "nmap",    name: "Nmap",    desc: "Port & Service Scanner",  anim: nmapAnimation,    color: "#00f2ff", tag: "RECON"    },
+    { id: "nikto",   name: "Nikto",   desc: "Web Server Auditor",       anim: niktoAnimation,   color: "#ff0055", tag: "WEB"      },
+    { id: "sqlmap",  name: "SQLMap",  desc: "SQL Injection Tester",     anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE" },
+    { id: "sslscan", name: "SSLScan", desc: "TLS/SSL Auditor",          anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS"    },
+    { id: "ffuf",    name: "FFUF",    desc: "Directory Fuzzer",         anim: ffufAnimation,    color: "#ff00ff", tag: "HIDDEN"   },
+    { id: "dns",     name: "DNS",     desc: "DNS Record Lookup",        anim: dnsAnimation,     color: "#00d4ff", tag: "RECON"    },
+    { id: "whois",   name: "WHOIS",   desc: "Domain Ownership Lookup",  anim: whoisAnimation,   color: "#9d00ff", tag: "INTEL"    },
   ] as const;
 
   const availabilityMap = toolAvailability?.byTool || {};
@@ -171,8 +156,9 @@ const StartScan = () => {
 
   // ✅ UPDATED: Separated recon tools (DNS/WHOIS) from scanner tools
   const scannerTools = tools.filter(t => !RECON_TOOLS.includes(t.id));
-  const reconTools = tools.filter(t => RECON_TOOLS.includes(t.id));
-  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "wapiti", "nuclei"].includes(t.id));
+  const reconTools   = tools.filter(t => RECON_TOOLS.includes(t.id));
+  // Auto scan runs: nmap, nikto, ssl(sslscan), sqlmap, ffuf — show only these in auto panel
+  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "ffuf"].includes(t.id));
 
   if (!authChecked || authLoading) return null;
 

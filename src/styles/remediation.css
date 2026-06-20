@@ -1,0 +1,440 @@
+/* remediation.css - PREMIUM SECURE CODING HUB UI */
+.remediation-page {
+  min-height: 100vh;
+  background-color: var(--cyber-bg);
+  padding: 100px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.remediation-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.remediation-header {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.back-btn-v2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cyber-text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: color 0.2s ease;
+}
+
+.back-btn-v2:hover {
+  color: var(--cyber-primary);
+  text-shadow: 0 0 8px var(--cyber-primary-glow);
+}
+
+.about-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.remediation-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.remediation-header p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.15rem;
+  color: var(--cyber-text-dim);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* AI Prompt Banner */
+.ai-prompt-banner {
+  border: 1px dashed rgba(0, 242, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 242, 255, 0.03) 0%, rgba(105, 240, 174, 0.03) 100%);
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.05);
+}
+
+.ai-banner-badge {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: rgba(0, 242, 255, 0.15);
+  border: 1px solid rgba(0, 242, 255, 0.4);
+  color: #00f2ff;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: 1px;
+}
+
+.ai-banner-content h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  color: #fff;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-banner-content p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.98rem;
+  color: var(--cyber-text-dim);
+  margin-bottom: 20px;
+  max-width: 800px;
+}
+
+.ai-prompt-box {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--cyber-border);
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+}
+
+.ai-prompt-text {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88rem;
+  color: #a5f3fc;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin-right: 50px;
+}
+
+.copy-btn-floating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #090e14;
+  border: 1px solid rgba(0, 242, 255, 0.35);
+  color: #00f2ff;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.copy-btn-floating:hover {
+  background: #00f2ff;
+  color: #090e14;
+  border-color: #00f2ff;
+  box-shadow: 0 0 12px rgba(0, 242, 255, 0.6);
+}
+
+/* Search and Filters */
+.search-filter-wrapper {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+.search-input-container {
+  flex: 1;
+  position: relative;
+}
+
+.search-input-container svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cyber-primary);
+}
+
+.search-input-container input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--cyber-border);
+  border-radius: 8px;
+  padding: 14px 16px 14px 48px;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.05rem;
+  transition: all 0.25s ease;
+}
+
+.search-input-container input:focus {
+  border-color: var(--cyber-primary);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
+  outline: none;
+}
+
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-tab {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--cyber-border);
+  color: var(--cyber-text-dim);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.category-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.category-tab.active {
+  background: rgba(0, 242, 255, 0.1);
+  border-color: #00f2ff;
+  color: #00f2ff;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+}
+
+/* Remediation Guide Cards */
+.remediation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.remediation-card {
+  padding: 36px;
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.3s ease;
+  border-left: 3px solid var(--tool-accent, var(--cyber-primary));
+}
+
+.remediation-card:hover {
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.05), 0 4px 20px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.remediation-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.remediation-title-area h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--tool-accent, #fff);
+  text-shadow: 0 0 10px rgba(var(--tool-accent-rgb, 255,255,255), 0.1);
+}
+
+.severity-indicator {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.severity-indicator.critical {
+  background: rgba(255, 93, 93, 0.15);
+  border: 1px solid rgba(255, 93, 93, 0.4);
+  color: #ff5d5d;
+}
+
+.severity-indicator.high {
+  background: rgba(255, 167, 38, 0.15);
+  border: 1px solid rgba(255, 167, 38, 0.4);
+  color: #ffa726;
+}
+
+.remediation-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.info-block h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cyber-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.info-block p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  color: var(--cyber-text-dim);
+  line-height: 1.5;
+}
+
+/* Tabs for Code snippets */
+.code-section {
+  border-top: 1px solid var(--cyber-border);
+  padding-top: 24px;
+}
+
+.code-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.code-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--cyber-border);
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.lang-tab {
+  background: transparent;
+  border: none;
+  color: var(--cyber-text-dim);
+  padding: 6px 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.lang-tab:hover {
+  color: #fff;
+}
+
+.lang-tab.active {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--cyber-primary);
+}
+
+.code-block-wrapper {
+  position: relative;
+  background: #090e14;
+  border: 1px solid var(--cyber-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 20px 60px 20px 20px;
+  overflow-x: auto;
+}
+
+.code-block-wrapper code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+@media (max-width: 768px) {
+  .remediation-page {
+    padding: 70px 16px 40px;
+  }
+
+  .remediation-header h1 {
+    font-size: 2rem;
+  }
+  
+  .remediation-info-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .remediation-card {
+    padding: 20px;
+  }
+
+  .search-filter-wrapper {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .category-tabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .category-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .code-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .language-tabs {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .ai-banner-content h2 {
+    font-size: 1.1rem;
+  }
+}

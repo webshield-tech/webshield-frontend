@@ -23,14 +23,10 @@ const POLL_MS = 3000;
 
 const TOOL_TITLES: Record<string, string> = {
   nmap: "Network Reconnaissance (Nmap)",
-  nuclei: "Template Scan (Nuclei)",
   nikto: "Web Server Audit (Nikto)",
   ssl: "Encryption Analysis (SSLScan)",
   sqlmap: "Injection Testing (SQLMap)",
-  wapiti: "Web App Audit (Wapiti)",
-  gobuster: "Directory Discovery (Gobuster)",
   ffuf: "Fuzzing & Enumeration (FFUF)",
-  ratelimit: "Rate Limiter Check",
   dns: "DNS Reconnaissance",
   whois: "WHOIS Lookup",
 };

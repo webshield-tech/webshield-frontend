@@ -1,8 +1,11 @@
-/* disclaimer.css - PREMIUM CYBER UI */
+/* disclaimer.css - PREMIUM CYBER ETHICAL AGREEMENT DESIGN */
 .disclaimer-page-premium {
   min-height: 100vh;
   background-color: var(--cyber-bg);
-  padding: 40px;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 242, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(112, 0, 255, 0.03) 0%, transparent 60%);
+  padding: 80px 24px 40px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,93 +18,108 @@
   gap: 24px;
 }
 
+.disclaimer-page-premium.loading p {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: var(--cyber-primary);
+  text-transform: uppercase;
+}
+
 .disclaimer-content-wrap {
   width: 100%;
-  max-width: 1180px;
+  max-width: 850px;
   position: relative;
   z-index: 10;
 }
 
 .disclaimer-header-premium {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
 }
 
 .header-icon-wrap {
   position: relative;
   display: inline-flex;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .pulse-ring {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -6px;
+  left: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
   border: 2px solid var(--cyber-accent);
   border-radius: 50%;
-  animation: ringPulse 2s infinite;
+  animation: ringPulse 2.5s cubic-bezier(0.25, 0, 0, 1) infinite;
+  pointer-events: none;
 }
 
 @keyframes ringPulse {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
+  0% { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
 .disclaimer-header-premium h1 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 900;
   letter-spacing: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .disclaimer-header-premium p {
   font-family: 'Fira Code', monospace;
-  font-size: 0.8rem;
-  color: var(--cyber-accent);
-  letter-spacing: 2px;
+  font-size: 0.82rem;
+  color: var(--cyber-text-dim);
+  letter-spacing: 1px;
 }
 
 .protocol-container {
-  padding: 28px 30px;
-  margin-bottom: 40px;
+  padding: 36px;
+  margin-bottom: 32px;
+  border-radius: 12px;
+  background: var(--cyber-panel);
+  border: 1px solid var(--cyber-border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 242, 255, 0.02);
 }
 
 .protocol-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
 }
-
-
 
 .protocol-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  color: var(--cyber-accent);
+  color: var(--cyber-primary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .protocol-section p {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.98rem;
+  font-size: 1.02rem;
   line-height: 1.6;
   color: var(--cyber-text-dim);
 }
 
 .protocol-wide {
   grid-column: 1 / -1;
+  border-top: 1px solid rgba(0, 242, 255, 0.1);
+  padding-top: 24px;
 }
 
 .protocol-section strong {
@@ -110,55 +128,70 @@
 
 .conduct-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .conduct-item {
   font-family: 'Fira Code', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--cyber-text-dim);
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
 
 .conduct-item span {
   color: var(--cyber-accent);
+  font-weight: bold;
 }
 
-/* Acceptance */
+/* Acceptance check */
 .protocol-acceptance {
-  margin-top: 40px;
-  padding-top: 32px;
-  border-top: 1px solid var(--cyber-border);
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 242, 255, 0.1);
 }
 
 .checkbox-wrap {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   cursor: pointer;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 4px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
   border: 1px solid var(--cyber-border);
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+}
+
+.checkbox-wrap:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(0, 242, 255, 0.4);
 }
 
 .checkbox-wrap.active {
   border-color: var(--cyber-primary);
-  background: rgba(var(--cyber-primary-rgb), 0.05);
+  background: rgba(0, 242, 255, 0.05);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.05);
 }
 
 .custom-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--cyber-border);
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--cyber-border);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--cyber-primary);
+  background: rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.checkbox-wrap.active .custom-checkbox {
+  border-color: var(--cyber-primary);
+  background: rgba(0, 242, 255, 0.1);
 }
 
 .custom-checkbox input {
@@ -166,21 +199,40 @@
 }
 
 .checkbox-wrap span {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cyber-text);
+  letter-spacing: 0.5px;
 }
 
 .error-hint {
   color: var(--cyber-accent);
   font-family: 'Fira Code', monospace;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   margin-top: 12px;
   text-align: center;
 }
 
-/* Footer */
+/* Protocol Alert */
+.protocol-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+}
+
+.protocol-alert.error {
+  background: rgba(255, 77, 77, 0.08);
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  color: #ff4d4d;
+}
+
+/* Footer Buttons */
 .disclaimer-footer {
   display: flex;
   gap: 20px;
@@ -192,13 +244,14 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 18px;
-  border-radius: 4px;
+  padding: 16px;
+  border-radius: 6px;
   font-family: 'Orbitron', sans-serif;
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 800;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .disagree-btn {
@@ -208,7 +261,8 @@
 }
 
 .disagree-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 77, 77, 0.08);
+  border-color: rgba(255, 77, 77, 0.4);
   color: #fff;
 }
 
@@ -221,21 +275,39 @@
 
 .agree-btn:hover:not(:disabled) {
   background: #fff;
+  color: var(--cyber-bg);
   transform: translateY(-2px);
-  box-shadow: 0 0 40px var(--cyber-primary-glow);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
 }
 
+.agree-btn:disabled, .disagree-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Responsive constraints */
 @media (max-width: 768px) {
+  .disclaimer-page-premium {
+    padding-top: 40px;
+  }
+  
+  .protocol-container {
+    padding: 24px;
+  }
+
   .protocol-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
-  .conduct-grid {
-    grid-template-columns: 1fr;
-  }
+  
   .disclaimer-footer {
     flex-direction: column;
+    gap: 12px;
   }
+  
   .disclaimer-header-premium h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 }

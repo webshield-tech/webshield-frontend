@@ -44,6 +44,7 @@ const ScanProgress = lazyRetry(() => import("../pages/user/ScanProgress"));
 const ScanResult = lazyRetry(() => import("../pages/user/ScanResult"));
 const StartScan = lazyRetry(() => import("../pages/user/StartScan"));
 const AboutTools = lazyRetry(() => import("../pages/user/AboutTools"));
+const Remediation = lazyRetry(() => import("../pages/user/Remediation"));
 const Learn = lazyRetry(() => import("../pages/public/Learn"));
 const VerifyEmail = lazyRetry(() => import("../pages/public/VerifyEmail"));
 const NotFound = lazyRetry(() => import("../pages/public/NotFound"));
@@ -91,6 +92,7 @@ function AppRoutes() {
             <Route path="/scan-progress/:scanId" element={<ScanProgress />} />
             <Route path="/scan-result/:scanId" element={<ScanResult />} />
             <Route path="/about-tools" element={<AboutTools />} />
+            <Route path="/remediation" element={<Remediation />} />
             <Route path="/learn" element={<Learn />} />
           </Route>
 

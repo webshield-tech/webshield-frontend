@@ -4,7 +4,6 @@ import Lottie from "lottie-react";
 import "../../styles/learn.css";
 import api from "../../api/axios";
 import sqlIcon from "../../assets/icons/sql.json";
-import wapatiIcon from "../../assets/icons/wapiti.json";
 import sslIcon from "../../assets/icons/ssl.json";
 import infoIcon from "../../assets/icons/info.json";
 import nampIcon from "../../assets/icons/nmap.json";
@@ -180,7 +179,6 @@ export default function Learn() {
 
   const lottieIconMap: Record<string, object> = {
     sql: sqlIcon,
-    wapiti: wapatiIcon,
     ssl: sslIcon,
     info: infoIcon,
     nmap: nampIcon,
