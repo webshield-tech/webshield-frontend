@@ -218,3 +218,244 @@ input:focus {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   VULN SPECTRA — ADVANCED CYBERNETIC DESIGNS & TYPOGRAPHY OVERRIDE (v3)
+   ========================================================================== */
+
+/* 1. Global Typography & Density Scaling */
+html {
+  font-size: 14.5px !important; /* Scale down browser default from 16px to 14.5px for higher info density */
+}
+
+body {
+  font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  color: var(--cyber-text) !important;
+  background-color: var(--cyber-bg) !important;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.5px;
+}
+
+/* Limit headings to look extremely precise and professional */
+h1, .welcome-text h1, .header-text h1, .about-title-group h1, .cta-title, .remediation-header h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.1rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.2) !important;
+}
+
+.title-main, .title-glitch {
+  font-size: clamp(2.5rem, 6vw, 4.5rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: 4px !important;
+  text-shadow: 0 0 20px rgba(0, 242, 255, 0.3) !important;
+}
+
+h2, .section-title {
+  font-size: clamp(1.2rem, 2.5vw, 1.45rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+}
+
+h3, .section-header h3, .card-header, .auto-tools-header, .auth-form-panel h1 {
+  font-size: clamp(0.95rem, 2vw, 1.1rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+.metric-info h3, .metric-value, .stat-value, .stat-number {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  color: #fff !important;
+}
+
+h4, .tool-info h4, .auto-tool-card h3, .module-info h3 {
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+p, .desc-text, .welcome-text p, .cta-subtitle, .auto-tools-copy, .footer-desc, .hero-description {
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+  color: var(--cyber-text-dim) !important;
+}
+
+/* 2. Premium Cybernetic Cards & Panels */
+.glass-panel,
+.metric-card,
+.tool-card-v2,
+.feature-card-premium,
+.auto-tool-card,
+.module-card,
+.accordion-item,
+.info-card,
+.stat-item,
+.about-notice-panel,
+.auth-form-premium,
+.auth-split-container {
+  background: linear-gradient(135deg, rgba(8, 12, 20, 0.85) 0%, rgba(4, 6, 8, 0.95) 100%) !important;
+  border: 1px solid rgba(0, 242, 255, 0.12) !important;
+  border-radius: 16px !important; /* Premium rounded edge from spec */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(0, 242, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  position: relative !important;
+  overflow: visible !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important; /* Soft glass border, no bright color edge */
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Interactive Card states */
+.glass-panel:hover,
+.metric-card:hover,
+.tool-card-v2:hover,
+.feature-card-premium:hover,
+.auto-tool-card:hover,
+.module-card:hover:not(.unavailable),
+.info-card:hover,
+.stat-item:hover,
+.accordion-item.open {
+  border-color: rgba(0, 242, 255, 0.25) !important; /* Soft cyan accent on hover only */
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 242, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* HUD corner bracket generation - Hiden for clean rounded aesthetics */
+.glass-panel::before,
+.glass-panel::after,
+.metric-card::before,
+.metric-card::after,
+.tool-card-v2::before,
+.tool-card-v2::after,
+.auto-tool-card::before,
+.auto-tool-card::after,
+.module-card::before,
+.module-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 3. Form Control Cybernetic Styling */
+input:not([type="checkbox"]):not([type="radio"]):not(.input-wrap input):not(.navbar-search input):not(.mobile-search input):not(.url-input-wrap input):not(.domain-intel-input-wrap input),
+textarea,
+select,
+.input-wrap {
+  background: rgba(4, 6, 10, 0.8) !important;
+  border: 1px solid rgba(0, 242, 255, 0.15) !important;
+  color: #fff !important;
+  border-radius: 4px !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 0.9rem !important;
+  padding: 10px 14px !important;
+  transition: all 0.25s ease !important;
+}
+
+/* Icon-padded URL inputs — keep their own left-padding to avoid icon overlap */
+.url-input-wrap input,
+.domain-intel-input-wrap input {
+  background: rgba(4, 6, 10, 0.8) !important;
+  border: 1px solid rgba(0, 242, 255, 0.15) !important;
+  color: #fff !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 0.9rem !important;
+  transition: all 0.25s ease !important;
+  /* NO padding override here — let start-scan.css padding-left: 64px stand */
+}
+
+.input-wrap input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 0 0 32px !important;
+}
+
+input:focus, textarea:focus, select:focus, .input-wrap:focus-within {
+  border-color: var(--cyber-primary) !important;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.12) !important;
+  background: rgba(8, 14, 22, 0.95) !important;
+}
+
+/* 4. Professional Cyber Buttons */
+button:not([class]), .cta-button, .initialize-btn, .flow-toggle-btn, .auth-submit-btn, .cta-button-main, .acc-scan-btn, .btn-primary, .ping-verify-btn, .hero-btn-primary, .hero-btn-secondary {
+  border-radius: 4px !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  font-family: 'Orbitron', sans-serif !important;
+  font-size: 0.76rem !important;
+  padding: 10px 18px !important;
+  background: rgba(0, 242, 255, 0.04) !important;
+  border: 1px solid rgba(0, 242, 255, 0.3) !important;
+  color: var(--cyber-primary) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+button:not([class]):hover, .cta-button:hover, .initialize-btn:hover, .flow-toggle-btn:hover, .auth-submit-btn:hover, .cta-button-main:hover, .acc-scan-btn:hover, .btn-primary:hover, .ping-verify-btn:hover, .hero-btn-primary:hover, .hero-btn-secondary:hover {
+  background: var(--cyber-primary) !important;
+  color: var(--cyber-bg) !important;
+  box-shadow: 0 0 15px var(--cyber-primary-glow) !important;
+  border-color: var(--cyber-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Success Buttons & Alerts */
+.initialize-btn:last-child, .launch-btn, .auth-submit-btn, .hero-btn-primary, .cta-button-main {
+  background: rgba(0, 255, 157, 0.08) !important;
+  border-color: rgba(0, 255, 157, 0.4) !important;
+  color: #00ff9d !important;
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.05) !important;
+}
+
+.initialize-btn:last-child:hover, .launch-btn:hover, .auth-submit-btn:hover, .hero-btn-primary:hover, .cta-button-main:hover {
+  background: #00ff9d !important;
+  color: #030508 !important;
+  border-color: #00ff9d !important;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.45) !important;
+}
+
+/* 5. Custom Elements (Pills, Scrollbar, Headers) */
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+::-webkit-scrollbar-track {
+  background: var(--cyber-bg) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 242, 255, 0.25) !important;
+  border-radius: 4px !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-primary) !important;
+  box-shadow: 0 0 8px var(--cyber-primary-glow) !important;
+}
+
+/* Unify green auth text to standard cyan theme */
+.text-gradient {
+  background: linear-gradient(90deg, #00f2ff 0%, #7000ff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.back-link, .forgot-link {
+  color: var(--cyber-primary) !important;
+  font-family: 'Orbitron', sans-serif !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 1px !important;
+}
+
+.back-link:hover, .forgot-link:hover {
+  text-shadow: 0 0 10px var(--cyber-primary-glow) !important;
+  color: #fff !important;
+}

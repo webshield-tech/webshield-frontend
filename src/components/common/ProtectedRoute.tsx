@@ -20,8 +20,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!user) {
+    const hasSessionHint = localStorage.getItem("ws_has_session");
+    const redirectUrl = hasSessionHint ? "/login?session=expired" : "/login";
+    if (hasSessionHint) {
+      localStorage.removeItem("ws_has_session");
+    }
     // Redirect to login but save the current location
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={redirectUrl} state={{ from: location }} replace />;
   }
 
   if (adminOnly && role !== "admin" && role !== "superadmin") {

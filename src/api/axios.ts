@@ -79,11 +79,13 @@ api.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401) {
-      // Auth routes: pass the full error through so the page can read
-      // error.response.data.error and display "User does not exist" etc.
+      // Auth and passive profile routes: pass the full error through so the calling page/context
+      // can handle it. For profile, this allows silent failure on public pages.
       const isAuthRoute =
         originalRequest?.url?.includes("/login") ||
-        originalRequest?.url?.includes("/signup");
+        originalRequest?.url?.includes("/signup") ||
+        originalRequest?.url?.includes("/user/profile") ||
+        originalRequest?.url?.includes("/profile");
 
       if (isAuthRoute) {
         return Promise.reject(error);
@@ -93,6 +95,7 @@ api.interceptors.response.use(
       try {
         sessionStorage.removeItem("authToken");
         sessionStorage.clear();
+        localStorage.removeItem("ws_has_session");
         document.cookie =
           "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       } catch (e) {

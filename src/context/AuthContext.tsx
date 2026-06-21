@@ -113,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Otherwise, keep the current user state to prevent logout on 500/Network errors
       if (authError.status === 401 || authError.isAuthError || authError.response?.status === 401) {
         setUser(null);
+        localStorage.removeItem("ws_has_session");
       }
       // For other errors (timeouts, network issues), silently continue without clearing user
       console.warn("[AuthCheck] Profile fetch failed:", authError.message || authError);

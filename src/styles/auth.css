@@ -13,7 +13,7 @@
   padding: 24px;
   background: #030508;
   background-image:
-    radial-gradient(ellipse at 20% 50%, rgba(0, 255, 65, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 50%, rgba(0, 242, 255, 0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(0, 200, 255, 0.03) 0%, transparent 40%);
   font-family: 'Inter', sans-serif;
   position: relative;
@@ -28,7 +28,7 @@
   justify-content: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 20% 20%, rgba(0, 255, 65, 0.08), transparent 28%),
+    radial-gradient(circle at 20% 20%, rgba(0, 242, 255, 0.08), transparent 28%),
     radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.06), transparent 26%),
     linear-gradient(180deg, #020403 0%, #050807 100%);
   position: relative;
@@ -41,8 +41,8 @@
   pointer-events: none;
   opacity: 0.22;
   background-image:
-    linear-gradient(rgba(0, 255, 65, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 65, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(0, 242, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 255, 0.04) 1px, transparent 1px);
   background-size: 42px 42px;
 }
 
@@ -67,7 +67,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: rgba(0, 255, 65, 0.88);
+  color: rgba(0, 242, 255, 0.88);
   font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 1.4px;
@@ -91,15 +91,15 @@
   position: absolute;
   inset: 0;
   border-radius: 22px;
-  background: radial-gradient(circle, rgba(0, 255, 65, 0.16), transparent 65%);
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.16), transparent 65%);
   filter: blur(4px);
 }
 
 .logo-icon {
   position: relative;
   z-index: 1;
-  color: #00ff41;
-  filter: drop-shadow(0 0 16px rgba(0, 255, 65, 0.35));
+  color: #00f2ff;
+  filter: drop-shadow(0 0 16px rgba(0, 242, 255, 0.35));
 }
 
 .text-gradient {
@@ -109,7 +109,7 @@
   line-height: 1.05;
   letter-spacing: 2px;
   text-transform: uppercase;
-  background: linear-gradient(90deg, #5dff8b 0%, #00ff41 50%, #b6ffcf 100%);
+  background: linear-gradient(90deg, #80f5ff 0%, #00f2ff 50%, #d1fbff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -128,9 +128,9 @@
   margin: 0 auto;
   padding: 32px;
   border-radius: 24px;
-  border: 1px solid rgba(0, 255, 65, 0.14);
+  border: 1px solid rgba(0, 242, 255, 0.14);
   background: linear-gradient(180deg, rgba(10, 15, 12, 0.96), rgba(6, 9, 7, 0.98));
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 255, 65, 0.04);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 242, 255, 0.04);
   backdrop-filter: blur(10px);
 }
 
@@ -201,7 +201,7 @@
   justify-content: center;
   padding: 24px;
   background:
-    radial-gradient(circle at top left, rgba(0, 255, 65, 0.08), transparent 30%),
+    radial-gradient(circle at top left, rgba(0, 242, 255, 0.08), transparent 30%),
     radial-gradient(circle at bottom right, rgba(0, 180, 255, 0.05), transparent 28%),
     #030508;
   position: relative;
@@ -221,20 +221,20 @@
   grid-template-columns: minmax(320px, 42%) minmax(0, 1fr);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 255, 65, 0.12);
-  border: 1px solid rgba(0, 255, 65, 0.15);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 242, 255, 0.12);
+  border: 1px solid rgba(0, 242, 255, 0.15);
 }
 
 .auth-info-panel {
   background:
     linear-gradient(160deg, rgba(6, 11, 8, 0.96), rgba(3, 6, 5, 0.98)),
-    radial-gradient(circle at center, rgba(0, 255, 65, 0.08), transparent 55%);
+    radial-gradient(circle at center, rgba(0, 242, 255, 0.08), transparent 55%);
   padding: 42px 36px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 18px;
-  border-right: 1px solid rgba(0, 255, 65, 0.12);
+  border-right: 1px solid rgba(0, 242, 255, 0.12);
 }
 
 .auth-logo {
@@ -265,14 +265,14 @@
   border-radius: 28px;
   display: grid;
   place-items: center;
-  background: linear-gradient(180deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.02));
-  border: 1px solid rgba(0, 255, 65, 0.18);
-  box-shadow: inset 0 0 0 1px rgba(0, 255, 65, 0.06), 0 0 28px rgba(0, 255, 65, 0.08);
+  background: linear-gradient(180deg, rgba(0, 242, 255, 0.08), rgba(0, 242, 255, 0.02));
+  border: 1px solid rgba(0, 242, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(0, 242, 255, 0.06), 0 0 28px rgba(0, 242, 255, 0.08);
 }
 
 .verification-icon {
-  color: #00ff41;
-  filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.25));
+  color: #00f2ff;
+  filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.25));
 }
 
 .auth-info-panel h2 {
@@ -320,7 +320,7 @@
 }
 
 .form-header-icon {
-  color: #00ff41;
+  color: #00f2ff;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -367,7 +367,7 @@
   .auth-info-panel {
     padding: 28px 24px;
     border-right: none;
-    border-bottom: 1px solid rgba(0, 255, 65, 0.12);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.12);
     text-align: center;
     align-items: center;
   }
@@ -438,8 +438,8 @@
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0,242,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,242,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
   z-index: 0;
@@ -453,7 +453,7 @@
   min-height: 600px;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(0,255,65,0.12), 0 32px 64px rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 1px rgba(0,242,255,0.12), 0 32px 64px rgba(0,0,0,0.6);
   position: relative;
   z-index: 1;
 }
@@ -470,7 +470,7 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  border-right: 1px solid rgba(0,255,65,0.1);
+  border-right: 1px solid rgba(0,242,255,0.1);
 }
 
 /* Radial glow on brand panel */
@@ -482,7 +482,7 @@
   transform: translate(-50%, -50%);
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(0,255,65,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,242,255,0.06) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -492,13 +492,13 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0,242,255,0.6), transparent);
 }
 
 .brand-logo-img {
   width: 120px;
   margin-bottom: 28px;
-  filter: drop-shadow(0 0 24px rgba(0, 255, 65, 0.5));
+  filter: drop-shadow(0 0 24px rgba(0, 242, 255, 0.5));
   position: relative;
   z-index: 2;
   border-radius: 12px;
@@ -561,8 +561,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(0,255,65,0.05);
-  border: 1px solid rgba(0,255,65,0.15);
+  background: rgba(0,242,255,0.05);
+  border: 1px solid rgba(0,242,255,0.15);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 0.78rem;
@@ -571,7 +571,7 @@
 }
 
 .auth-brand-tag span:first-child {
-  color: #00ff41;
+  color: #00f2ff;
   font-size: 0.7rem;
   font-family: 'Orbitron', sans-serif;
   letter-spacing: 1px;
@@ -645,7 +645,7 @@
 
 .forgot-link {
   font-size: 0.78rem;
-  color: #00ff41;
+  color: #00f2ff;
   text-decoration: none;
   opacity: 0.8;
   transition: opacity 0.2s;
@@ -668,9 +668,9 @@
 }
 
 .input-wrap:focus-within {
-  background: rgba(0, 255, 65, 0.04);
-  border-color: #00ff41;
-  box-shadow: 0 0 0 3px rgba(0,255,65,0.1), inset 0 0 12px rgba(0,255,65,0.03);
+  background: rgba(0, 242, 255, 0.04);
+  border-color: #00f2ff;
+  box-shadow: 0 0 0 3px rgba(0,242,255,0.1), inset 0 0 12px rgba(0,242,255,0.03);
 }
 
 .input-wrap.has-error {
@@ -687,7 +687,7 @@
 }
 
 .input-wrap:focus-within .i-icon {
-  color: #00ff41;
+  color: #00f2ff;
 }
 
 .input-wrap.has-error .i-icon {
@@ -747,7 +747,7 @@
 .pw-bar.active-weak   { background: #ff3333; box-shadow: 0 0 4px rgba(255,51,51,0.5); }
 .pw-bar.active-fair   { background: #ffaa00; box-shadow: 0 0 4px rgba(255,170,0,0.5); }
 .pw-bar.active-good   { background: #00ccff; box-shadow: 0 0 4px rgba(0,204,255,0.5); }
-.pw-bar.active-strong { background: #00ff41; box-shadow: 0 0 4px rgba(0,255,65,0.5); }
+.pw-bar.active-strong { background: #00f2ff; box-shadow: 0 0 4px rgba(0,242,255,0.5); }
 
 .pw-label {
   font-size: 0.7rem;
@@ -760,7 +760,7 @@
 .pw-label.weak   { color: #ff3333; }
 .pw-label.fair   { color: #ffaa00; }
 .pw-label.good   { color: #00ccff; }
-.pw-label.strong { color: #00ff41; }
+.pw-label.strong { color: #00f2ff; }
 
 /* SUBMIT BUTTON */
 .auth-submit-btn {
@@ -769,7 +769,7 @@
   margin-top: 10px;
   border-radius: 8px;
   border: none;
-  background: #00ff41;
+  background: #00f2ff;
   color: #000;
   font-family: 'Orbitron', sans-serif;
   font-size: 0.85rem;
@@ -782,14 +782,14 @@
   gap: 8px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  box-shadow: 0 0 20px rgba(0,255,65,0.2);
+  box-shadow: 0 0 20px rgba(0,242,255,0.2);
 }
 
 .auth-submit-btn:hover:not(:disabled) {
   background: #fff;
   color: #000;
   transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
 }
 
 .auth-submit-btn:disabled {
@@ -810,7 +810,7 @@
 
 .auth-link {
   font-weight: 700;
-  color: #00ff41;
+  color: #00f2ff;
   margin-left: 6px;
   text-decoration: none;
   transition: opacity 0.2s;
@@ -852,9 +852,9 @@
 }
 
 .auth-alert.success {
-  background: rgba(0, 255, 65, 0.06);
-  border: 1px solid rgba(0, 255, 65, 0.25);
-  color: #00ff41;
+  background: rgba(0, 242, 255, 0.06);
+  border: 1px solid rgba(0, 242, 255, 0.25);
+  color: #00f2ff;
 }
 
 /* RESPONSIVE — Tablet */
@@ -989,8 +989,8 @@
 .verification-card {
   max-width: 900px;
   background: linear-gradient(135deg, #0a110e 0%, #050807 100%);
-  border: 1px solid rgba(0, 255, 65, 0.15);
-  box-shadow: 0 0 50px rgba(0, 255, 65, 0.05), 0 20px 40px rgba(0,0,0,0.8);
+  border: 1px solid rgba(0, 242, 255, 0.15);
+  box-shadow: 0 0 50px rgba(0, 242, 255, 0.05), 0 20px 40px rgba(0,0,0,0.8);
 }
 
 .verification-visual {
@@ -1001,8 +1001,8 @@
 }
 
 .floating-icon {
-  color: #00ff41;
-  filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.3));
+  color: #00f2ff;
+  filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.3));
   /* ✅ OPTIMIZED: Removed floatIcon animation to reduce CPU usage */
   will-change: auto;
 }
@@ -1010,11 +1010,11 @@
 /* ✅ REMOVED: @keyframes floatIcon animation */
 
 .target-email-badge {
-  background: rgba(0, 255, 65, 0.08);
-  border: 1px solid rgba(0, 255, 65, 0.2);
+  background: rgba(0, 242, 255, 0.08);
+  border: 1px solid rgba(0, 242, 255, 0.2);
   padding: 8px 16px;
   border-radius: 20px;
-  color: #00ff41;
+  color: #00f2ff;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem;
   margin-top: 15px;
@@ -1024,7 +1024,7 @@
 .premium-otp-input {
   width: 100%;
   background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(0, 255, 65, 0.2);
+  border: 1px solid rgba(0, 242, 255, 0.2);
   border-radius: 12px;
   padding: 20px;
   font-size: 2.5rem;
@@ -1038,9 +1038,9 @@
 
 .premium-otp-input:focus {
   outline: none;
-  border-color: #00ff41;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.2), inset 0 2px 15px rgba(0,0,0,0.7);
-  background: rgba(0, 255, 65, 0.03);
+  border-color: #00f2ff;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2), inset 0 2px 15px rgba(0,0,0,0.7);
+  background: rgba(0, 242, 255, 0.03);
 }
 
 .field-hint {
@@ -1079,7 +1079,7 @@
 .resend-link-btn {
   background: none;
   border: none;
-  color: #00ff41;
+  color: #00f2ff;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -1092,7 +1092,7 @@
 }
 
 .resend-link-btn:hover:not(:disabled) {
-  background: rgba(0, 255, 65, 0.1);
+  background: rgba(0, 242, 255, 0.1);
   text-decoration: underline;
 }
 
@@ -1130,7 +1130,7 @@
   border-radius: 12px;
   pointer-events: none;
   opacity: 0;
-  box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
   transition: opacity 0.3s;
 }
 
@@ -1149,8 +1149,8 @@
   width: 100%;
   height: 100%;
   background-image: 
-    linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   opacity: 0.3;
