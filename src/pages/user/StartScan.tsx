@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Shield, Globe, Info, AlertCircle, ArrowRight, Loader2,
-  X, Rocket, Clock, Search, CheckCircle2, Database, Zap
+  X, Rocket, Search, CheckCircle2, Database, Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
@@ -19,6 +19,8 @@ import sslscanAnimation from "../../assets/icons/ssl.json";
 import ffufAnimation    from "../../assets/icons/ffuf.json";
 import dnsAnimation     from "../../assets/icons/dns-recon.json";
 import whoisAnimation   from "../../assets/icons/whois.json";
+import nucleiAnimation  from "../../assets/icons/nuclie.json";
+import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 
 
 import { useToast, ToastContainer } from "../../components/Toast";
@@ -30,6 +32,9 @@ const SCAN_MODE_DESCRIPTIONS: Record<string, any> = {
   sqlmap:  { color: "#ffd54f", medium: { title: "Standard Scan",    detail: "SQL injection probe — Level 2 / Risk 1.",            bullets: ["Boolean & error-based", "Form auto-detection", "~2–4 mins"] }, full: { title: "Full Scan",   detail: "Advanced SQL injection — Level 3 / Risk 2.",      bullets: ["Union & blind queries", "Form crawling", "~5–8 mins"] } },
   sslscan: { color: "#00ff9d", medium: { title: "Standard Scan",    detail: "Audits TLS protocols and certificate validity.",     bullets: ["Protocol versions", "Weak ciphers", "Certificate expiry", "~30 secs"] }, full: { title: "Full Scan",   detail: "Full TLS audit with Heartbleed check.",          bullets: ["All cipher suites", "Certificate chain", "Heartbleed", "~30 secs"] } },
   ffuf:    { color: "#ff00ff", medium: { title: "Directory Fuzzing", detail: "Fast hidden directory and endpoint discovery.",     bullets: ["200/204/301/302/403 codes", "5 threads", "~2 mins"] }, full: { title: "Full Fuzzing", detail: "Broader discovery with extended status codes.", bullets: ["All common status codes", "JSON output", "~3 mins"] } },
+  whatweb: { color: "#7dd3fc", medium: { title: "Technology Detection", detail: "Fingerprints frameworks, servers, and plugins.", bullets: ["Normal detection", "No payloads", "~30 secs"] }, full: { title: "Aggressive Detection", detail: "Runs stronger fingerprinting checks.", bullets: ["Plugin fingerprinting", "Version hints", "~1 min"] } },
+  nuclei:  { color: "#a78bfa", medium: { title: "Template Scan", detail: "Runs automatic low-to-critical templates.", bullets: ["Verified templates", "JSON evidence", "~2–4 mins"] }, full: { title: "Full Template Scan", detail: "Includes informational templates.", bullets: ["More coverage", "More noise", "~5–8 mins"] } },
+  "rate-limit": { color: "#fb7185", medium: { title: "Rate Limit Check", detail: "Checks if APIs throttle request bursts.", bullets: ["Safe request burst", "429/403 detection", "~30 secs"] }, full: { title: "Rate Limit Check", detail: "Same safe localhost-first check.", bullets: ["Safe request burst", "429/403 detection", "~30 secs"] } },
 };
 
 // DNS/WHOIS are inline tools only (not scan pipeline tools)
@@ -41,6 +46,9 @@ const TOOL_DAILY_LIMITS = [
   { id: "sqlmap",  label: "SQLMap",  limit: 10, color: "#ffd54f" },
   { id: "sslscan", label: "SSLScan", limit: 10, color: "#00ff9d" },
   { id: "ffuf",    label: "FFUF",    limit: 10, color: "#ff00ff" },
+  { id: "whatweb", label: "WhatWeb", limit: 10, color: "#7dd3fc" },
+  { id: "nuclei", label: "Nuclei", limit: 10, color: "#a78bfa" },
+  { id: "rate-limit", label: "Rate Limit", limit: 10, color: "#fb7185" },
 ];
 
 const StartScan = () => {
@@ -52,9 +60,6 @@ const StartScan = () => {
   const [url, setUrl] = useState("");
   const [scanFlow, setScanFlow] = useState<"auto" | "manual" | "domain-intel">(searchParams.get("mode") === "manual" ? "manual" : searchParams.get("mode") === "domain-intel" ? "domain-intel" : "auto");
   const [tool, setTool] = useState<ScanTool>("nmap");
-  const [reconTool, setReconTool] = useState<"dns" | "whois">("dns");
-  const [scanMode, setScanMode] = useState<"medium" | "full">("medium");
-
   const [scanLoading, setScanLoading] = useState(false);
   const [pingLoading, setPingLoading] = useState(false);
   const [detectLoading, setDetectLoading] = useState(false);
@@ -79,6 +84,15 @@ const StartScan = () => {
     if (typeof value.summary === "string") return value.summary;
     return JSON.stringify(value, null, 2);
   };
+
+  useEffect(() => {
+    const requestedTool = searchParams.get("tool");
+    if (requestedTool) {
+      const normalizedTool = requestedTool === "ssl" ? "sslscan" : requestedTool;
+      setTool(normalizedTool as ScanTool);
+      setScanFlow("manual");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -126,6 +140,9 @@ const StartScan = () => {
     { id: "sqlmap",  name: "SQLMap",  desc: "SQL Injection Tester",     anim: sqlmapAnimation,  color: "#ffd54f", tag: "DATABASE" },
     { id: "sslscan", name: "SSLScan", desc: "TLS/SSL Auditor",          anim: sslscanAnimation, color: "#00ff9d", tag: "HTTPS"    },
     { id: "ffuf",    name: "FFUF",    desc: "Directory Fuzzer",         anim: ffufAnimation,    color: "#ff00ff", tag: "HIDDEN"   },
+    { id: "whatweb", name: "WhatWeb", desc: "Technology Fingerprinter", anim: nmapAnimation,    color: "#7dd3fc", tag: "TECH"     },
+    { id: "nuclei",  name: "Nuclei",  desc: "Template Vulnerability Scan", anim: nucleiAnimation, color: "#a78bfa", tag: "CVE"      },
+    { id: "rate-limit", name: "Rate Limit", desc: "Request Throttling Check", anim: rateLimitAnimation, color: "#fb7185", tag: "LOGIC" },
     { id: "dns",     name: "DNS",     desc: "DNS Record Lookup",        anim: dnsAnimation,     color: "#00d4ff", tag: "RECON"    },
     { id: "whois",   name: "WHOIS",   desc: "Domain Ownership Lookup",  anim: whoisAnimation,   color: "#9d00ff", tag: "INTEL"    },
   ] as const;
@@ -156,9 +173,8 @@ const StartScan = () => {
 
   // ✅ UPDATED: Separated recon tools (DNS/WHOIS) from scanner tools
   const scannerTools = tools.filter(t => !RECON_TOOLS.includes(t.id));
-  const reconTools   = tools.filter(t => RECON_TOOLS.includes(t.id));
-  // Auto scan runs: nmap, nikto, ssl(sslscan), sqlmap, ffuf — show only these in auto panel
-  const autoTools = tools.filter(t => ["nmap", "nikto", "sslscan", "sqlmap", "ffuf"].includes(t.id));
+  // Auto scan runs sequentially: Nmap → WhatWeb → FFUF → Nikto → SSLScan → SQLMap → Nuclei → Rate Limit
+  const autoTools = tools.filter(t => ["nmap", "whatweb", "ffuf", "nikto", "sslscan", "sqlmap", "nuclei", "rate-limit"].includes(t.id));
 
   if (!authChecked || authLoading) return null;
 
@@ -223,8 +239,8 @@ const StartScan = () => {
       setError("");
       setReconResult(null);
       let res;
-      if (reconTool === "dns") res = await dnsLookupInline(normalizedUrl);
-      else if (reconTool === "whois") res = await whoisLookupInline(normalizedUrl);
+      if (tool === "dns") res = await dnsLookupInline(normalizedUrl);
+      else if (tool === "whois") res = await whoisLookupInline(normalizedUrl);
 
       if (res && res.data.success) {
         setReconResult(res.data);
@@ -311,7 +327,6 @@ const StartScan = () => {
 
   const launchScan = async (chosenMode?: "medium" | "full", autoDetection?: any) => {
     const mode = chosenMode || "medium";
-    setScanMode(mode);
 
     try {
       setScanLoading(true);
@@ -552,65 +567,15 @@ const StartScan = () => {
                 </div>
               </div>
 
-              <div className="module-group recon-group">
-                <label>Domain Reconnaissance</label>
-                <p className="module-helper-text">Quick DNS & WHOIS lookups that return results instantly on this page.</p>
-                <div className={`module-selector recon-selector ${isMobile ? "mobile-grid" : ""}`}>
-                  {reconTools.map((t) => {
-                    const available = isToolAvailable(t.id);
-                    return (
-                      <div
-                        key={t.id}
-                        className={`module-card ${reconTool === t.id ? "selected" : ""} ${!available ? "unavailable" : ""}`}
-                        onClick={() => { if (!available) return; setReconTool(t.id as "dns" | "whois"); setReconResult(null); }}
-                        style={{ "--accent-color": t.color } as any}
-                      >
-                        <div className="module-tag">{t.tag}</div>
-                        {!available && <div className="module-unavailable">Unavailable</div>}
-                        <div className="module-icon">
-                          <Lottie animationData={t.anim} loop={false} className="lottie-mini" />
-                        </div>
-                        <div className="module-info">
-                          <h3>{t.name}</h3>
-                          <p>{t.desc}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="recon-results-card glass-panel">
-                <div className="card-header">
-                  <Info size={18} className="text-primary" />
-                  <span>Domain Reconnaissance Results</span>
-                </div>
-                {reconResult ? (
-                  <div className="recon-results-body">
-                    <div className="recon-results-meta">
-                      <strong>{tools.find(t => t.id === reconTool)?.name}</strong>
-                      <span>{reconResult.hostname}</span>
-                    </div>
-                    <pre className="recon-results-pre">
-                      {reconTool === "whois" ? reconResult.data : JSON.stringify(reconResult.records, null, 2)}
-                    </pre>
-                  </div>
-                ) : (
-                  <div className="recon-results-empty">
-                    Click "Run Reconnaissance" below to fetch DNS or WHOIS data.
-                  </div>
-                )}
-              </div>
-
               <button
                 onClick={handleInitialize}
                 className="launch-btn"
                 style={{ marginTop: 30 }}
-                disabled={scanLoading || reconLoading || !url.trim() || manualLimitReached || (scanFlow === "manual" && !RECON_TOOLS.includes(tool) && !isToolAvailable(tool))}
+                disabled={scanLoading || !url.trim() || manualLimitReached || (scanFlow === "manual" && !isToolAvailable(tool))}
                 title={manualLimitReached ? limitTooltip : undefined}
               >
-                {scanLoading || reconLoading ? <Loader2 className="animate-spin" size={22} /> : <Shield size={22} />}
-                <span>{RECON_TOOLS.includes(tool) ? "Run Reconnaissance" : "Initialize Tool Scan"}</span>
+                {scanLoading ? <Loader2 className="animate-spin" size={22} /> : <Shield size={22} />}
+                <span>Initialize Tool Scan</span>
                 <ArrowRight size={22} />
               </button>
             </div>

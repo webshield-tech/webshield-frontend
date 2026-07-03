@@ -23,6 +23,8 @@ import sslAnimation from "../../assets/icons/ssl.json";
 import ffufAnimation from "../../assets/icons/ffuf.json";
 import dnsAnimation from "../../assets/icons/dns-recon.json";
 import whoisAnimation from "../../assets/icons/whois.json";
+import nucleiAnimation from "../../assets/icons/nuclie.json";
+import rateLimitAnimation from "../../assets/icons/rate-limit.json";
 
 const toolData = [
   {
@@ -99,6 +101,51 @@ const toolData = [
       "FFUF rapidly discovers hidden directories, admin panels, backup files, and API endpoints that are not publicly linked but still accessible.",
     whenToUse: "Use on backend/full-stack sites to uncover exposed paths that should not be publicly reachable.",
     features: ["Directory Discovery", "Multi-status Filtering"],
+  },
+  {
+    id: "whatweb",
+    title: "WhatWeb",
+    subtitle: "Technology Fingerprinter",
+    animation: nmapAnimation,
+    icon: <Globe size={18} />,
+    color: "#7dd3fc",
+    colorRgb: "125, 211, 252",
+    tag: "TECH",
+    badges: ["CMS Fingerprinting", "Server Identification"],
+    description:
+      "WhatWeb identifies technologies, including content management systems (CMS), blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices.",
+    whenToUse: "Use to fingerprint web platforms and identify underlying CMS systems (like WordPress or Drupal) and server technologies.",
+    features: ["Platform Detection", "Version Fingerprinting"],
+  },
+  {
+    id: "nuclei",
+    title: "Nuclei",
+    subtitle: "Template Vulnerability Scanner",
+    animation: nucleiAnimation,
+    icon: <Cpu size={18} />,
+    color: "#a78bfa",
+    colorRgb: "167, 139, 250",
+    tag: "CVE",
+    badges: ["Template Based", "Rapid Probing"],
+    description:
+      "Nuclei is used to send requests across targets based on templates, allowing zero-false-positives scans and fast scanning on a large number of protocols.",
+    whenToUse: "Use to scan targets for specific CVEs, misconfigurations, and standard web application vulnerabilities.",
+    features: ["Template Matching", "Zero False-Positives Probe"],
+  },
+  {
+    id: "rate-limit",
+    title: "Rate Limit Check",
+    subtitle: "Request Throttling Auditor",
+    animation: rateLimitAnimation,
+    icon: <Lock size={18} />,
+    color: "#fb7185",
+    colorRgb: "251, 113, 133",
+    tag: "LOGIC",
+    badges: ["DOS Resiliency", "API Protection"],
+    description:
+      "Rate Limit Auditor checks if endpoints enforce client-side request throttling, identifying whether an attacker can perform brute-force attacks or overwhelm web services.",
+    whenToUse: "Use on APIs and authentication routes to audit if request limits and brute-force mitigations are properly configured.",
+    features: ["Throttling Check", "Logic Flow Audit"],
   },
   {
     id: "dns",
@@ -225,7 +272,13 @@ const AboutTools: React.FC = () => {
 
                         <button
                           className="acc-scan-btn"
-                          onClick={() => navigate(`/start-scan?tool=${tool.id}`)}
+                          onClick={() => {
+                            if (tool.id === "dns" || tool.id === "whois") {
+                              navigate("/start-scan?mode=domain-intel");
+                            } else {
+                              navigate(`/start-scan?tool=${tool.id}`);
+                            }
+                          }}
                         >
                           <Play size={14} fill="currentColor" />
                           <span>Scan with {tool.title}</span>

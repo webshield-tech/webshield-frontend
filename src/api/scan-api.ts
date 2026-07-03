@@ -49,6 +49,10 @@ export const getToolAvailability = () => {
   return api.get("/scan/tools/availability");
 };
 
+export const getLabStatus = () => {
+  return api.get("/scan/lab/status");
+};
+
 // Get scan history
 export const getScanHistory = () => {
   return api.get("/scan/history");
@@ -108,3 +112,9 @@ export const viewBatchReport = (
 ) => {
   return api.get(`/scan/batch/${batchId}/report/view`, { params: { language } });
 };
+
+export const getRawScanDownloadUrl = (scanId: string, format: "txt" | "json" = "txt") =>
+  `/scan/${scanId}/raw?format=${format}`;
+
+export const getRawBatchDownloadUrl = (batchId: string, format: "txt" | "json" = "txt") =>
+  `/scan/batch/${batchId}/raw?format=${format}`;

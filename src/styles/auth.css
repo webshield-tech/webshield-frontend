@@ -153,7 +153,7 @@
 }
 
 .auth-form-premium input {
-  font-size: 0.95rem;
+  font-size: 16px;
 }
 
 .auth-form-premium .auth-alert {
@@ -701,7 +701,7 @@
   border: none;
   color: #fff;
   font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
+  font-size: 16px;
 }
 
 .input-wrap input::placeholder {

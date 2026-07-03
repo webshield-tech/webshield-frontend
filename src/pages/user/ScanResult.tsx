@@ -7,6 +7,8 @@ import {
   Eye, 
   Sparkles, 
   ChevronLeft, 
+  ChevronDown,
+  ChevronUp,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -509,6 +511,7 @@ const ScanResult = () => {
   const [toast, setToast] = useState<{ type: ToastType; message: string }>({ type: "", message: "" });
   const [generating, setGenerating] = useState(false);
   const [reportModal, setReportModal] = useState<{ open: boolean; content: string }>({ open: false, content: "" });
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   // reportGeneratedAt is always returned by the API and is more reliable than
   // checking reportContent (which is a large string that may be trimmed)
@@ -908,9 +911,9 @@ const ScanResult = () => {
       showToast("error", "No scan data to download.");
       return;
     }
-    const content = typeof data.results === "object"
-      ? JSON.stringify(data.results, null, 2)
-      : String(data.results);
+    const content = data.results?.rawOutput || data.results?.partialOutput || (
+      typeof data.results === "object" ? JSON.stringify(data.results, null, 2) : String(data.results)
+    );
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -926,6 +929,28 @@ const ScanResult = () => {
       URL.revokeObjectURL(url);
     }, 1000);
     showToast("success", "Raw data downloaded successfully.");
+  };
+
+  const handleDownloadJson = () => {
+    if (!data?.results) {
+      showToast("error", "No scan data to download.");
+      return;
+    }
+    const content = JSON.stringify(batchId ? { batchId, scans: batchScans } : data, null, 2);
+    const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const target = data?.targetUrl || data?.url || "unknown";
+    a.href = url;
+    a.download = `Vuln-Spectra-Raw-${target.replace(/https?:\/\//, "").replace(/[^a-z0-9]/gi, "-")}-${batchId ? batchId.slice(-6) : scanId?.slice(-6) || "scan"}.json`;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1000);
+    showToast("success", "Raw JSON downloaded successfully.");
   };
 
 
@@ -997,6 +1022,10 @@ const ScanResult = () => {
             <button className="action-btn secondary" onClick={handleDownloadTxt}>
               <FileText size={18} />
               <span>Raw TXT</span>
+            </button>
+            <button className="action-btn secondary" onClick={handleDownloadJson}>
+              <Download size={18} />
+              <span>Raw JSON</span>
             </button>
             <button className="action-btn secondary" onClick={handleDownload} disabled={generating || !hasReport} title={!hasReport ? "Generate AI Report first" : "Download PDF"}>
               <Download size={18} />
@@ -1088,12 +1117,6 @@ const ScanResult = () => {
                   <Search size={18} />
                   <span>New Scan</span>
                 </button>
-                {data?.status === "completed" && vulnerabilities.length > 0 && (
-                  <button className="sidebar-action-btn" disabled style={{ opacity: 0.6, cursor: "not-allowed" }} title="Auto PoC feature coming soon and under process">
-                    <Sparkles size={18} />
-                    <span>⏰ Auto PoC (Coming soon and under process)</span>
-                  </button>
-                )}
                 {data?.status === "failed" && (
                   <button className="sidebar-action-btn" onClick={handleRetryFailedScan}>
                     <Loader2 size={18} />
@@ -1128,25 +1151,124 @@ const ScanResult = () => {
                 </div>
                 <div className="findings-list">
                   {simpleFindings.length > 0 ? (
-                    simpleFindings.map((v: any, i: number) => (
-                      <div className={`finding-card severity-${v.severity?.toLowerCase()}`} key={i}>
-                        <div className="finding-icon"><AlertTriangle size={24} /></div>
-                        <div className="finding-content">
-                          <div className="f-header">
-                            <h4>{v.simpleTitle || v.title || v.name || "Unnamed Vulnerability"}</h4>
-                            <span className="severity-tag">{v.severity || "Unknown"}</span>
+                    simpleFindings.map((v: any, i: number) => {
+                      const isExpanded = expandedIdx === i;
+                      const fc = SEVERITY_COLORS[v.severity] || "#888";
+                      return (
+                        <div className={`finding-card severity-${v.severity?.toLowerCase()}`} key={i} style={{ flexDirection: "column", gap: 0, padding: 0, overflow: "hidden", cursor: "default" }}>
+                          {/* Card Header — always visible, click to toggle */}
+                          <div
+                            style={{ display: "flex", alignItems: "center", gap: "16px", padding: "22px 28px", cursor: "pointer", userSelect: "none" }}
+                            onClick={() => setExpandedIdx(isExpanded ? null : i)}
+                          >
+                            <div className="finding-icon" style={{ width: 40, height: 40, flexShrink: 0 }}><AlertTriangle size={22} /></div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                                <h4 style={{ margin: 0, fontFamily: "'Orbitron',sans-serif", fontSize: "0.95rem", fontWeight: 800 }}>
+                                  {v.simpleTitle || v.title || v.name || "Unnamed Vulnerability"}
+                                </h4>
+                                <span className="severity-tag">{v.severity || "Unknown"}</span>
+                                {v.exploitability && (
+                                  <span style={{ fontSize: "0.7rem", background: "rgba(255,107,53,0.1)", border: "1px solid rgba(255,107,53,0.3)", color: "#ff6b35", padding: "2px 8px", borderRadius: 3 }}>
+                                    Exploitability: {v.exploitability}
+                                  </span>
+                                )}
+                                {v.security_score_impact && (
+                                  <span style={{ fontSize: "0.7rem", background: "rgba(255,45,85,0.1)", border: "1px solid rgba(255,45,85,0.25)", color: "#ff2d55", padding: "2px 8px", borderRadius: 3 }}>
+                                    Score Impact: {v.security_score_impact}
+                                  </span>
+                                )}
+                              </div>
+                              <p style={{ margin: "6px 0 0 0", color: "rgba(224,250,255,0.65)", fontSize: "0.88rem", lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: isExpanded ? "unset" : "2", WebkitBoxOrient: "vertical" }}>
+                                {v.description || "Security issue detected. Click to view details."}
+                              </p>
+                            </div>
+                            <div style={{ flexShrink: 0, color: "rgba(255,255,255,0.4)" }}>
+                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </div>
                           </div>
-                          <p>{v.description || "We found a security issue that should be reviewed."}</p>
-                          {v.recommendation && (
-                            <div className="recommendation">
-                              <CheckCircle size={14} />
-                              <span>Fix: {v.recommendation}</span>
+
+                          {/* Expandable detail panel */}
+                          {isExpanded && (
+                            <div style={{ borderTop: `1px solid ${fc}22`, padding: "0 28px 24px" }}>
+
+                              {/* Impact Row */}
+                              {(v.business_impact || v.technical_impact) && (
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "20px" }}>
+                                  {v.business_impact && (
+                                    <div style={{ padding: "14px", background: "rgba(255,77,77,0.05)", border: "1px solid rgba(255,77,77,0.15)", borderRadius: "6px" }}>
+                                      <p style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.65rem", color: "#ff4d4d", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 8px" }}>Business Impact</p>
+                                      <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem", lineHeight: 1.55, margin: 0 }}>{v.business_impact}</p>
+                                    </div>
+                                  )}
+                                  {v.technical_impact && (
+                                    <div style={{ padding: "14px", background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.15)", borderRadius: "6px" }}>
+                                      <p style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.65rem", color: "#00d4ff", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 8px" }}>Technical Impact</p>
+                                      <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem", lineHeight: 1.55, margin: 0 }}>{v.technical_impact}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Recommendation */}
+                              {v.recommendation && (
+                                <div style={{ marginTop: "16px" }} className="recommendation">
+                                  <CheckCircle size={14} />
+                                  <span>Fix: {v.recommendation}</span>
+                                </div>
+                              )}
+
+                              {/* Patch Steps */}
+                              {v.patch_steps?.length > 0 && (
+                                <div style={{ marginTop: "16px", background: "rgba(0,255,157,0.04)", border: "1px solid rgba(0,255,157,0.15)", borderRadius: "6px", padding: "14px" }}>
+                                  <p style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.65rem", color: "#00ff9d", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 10px" }}>Remediation Steps</p>
+                                  <ol style={{ margin: 0, paddingLeft: "18px", color: "rgba(255,255,255,0.8)", fontSize: "0.88rem", lineHeight: 1.6 }}>
+                                    {v.patch_steps.map((step: string, si: number) => (
+                                      <li key={si} style={{ marginBottom: "6px" }}>{step}</li>
+                                    ))}
+                                  </ol>
+                                </div>
+                              )}
+
+                              {/* Verification Steps */}
+                              {v.verification_steps?.length > 0 && (
+                                <div style={{ marginTop: "16px", background: "rgba(168,85,247,0.04)", border: "1px solid rgba(168,85,247,0.15)", borderRadius: "6px", padding: "14px" }}>
+                                  <p style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.65rem", color: "#a855f7", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 10px" }}>Verification Steps</p>
+                                  <ol style={{ margin: 0, paddingLeft: "18px", color: "rgba(255,255,255,0.75)", fontSize: "0.88rem", lineHeight: 1.6 }}>
+                                    {v.verification_steps.map((step: string, vi: number) => (
+                                      <li key={vi} style={{ marginBottom: "6px" }}>{step}</li>
+                                    ))}
+                                  </ol>
+                                </div>
+                              )}
+
+                              {/* Platform Fix */}
+                              {v.platform_specific_fix && v.platform_specific_fix !== "N/A" && (
+                                <div style={{ marginTop: "14px", display: "flex", alignItems: "flex-start", gap: "10px", background: "rgba(0,255,157,0.03)", border: "1px solid rgba(0,255,157,0.12)", borderRadius: "6px", padding: "12px 14px" }}>
+                                  <Globe size={14} style={{ color: "#00ff9d", flexShrink: 0, marginTop: 2 }} />
+                                  <p style={{ margin: 0, color: "rgba(0,255,157,0.85)", fontSize: "0.85rem", lineHeight: 1.5 }}><strong>Platform-specific:</strong> {v.platform_specific_fix}</p>
+                                </div>
+                              )}
+
+                              {/* References */}
+                              {v.references?.length > 0 && (
+                                <div style={{ marginTop: "14px", display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
+                                  <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Refs:</span>
+                                  {v.references.map((ref: string, ri: number) => (
+                                    <span key={ri} style={{ background: "rgba(255,45,85,0.1)", border: "1px solid rgba(255,45,85,0.2)", color: "#ff2d55", padding: "1px 7px", borderRadius: 3, fontSize: "0.72rem" }}>{ref}</span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* VulnerabilityRemediation component */}
+                              <div style={{ marginTop: "16px" }}>
+                                <VulnerabilityRemediation vulnerabilityTitle={v.title || v.name || "Unknown"} severity={v.severity} />
+                              </div>
                             </div>
                           )}
-                          <VulnerabilityRemediation vulnerabilityTitle={v.title || v.name || "Unknown"} severity={v.severity} />
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="raw-results-panel glass-panel">
                       <div className="panel-header-mini"><Terminal size={16} /><span>Scan Analysis Results</span></div>

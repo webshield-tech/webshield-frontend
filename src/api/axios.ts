@@ -98,7 +98,7 @@ api.interceptors.response.use(
         localStorage.removeItem("ws_has_session");
         document.cookie =
           "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      } catch (e) {
+      } catch {
         // ignore
       }
 
@@ -106,7 +106,7 @@ api.interceptors.response.use(
       if (typeof window !== "undefined") {
         try {
           window.location.href = "/login?session=expired";
-        } catch (e) {
+        } catch {
           // fallback: reject with auth error
           return Promise.reject({ isAuthError: true, status: 401 });
         }

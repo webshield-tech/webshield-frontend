@@ -46,6 +46,7 @@ const StartScan = lazyRetry(() => import("../pages/user/StartScan"));
 const AboutTools = lazyRetry(() => import("../pages/user/AboutTools"));
 const Remediation = lazyRetry(() => import("../pages/user/Remediation"));
 const Learn = lazyRetry(() => import("../pages/public/Learn"));
+const Labs = lazyRetry(() => import("../pages/user/Labs"));
 const VerifyEmail = lazyRetry(() => import("../pages/public/VerifyEmail"));
 const NotFound = lazyRetry(() => import("../pages/public/NotFound"));
 
@@ -94,6 +95,7 @@ function AppRoutes() {
             <Route path="/about-tools" element={<AboutTools />} />
             <Route path="/remediation" element={<Remediation />} />
             <Route path="/learn" element={<Learn />} />
+            <Route path="/labs" element={<Labs />} />
           </Route>
 
           {/* Admin Section (Protected + AdminOnly) */}

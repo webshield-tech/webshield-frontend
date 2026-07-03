@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp, type FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
@@ -15,9 +15,9 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
-let app: any = null;
-let auth: any = null;
-let googleProvider: any = null;
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
 
 if (hasFirebaseConfig) {
   try {
@@ -37,4 +37,3 @@ if (hasFirebaseConfig) {
 }
 
 export { auth, googleProvider };
-

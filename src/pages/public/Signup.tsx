@@ -6,9 +6,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signupUser } from "../../api/auth-api.ts";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.tsx";
 import "../../styles/auth.css";
-import { validateUsername, validateEmail, validatePassword } from "../../utils/validators";
+import { validateUsername, validateEmail, validatePassword } from "../../utils/validators.tsx";
 
 function GoogleBrandMark() {
   return (
@@ -24,21 +24,21 @@ function GoogleBrandMark() {
 /* ---- Password analysis ---- */
 function analysePassword(pw: string) {
   const checks = {
-    length:    pw.length >= 8,
+    length: pw.length >= 8,
     uppercase: /[A-Z]/.test(pw),
     lowercase: /[a-z]/.test(pw),
-    number:    /[0-9]/.test(pw),
-    special:   /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw),
+    number: /[0-9]/.test(pw),
+    special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw),
   };
   const score = Object.values(checks).filter(Boolean).length;
   return { checks, score };
 }
 
 function strengthLabel(score: number) {
-  if (score <= 1) return { label: "Too weak",  cls: "weak" };
-  if (score === 2) return { label: "Weak",      cls: "weak" };
-  if (score === 3) return { label: "Fair",      cls: "fair" };
-  if (score === 4) return { label: "Good",      cls: "good" };
+  if (score <= 1) return { label: "Too weak", cls: "weak" };
+  if (score === 2) return { label: "Weak", cls: "weak" };
+  if (score === 3) return { label: "Fair", cls: "fair" };
+  if (score === 4) return { label: "Good", cls: "good" };
   return { label: "Strong", cls: "strong" };
 }
 
@@ -46,15 +46,15 @@ function Signup() {
   const navigate = useNavigate();
   const { socialLogin } = useAuth();
 
-  const [username, setUsername]             = useState("");
-  const [email, setEmail]                   = useState("");
-  const [password, setPassword]             = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading]               = useState(false);
-  const [formError, setFormError]           = useState("");
-  const [formSuccess, setFormSuccess]       = useState("");
-  const [fieldErrors, setFieldErrors]       = useState<Record<string, string>>({});
-  const [pwTouched, setPwTouched]           = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pwTouched, setPwTouched] = useState(false);
 
   const { score } = useMemo(() => analysePassword(password), [password]);
   const strength = strengthLabel(score);
@@ -66,7 +66,7 @@ function Signup() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    
+
     const userVal = validateUsername(username);
     if (!userVal.isValid) errs.username = userVal.message;
 
@@ -76,7 +76,7 @@ function Signup() {
     const passVal = validatePassword(password);
     if (!passVal.isValid) errs.password = passVal.message;
     else if (password !== confirmPassword) errs.confirm = "Passwords do not match.";
-    
+
     return errs;
   };
 
@@ -114,7 +114,7 @@ function Signup() {
       /UNION\s+SELECT/i, // SQLi
       /\b(DROP|DELETE|TRUNCATE|UPDATE)\s+TABLE\b/i, // SQLi
     ];
-    
+
     for (const pattern of maliciousPatterns) {
       if (pattern.test(email) || pattern.test(password) || pattern.test(username)) {
         setFormError("Nice try, hacker! 🕵️‍♂️ But we're the ones building the shields here. Save your SQLi and XSS for the training labs!");
@@ -181,9 +181,9 @@ function Signup() {
 
           {/* SOCIAL LOGIN AT TOP */}
           <div className="social-grid">
-            <button 
-              type="button" 
-              className="social-btn google" 
+            <button
+              type="button"
+              className="social-btn google"
               onClick={handleSocialAction}
               disabled={loading}
             >
@@ -254,7 +254,7 @@ function Signup() {
               {pwTouched && password.length > 0 && (
                 <div className="pw-strength">
                   <div className="pw-bars">
-                    {[1,2,3,4,5].map(i => {
+                    {[1, 2, 3, 4, 5].map(i => {
                       let barClass = "";
                       if (i <= score) {
                         barClass = score <= 2 ? "active-weak" : score === 3 ? "active-fair" : score === 4 ? "active-good" : "active-strong";

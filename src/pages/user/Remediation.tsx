@@ -411,6 +411,246 @@ func rateLimiterMiddleware(next http.Handler) http.Handler {
       }
     ],
     aiPrompt: "Implement rate-limiting middleware for the provided backend code. Ensure there is a general API rate limiter (e.g., 100 requests per 15 minutes) and a much stricter rate limiter (e.g., 5 requests per minute) applied exclusively to sensitive business logic routes (such as authentication, login, registration, and password reset)."
+  },
+  {
+    id: "jwt",
+    title: "JWT Authentication Security",
+    category: "access",
+    severity: "critical",
+    color: "#f59e0b",
+    colorRgb: "245, 158, 11",
+    icon: <Lock size={20} />,
+    description: "JSON Web Tokens are widely used for stateless authentication. Insecure JWT implementations can lead to algorithm confusion attacks, token forgery, and session takeover.",
+    impact: "Attackers can forge tokens using 'none' algorithm attacks or RS256→HS256 confusion, gaining admin access without valid credentials.",
+    remediation: "Always explicitly specify allowed algorithms. Use strong secrets (≥256 bits). Set short expiry times. Validate all claims (iss, aud, exp). Implement token rotation with refresh tokens.",
+    snippets: [
+      {
+        language: "Node/JS",
+        code: `const jwt = require('jsonwebtoken');
+
+// UNSAFE: No algorithm restriction, weak secret
+const token = jwt.sign({ userId: 123 }, 'secret');
+const decoded = jwt.verify(token, 'secret'); // Accepts any algorithm!
+
+// SAFE: Explicit algorithm, strong secret, short expiry
+const SECRET = process.env.JWT_SECRET; // Min 256-bit random key
+
+const safeToken = jwt.sign(
+  { userId: 123, iss: 'myapp', aud: 'myapp-users' },
+  SECRET,
+  { algorithm: 'HS256', expiresIn: '15m' }
+);
+
+// SAFE verification with algorithm whitelist
+const safeDecode = jwt.verify(safeToken, SECRET, {
+  algorithms: ['HS256'],     // Reject RS256→HS256 confusion
+  issuer: 'myapp',
+  audience: 'myapp-users',
+});`
+      },
+      {
+        language: "Python",
+        code: `import jwt
+import os
+from datetime import datetime, timedelta, timezone
+
+SECRET = os.environ['JWT_SECRET']  # Must be 256-bit+
+
+# SAFE: Sign with explicit algorithm + claims
+payload = {
+    'sub': str(user_id),
+    'iss': 'myapp',
+    'aud': 'myapp-users',
+    'exp': datetime.now(timezone.utc) + timedelta(minutes=15),
+    'iat': datetime.now(timezone.utc),
+}
+token = jwt.encode(payload, SECRET, algorithm='HS256')
+
+# SAFE: Verify with strict options
+try:
+    data = jwt.decode(
+        token,
+        SECRET,
+        algorithms=['HS256'],   # Never pass algorithms=['none']
+        audience='myapp-users',
+        issuer='myapp',
+    )
+except jwt.ExpiredSignatureError:
+    raise ValueError('Token expired')
+except jwt.InvalidTokenError:
+    raise ValueError('Invalid token')`
+      },
+      {
+        language: "Go",
+        code: `package auth
+
+import (
+  "errors"
+  "time"
+  "github.com/golang-jwt/jwt/v5"
+)
+
+var signingKey = []byte(os.Getenv("JWT_SECRET")) // 256-bit+
+
+func GenerateToken(userID string) (string, error) {
+  claims := jwt.RegisteredClaims{
+    Subject:   userID,
+    Issuer:    "myapp",
+    Audience:  jwt.ClaimStrings{"myapp-users"},
+    ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+    IssuedAt:  jwt.NewNumericDate(time.Now()),
+  }
+  token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+  return token.SignedString(signingKey)
+}
+
+func ValidateToken(tokenStr string) (*jwt.RegisteredClaims, error) {
+  token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{},
+    func(t *jwt.Token) (any, error) {
+      // CRITICAL: Verify signing method to prevent alg confusion
+      if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+        return nil, errors.New("unexpected signing method")
+      }
+      return signingKey, nil
+    },
+    jwt.WithIssuer("myapp"),
+    jwt.WithAudience("myapp-users"),
+    jwt.WithExpirationRequired(),
+  )
+  if err != nil {
+    return nil, err
+  }
+  return token.Claims.(*jwt.RegisteredClaims), nil
+}`
+      }
+    ],
+    aiPrompt: "Review this JWT authentication implementation and fix all security vulnerabilities. Ensure: (1) algorithm is explicitly set to HS256 or RS256 — never 'none' or dynamically trusted, (2) secrets are cryptographically strong environment variables, (3) all standard claims (exp, iss, aud) are validated, (4) tokens expire within 15 minutes, (5) a refresh-token rotation pattern is implemented."
+  },
+  {
+    id: "csrf",
+    title: "CSRF Token Protection",
+    category: "request",
+    severity: "high",
+    color: "#06b6d4",
+    colorRgb: "6, 182, 212",
+    icon: <Shield size={20} />,
+    description: "Cross-Site Request Forgery tricks authenticated users into submitting malicious state-changing requests from a third-party site. Without CSRF protection, attackers can change passwords, transfer funds, or modify account data.",
+    impact: "Authenticated actions executed without user consent — from changing email/password to financial transactions — affecting any user who visits a malicious page.",
+    remediation: "Use the Synchronizer Token Pattern or Double-Submit Cookie Pattern. Set SameSite=Strict/Lax on session cookies. Verify Origin/Referer headers as a secondary defense.",
+    snippets: [
+      {
+        language: "Node/JS",
+        code: `// Express CSRF protection using 'csrf' package
+const csrf = require('csrf');
+const tokens = new csrf();
+
+// Generate a secret per user session
+app.use((req, res, next) => {
+  if (!req.session.csrfSecret) {
+    req.session.csrfSecret = tokens.secretSync();
+  }
+  next();
+});
+
+// Expose token to the frontend (e.g. via meta tag or JSON)
+app.get('/csrf-token', (req, res) => {
+  const token = tokens.create(req.session.csrfSecret);
+  res.json({ csrfToken: token });
+});
+
+// Validate token on state-changing routes
+function csrfProtect(req, res, next) {
+  const token = req.headers['x-csrf-token'] || req.body._csrf;
+  if (!tokens.verify(req.session.csrfSecret, token)) {
+    return res.status(403).json({ error: 'CSRF validation failed' });
+  }
+  next();
+}
+
+app.post('/transfer', csrfProtect, transferHandler);
+
+// ALSO: Set SameSite on session cookie
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict'  // Blocks cross-origin cookie sending
+  }
+}));`
+      },
+      {
+        language: "Python",
+        code: `# Django: CSRF is built-in via middleware
+# settings.py — ensure middleware is active:
+MIDDLEWARE = [
+    ...
+    'django.middleware.csrf.CsrfViewMiddleware',
+    ...
+]
+
+# In templates, always include {% csrf_token %}:
+# <form method="post">
+#   {% csrf_token %}
+#   ...
+# </form>
+
+# For AJAX requests, send the CSRF token in the header:
+# fetch('/api/action', {
+#   method: 'POST',
+#   headers: { 'X-CSRFToken': getCookie('csrftoken') },
+#   body: JSON.stringify(data)
+# });
+
+# Flask: use Flask-WTF extension
+from flask_wtf.csrf import CSRFProtect
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+csrf = CSRFProtect(app)
+
+# Exempt specific endpoints if needed (e.g. webhooks)
+@csrf.exempt
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    return 'OK'`
+      },
+      {
+        language: "Go",
+        code: `package main
+
+import (
+  "github.com/gorilla/csrf"
+  "github.com/gorilla/mux"
+  "net/http"
+)
+
+func main() {
+  r := mux.NewRouter()
+
+  // Apply CSRF middleware with 32-byte auth key
+  csrfMiddleware := csrf.Protect(
+    []byte(os.Getenv("CSRF_AUTH_KEY")), // Must be 32 bytes
+    csrf.Secure(true),
+    csrf.SameSite(csrf.SameSiteStrictMode),
+  )
+
+  r.HandleFunc("/form", showForm).Methods("GET")
+  r.HandleFunc("/form", submitForm).Methods("POST")
+
+  http.ListenAndServeTLS(":443", "cert.pem", "key.pem",
+    csrfMiddleware(r))
+}
+
+func showForm(w http.ResponseWriter, r *http.Request) {
+  // Pass the token to the template
+  tmpl.Execute(w, map[string]interface{}{
+    csrf.TemplateTag: csrf.TemplateField(r),
+  })
+}`
+      }
+    ],
+    aiPrompt: "Add comprehensive CSRF protection to the provided web application. Implement the Synchronizer Token Pattern: generate a unique per-session CSRF secret, create a derived token for each form/request, validate it server-side on all state-changing endpoints (POST/PUT/PATCH/DELETE). Also set SameSite=Strict on all session cookies and validate Origin/Referer headers as a secondary defense."
   }
 ];
 
@@ -462,10 +702,26 @@ const Remediation: React.FC = () => {
             <span>Dashboard</span>
           </Link>
           <div className="about-title-group">
-            <h1 className="text-gradient">Secure Coding Guidelines</h1>
-            <p>Implement core security remediations across multiple programming languages to protect your applications.</p>
+            <h1 className="text-gradient">Secure Coding Knowledge Base</h1>
+            <p>Production-grade security implementations across 6 vulnerability classes, 4 languages, and full OWASP Top 10 coverage.</p>
           </div>
         </header>
+
+        {/* Knowledge Base Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", marginBottom: "32px" }}>
+          {[
+            { label: "Guides", value: GUIDELINES_DATA.length, color: "#00f2ff" },
+            { label: "Critical", value: GUIDELINES_DATA.filter(g => g.severity === "critical").length, color: "#ff4d4d" },
+            { label: "High", value: GUIDELINES_DATA.filter(g => g.severity === "high").length, color: "#fb923c" },
+            { label: "Languages", value: 4, color: "#00ff9d" },
+            { label: "OWASP", value: "100%", color: "#a855f7" },
+          ].map(stat => (
+            <div key={stat.label} style={{ padding: "14px 16px", background: "rgba(10,15,25,0.6)", border: `1px solid ${stat.color}22`, borderLeft: `3px solid ${stat.color}`, borderRadius: "8px" }}>
+              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "1.5rem", fontWeight: 800, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+              <div style={{ fontSize: "0.7rem", color: "rgba(224,250,255,0.5)", textTransform: "uppercase", letterSpacing: "1px", marginTop: "6px" }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
 
         {/* Global AI Prompt Banner */}
         <section className="ai-prompt-banner">

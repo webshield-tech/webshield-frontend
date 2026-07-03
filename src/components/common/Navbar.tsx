@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   Bell,
   LogOut,
-  Shield
+  Shield,
+  FlaskConical
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -77,7 +78,7 @@ export const Navbar = () => {
             return serverList.length ? serverList : prev;
           });
         }
-      } catch (e) {
+      } catch {
         // ignore fetch errors and rely on local cache
       }
     })();
@@ -193,6 +194,10 @@ export const Navbar = () => {
           <Link to="/learn" className="nav-link">
             <BookOpen size={18} />
             <span>Learn</span>
+          </Link>
+          <Link to="/labs" className="nav-link">
+            <FlaskConical size={18} />
+            <span>Labs</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className="nav-link admin-link">
@@ -339,6 +344,10 @@ export const Navbar = () => {
           <Link to="/remediation" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
             <Shield size={20} />
             <span>Secure Coding</span>
+          </Link>
+          <Link to="/labs" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
+            <FlaskConical size={20} />
+            <span>Labs</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>

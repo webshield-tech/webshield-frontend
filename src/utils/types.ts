@@ -6,10 +6,12 @@ export type ScanTool =
   | "sslscan"
   | "gobuster"
   | "ffuf"
+  | "whatweb"
   | "wapiti"
   | "nuclei"
   | "dns"
   | "whois"
+  | "rate-limit"
   | "ratelimit";
 
 export interface User {
